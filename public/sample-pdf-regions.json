@@ -1,0 +1,62 @@
+[
+  {
+    "id": "pdf-sample",
+    "name": "PDF Example Document",
+    "pages": [
+      {
+        "id": "pdf-sample-p1",
+        "documentId": "pdf-sample",
+        "pageNumber": 1,
+        "width": 1190,
+        "height": 1684,
+        "regions": [
+          { "id": "ps-p1-r01", "x1": 80, "y1": 80, "x2": 600, "y2": 120, "originalText": "Lorem Ipsum Document Title", "currentText": "Lorem Ipsum Document Title", "confidence": 0.95 },
+          { "id": "ps-p1-r02", "x1": 80, "y1": 160, "x2": 1100, "y2": 190, "originalText": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.", "currentText": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.", "confidence": 0.92 },
+          { "id": "ps-p1-r03", "x1": 80, "y1": 200, "x2": 1100, "y2": 230, "originalText": "Nunc at pellentesque leo, vel tempor odio.", "currentText": "Nunc at pellentesque leo, vel tempor odio.", "confidence": 0.88 },
+          { "id": "ps-p1-r04", "x1": 80, "y1": 240, "x2": 1050, "y2": 270, "originalText": "Vivamus lacinia odio vitae vestibulum vestibulum.", "currentText": "Vivamus lacinia odio vitae vestibulum vestibulum.", "confidence": 0.45 },
+          { "id": "ps-p1-r05", "x1": 80, "y1": 300, "x2": 1100, "y2": 330, "originalText": "Cras pulvinar mattis nunc sed blandit libero.", "currentText": "Cras pulvinar mattis nunc sed blandit libero.", "confidence": 0.90 },
+          { "id": "ps-p1-r06", "x1": 80, "y1": 340, "x2": 1080, "y2": 370, "originalText": "Pellentesque hablitant rnobi tristique senectus.", "currentText": "Pellentesque hablitant rnobi tristique senectus.", "confidence": 0.38 },
+          { "id": "ps-p1-r07", "x1": 80, "y1": 400, "x2": 500, "y2": 435, "originalText": "Section 1.1", "currentText": "Section 1.1", "confidence": 0.97 },
+          { "id": "ps-p1-r08", "x1": 80, "y1": 450, "x2": 1100, "y2": 480, "originalText": "Donec vitae sapien ut libero venenatis faucibus.", "currentText": "Donec vitae sapien ut libero venenatis faucibus.", "confidence": 0.85 },
+          { "id": "ps-p1-r09", "x1": 80, "y1": 490, "x2": 1060, "y2": 520, "originalText": "Nu11am quis ante. Etiam sit arnet orci eget.", "currentText": "Nu11am quis ante. Etiam sit arnet orci eget.", "confidence": 0.36 },
+          { "id": "ps-p1-r10", "x1": 80, "y1": 530, "x2": 1100, "y2": 560, "originalText": "Aenean leo ligula, porttitor eu consequat vitae.", "currentText": "Aenean leo ligula, porttitor eu consequat vitae.", "confidence": 0.91 }
+        ]
+      },
+      {
+        "id": "pdf-sample-p2",
+        "documentId": "pdf-sample",
+        "pageNumber": 2,
+        "width": 1190,
+        "height": 1684,
+        "regions": [
+          { "id": "ps-p2-r01", "x1": 80, "y1": 80, "x2": 500, "y2": 115, "originalText": "Chapter 2: Methodology", "currentText": "Chapter 2: Methodology", "confidence": 0.94 },
+          { "id": "ps-p2-r02", "x1": 80, "y1": 150, "x2": 1100, "y2": 180, "originalText": "Praesent egestas neque eu enim. In hac habitasse.", "currentText": "Praesent egestas neque eu enim. In hac habitasse.", "confidence": 0.87 },
+          { "id": "ps-p2-r03", "x1": 80, "y1": 190, "x2": 1080, "y2": 220, "originalText": "Fusce a quarn. Pha5ellus nulla. Phasellus lacus.", "currentText": "Fusce a quarn. Pha5ellus nulla. Phasellus lacus.", "confidence": 0.34 },
+          { "id": "ps-p2-r04", "x1": 80, "y1": 230, "x2": 1100, "y2": 260, "originalText": "Curabitur vulputate vestibulurn arnet consectetuer.", "currentText": "Curabitur vulputate vestibulurn arnet consectetuer.", "confidence": 0.39 },
+          { "id": "ps-p2-r05", "x1": 80, "y1": 300, "x2": 1100, "y2": 330, "originalText": "Morbi mollis tellus ac sapien. Fusce vel dui.", "currentText": "Morbi mollis tellus ac sapien. Fusce vel dui.", "confidence": 0.93 },
+          { "id": "ps-p2-r06", "x1": 80, "y1": 340, "x2": 1050, "y2": 370, "originalText": "Sed arcu. Cras consequat. Praesent daplbus.", "currentText": "Sed arcu. Cras consequat. Praesent daplbus.", "confidence": 0.41 },
+          { "id": "ps-p2-r07", "x1": 80, "y1": 400, "x2": 1100, "y2": 430, "originalText": "Donec pede justo fringilla vel aliquet nec vulputate.", "currentText": "Donec pede justo fringilla vel aliquet nec vulputate.", "confidence": 0.89 },
+          { "id": "ps-p2-r08", "x1": 80, "y1": 440, "x2": 900, "y2": 470, "originalText": "Maecenas ternpus te11us eget condirnentur.", "currentText": "Maecenas ternpus te11us eget condirnentur.", "confidence": 0.33 }
+        ]
+      },
+      {
+        "id": "pdf-sample-p3",
+        "documentId": "pdf-sample",
+        "pageNumber": 3,
+        "width": 1190,
+        "height": 1684,
+        "regions": [
+          { "id": "ps-p3-r01", "x1": 80, "y1": 80, "x2": 500, "y2": 115, "originalText": "Chapter 3: Results", "currentText": "Chapter 3: Results", "confidence": 0.96 },
+          { "id": "ps-p3-r02", "x1": 80, "y1": 150, "x2": 1100, "y2": 180, "originalText": "Sed consequat auctor neque nec interdum sapien.", "currentText": "Sed consequat auctor neque nec interdum sapien.", "confidence": 0.90 },
+          { "id": "ps-p3-r03", "x1": 80, "y1": 190, "x2": 1060, "y2": 220, "originalText": "A1iquam erat volutpat. Nunc ferrnenturn tortor.", "currentText": "A1iquam erat volutpat. Nunc ferrnenturn tortor.", "confidence": 0.37 },
+          { "id": "ps-p3-r04", "x1": 80, "y1": 260, "x2": 400, "y2": 290, "originalText": "Table 3.1", "currentText": "Table 3.1", "confidence": 0.98 },
+          { "id": "ps-p3-r05", "x1": 80, "y1": 300, "x2": 700, "y2": 340, "originalText": "Category  |  Value  |  Result", "currentText": "Category  |  Value  |  Result", "confidence": 0.85 },
+          { "id": "ps-p3-r06", "x1": 80, "y1": 340, "x2": 700, "y2": 370, "originalText": "Alpha     |  12.5   |  Pass", "currentText": "Alpha     |  12.5   |  Pass", "confidence": 0.92 },
+          { "id": "ps-p3-r07", "x1": 80, "y1": 370, "x2": 700, "y2": 400, "originalText": "Beta      |  8.3    |  Fai1", "currentText": "Beta      |  8.3    |  Fai1", "confidence": 0.40 },
+          { "id": "ps-p3-r08", "x1": 80, "y1": 440, "x2": 1100, "y2": 470, "originalText": "The resu1ts indicate a slgnificant irnprovement.", "currentText": "The resu1ts indicate a slgnificant irnprovement.", "confidence": 0.35 },
+          { "id": "ps-p3-r09", "x1": 80, "y1": 480, "x2": 1080, "y2": 510, "originalText": "Further analysis is recornrnended for Phase II.", "currentText": "Further analysis is recornrnended for Phase II.", "confidence": 0.42 }
+        ]
+      }
+    ]
+  }
+]

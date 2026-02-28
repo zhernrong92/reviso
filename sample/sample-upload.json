@@ -1,0 +1,73 @@
+[
+  {
+    "id": "upload-doc1",
+    "name": "Field Journal — Cairo 1924",
+    "pages": [
+      {
+        "id": "upload-doc1-p1",
+        "documentId": "upload-doc1",
+        "pageNumber": 1,
+        "width": 1200,
+        "height": 1600,
+        "regions": [
+          { "id": "u1-p1-r01", "x1": 100, "y1": 100, "x2": 600, "y2": 130, "originalText": "FIELD JOURNAL — CAIRO EXPEDITION", "currentText": "FIELD JOURNAL — CAIRO EXPEDITION", "confidence": 0.97 },
+          { "id": "u1-p1-r02", "x1": 100, "y1": 150, "x2": 450, "y2": 175, "originalText": "Dr. Eleanor Voss, March 1924", "currentText": "Dr. Eleanor Voss, March 1924", "confidence": 0.92 },
+          { "id": "u1-p1-r03", "x1": 100, "y1": 210, "x2": 800, "y2": 235, "originalText": "Arrived at the excavation site south of Giza at dawn.", "currentText": "Arrived at the excavation site south of Giza at dawn.", "confidence": 0.88 },
+          { "id": "u1-p1-r04", "x1": 100, "y1": 250, "x2": 780, "y2": 275, "originalText": "The teruperature was already unbearab1e by mid-morning.", "currentText": "The teruperature was already unbearab1e by mid-morning.", "confidence": 0.41 },
+          { "id": "u1-p1-r05", "x1": 100, "y1": 290, "x2": 820, "y2": 315, "originalText": "We uncovered a sma11 stone tablet near the northern wa11.", "currentText": "We uncovered a sma11 stone tablet near the northern wa11.", "confidence": 0.38 },
+          { "id": "u1-p1-r06", "x1": 100, "y1": 330, "x2": 760, "y2": 355, "originalText": "The inscriptions appear to be Middle Kingdorn hieratic.", "currentText": "The inscriptions appear to be Middle Kingdorn hieratic.", "confidence": 0.44 },
+          { "id": "u1-p1-r07", "x1": 100, "y1": 370, "x2": 800, "y2": 395, "originalText": "Professor Langford believes it dates to the 12th Dynasty.", "currentText": "Professor Langford believes it dates to the 12th Dynasty.", "confidence": 0.90 },
+          { "id": "u1-p1-r08", "x1": 100, "y1": 430, "x2": 750, "y2": 455, "originalText": "Section 2: Afternoon observations.", "currentText": "Section 2: Afternoon observations.", "confidence": 0.95 },
+          { "id": "u1-p1-r09", "x1": 100, "y1": 470, "x2": 830, "y2": 495, "originalText": "A second charnber was located beneath the rnain corridor.", "currentText": "A second charnber was located beneath the rnain corridor.", "confidence": 0.36 },
+          { "id": "u1-p1-r10", "x1": 100, "y1": 510, "x2": 790, "y2": 535, "originalText": "Water seepage has caused signlflcant darnage to the wa11s.", "currentText": "Water seepage has caused signlflcant darnage to the wa11s.", "confidence": 0.32 },
+          { "id": "u1-p1-r11", "x1": 100, "y1": 550, "x2": 770, "y2": 575, "originalText": "Pottery fragrnents were collected and catalogued.", "currentText": "Pottery fragrnents were collected and catalogued.", "confidence": 0.47 },
+          { "id": "u1-p1-r12", "x1": 100, "y1": 590, "x2": 810, "y2": 615, "originalText": "Sketch of the tablet is included on the fo11owing page.", "currentText": "Sketch of the tablet is included on the fo11owing page.", "confidence": 0.40 }
+        ]
+      },
+      {
+        "id": "upload-doc1-p2",
+        "documentId": "upload-doc1",
+        "pageNumber": 2,
+        "width": 1200,
+        "height": 1600,
+        "regions": [
+          { "id": "u1-p2-r01", "x1": 100, "y1": 100, "x2": 550, "y2": 130, "originalText": "TABLET TRANSCRIPTION NOTES", "currentText": "TABLET TRANSCRIPTION NOTES", "confidence": 0.93 },
+          { "id": "u1-p2-r02", "x1": 100, "y1": 170, "x2": 820, "y2": 195, "originalText": "Line 1: An offering forrnula dedicated to Osiris.", "currentText": "Line 1: An offering forrnula dedicated to Osiris.", "confidence": 0.43 },
+          { "id": "u1-p2-r03", "x1": 100, "y1": 210, "x2": 800, "y2": 235, "originalText": "Line 2: The narne of the deceased is partially i11egible.", "currentText": "Line 2: The narne of the deceased is partially i11egible.", "confidence": 0.35 },
+          { "id": "u1-p2-r04", "x1": 100, "y1": 250, "x2": 780, "y2": 275, "originalText": "Line 3: Reference to 'a thousand loaves of bread'.", "currentText": "Line 3: Reference to 'a thousand loaves of bread'.", "confidence": 0.89 },
+          { "id": "u1-p2-r05", "x1": 100, "y1": 290, "x2": 810, "y2": 315, "originalText": "Line 4: Mentions a 'scrlbe of the granary' — likely a title.", "currentText": "Line 4: Mentions a 'scrlbe of the granary' — likely a title.", "confidence": 0.39 },
+          { "id": "u1-p2-r06", "x1": 100, "y1": 350, "x2": 700, "y2": 375, "originalText": "Additional notes by Prof. Langford:", "currentText": "Additional notes by Prof. Langford:", "confidence": 0.96 },
+          { "id": "u1-p2-r07", "x1": 100, "y1": 390, "x2": 830, "y2": 415, "originalText": "The stone is 1imestone, consistent with local quarry sources.", "currentText": "The stone is 1imestone, consistent with local quarry sources.", "confidence": 0.42 },
+          { "id": "u1-p2-r08", "x1": 100, "y1": 430, "x2": 790, "y2": 455, "originalText": "Dirnenslons: approxirnately 45cm x 30cm x 8cm.", "currentText": "Dirnenslons: approxirnately 45cm x 30cm x 8cm.", "confidence": 0.34 },
+          { "id": "u1-p2-r09", "x1": 100, "y1": 470, "x2": 760, "y2": 495, "originalText": "Recornrnend further analysis at the Cairo Museurn.", "currentText": "Recornrnend further analysis at the Cairo Museurn.", "confidence": 0.37 },
+          { "id": "u1-p2-r10", "x1": 100, "y1": 530, "x2": 500, "y2": 555, "originalText": "— End of journal entry —", "currentText": "— End of journal entry —", "confidence": 0.98 }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "upload-doc2",
+    "name": "Shipping Manifest — S.S. Thebes",
+    "pages": [
+      {
+        "id": "upload-doc2-p1",
+        "documentId": "upload-doc2",
+        "pageNumber": 1,
+        "width": 1200,
+        "height": 1600,
+        "regions": [
+          { "id": "u2-p1-r01", "x1": 100, "y1": 100, "x2": 650, "y2": 130, "originalText": "SHIPPING MANIFEST — S.S. THEBES", "currentText": "SHIPPING MANIFEST — S.S. THEBES", "confidence": 0.94 },
+          { "id": "u2-p1-r02", "x1": 100, "y1": 150, "x2": 500, "y2": 175, "originalText": "Port of Origin: Alexandria, Egypt", "currentText": "Port of Origin: Alexandria, Egypt", "confidence": 0.91 },
+          { "id": "u2-p1-r03", "x1": 100, "y1": 190, "x2": 480, "y2": 215, "originalText": "Destination: Southarnpton, England", "currentText": "Destination: Southarnpton, England", "confidence": 0.45 },
+          { "id": "u2-p1-r04", "x1": 100, "y1": 230, "x2": 400, "y2": 255, "originalText": "Date: 12 April 1924", "currentText": "Date: 12 April 1924", "confidence": 0.93 },
+          { "id": "u2-p1-r05", "x1": 100, "y1": 290, "x2": 750, "y2": 315, "originalText": "Crate 01: Stone tablet, lirnestone, 12th Dynasty.", "currentText": "Crate 01: Stone tablet, lirnestone, 12th Dynasty.", "confidence": 0.40 },
+          { "id": "u2-p1-r06", "x1": 100, "y1": 330, "x2": 780, "y2": 355, "originalText": "Crate 02: Pottery fragrnents (14 pieces), catalogued.", "currentText": "Crate 02: Pottery fragrnents (14 pieces), catalogued.", "confidence": 0.43 },
+          { "id": "u2-p1-r07", "x1": 100, "y1": 370, "x2": 800, "y2": 395, "originalText": "Crate 03: Papyrus scro11s (3), sealed in protective tubes.", "currentText": "Crate 03: Papyrus scro11s (3), sealed in protective tubes.", "confidence": 0.38 },
+          { "id": "u2-p1-r08", "x1": 100, "y1": 410, "x2": 720, "y2": 435, "originalText": "Crate 04: Bronze too1s and irnplements.", "currentText": "Crate 04: Bronze too1s and irnplements.", "confidence": 0.41 },
+          { "id": "u2-p1-r09", "x1": 100, "y1": 470, "x2": 600, "y2": 495, "originalText": "Authorised by: Dr. E. Voss", "currentText": "Authorised by: Dr. E. Voss", "confidence": 0.92 },
+          { "id": "u2-p1-r10", "x1": 100, "y1": 510, "x2": 700, "y2": 535, "originalText": "Received by: British Museurn, Dept. of Antiquities", "currentText": "Received by: British Museurn, Dept. of Antiquities", "confidence": 0.39 }
+        ]
+      }
+    ]
+  }
+]
