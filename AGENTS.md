@@ -31,8 +31,8 @@ Refer to these for details (load only when needed):
 
 ## Current State (Update This!)
 **Last Updated:** March 1, 2026
-**Working On:** Phase 8 — Component Refactor (converting standalone app → embeddable `<Reviso />` component)
-**Recently Completed:** Phase 7 — Polish (PoC complete)
+**Working On:** Nothing — Phase 8 complete
+**Recently Completed:** Phase 8 — Component Refactor (embeddable `<Reviso />` component, all props wired, dead files cleaned up)
 **Blocked By:** None
 **Design Doc:** `agent_docs/component_design.md` — full component API, layout, bundle strategy
 
@@ -106,19 +106,25 @@ Refer to these for details (load only when needed):
 - [ ] Find-and-replace across regions
 - [ ] Final cross-browser testing (Chrome, Firefox, Safari, Edge)
 
-### Phase 8: Component Refactor ← CURRENT
+### Phase 8: Component Refactor ✓
 See `agent_docs/component_design.md` for full design details.
-- [ ] Remove standalone app shell (AppShell, top-level routing, sample data loading)
-- [ ] Remove file upload feature (drop pdfjs-dist dependency)
-- [ ] Convert TopBar → inline toolbar (lives inside component boundary)
-- [ ] Convert Sidebar → single-document page thumbnails only (no document list)
-- [ ] Create `<Reviso />` wrapper component with props interface
-- [ ] Internalise stores — scoped to component instance (no global singletons)
-- [ ] Wire up onChange/callback props to store subscriptions
-- [ ] Accept host MUI theme via context, with built-in fallback
+
+- [x] Define public API types (RevisoDocument/Page/Region/Props) + type mappers
+- [x] Restructure code into `src/reviso/` folder (copy-paste ready)
+- [x] Split Sidebar into DocumentList (app-level) + PageThumbnails (component-level)
+- [x] Create `<Reviso />` wrapper component with RevisoProps interface
+- [x] Convert TopBar → InlineToolbar (compact, lives inside component boundary)
+- [x] Wire Reviso props → internal stores (document, callbacks, editable, features, defaultRegionStyles, onExport)
+- [x] Accept single document instead of multi-document array
+- [x] Remove file upload (host app responsibility)
+- [x] Accept host MUI theme via ThemeProvider passthrough
+- [x] Make features toggleable via props (editable, showSidebar, showToolbar, comparison, export, regionCreation)
+- [x] Move legacy-only files (TopBar, AppShell, Sidebar, DocumentList, parsePdf, parseUploadedJson, dummyData) to `src/legacy/`
+- [x] Fit-to-view on page navigation and sidebar toggle
+- [x] Demo page at `/reviso` with dummy host app layout
 
 ### Distribution
-Copy-paste — not a published library. See `agent_docs/component_design.md` for folder structure and host project dependencies.
+Copy-paste — not a published library. Copy `src/reviso/` to your project and install peer dependencies. See `agent_docs/component_design.md` for details.
 
 ## Engineering Constraints
 

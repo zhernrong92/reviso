@@ -20,7 +20,6 @@ import { exportImage } from '../../utils/exportImage';
 import { downloadFile } from '../../utils/downloadFile';
 
 type ExportFormat = 'json' | 'pdf' | 'image';
-type ExportScope = 'current' | 'all';
 
 interface ExportDialogProps {
   open: boolean;
@@ -29,44 +28,52 @@ interface ExportDialogProps {
 
 export const ExportDialog: React.FC<ExportDialogProps> = ({ open, onClose }) => {
   const [format, setFormat] = useState<ExportFormat>('json');
-  const [scope, setScope] = useState<ExportScope>('current');
   const [exporting, setExporting] = useState(false);
 
-  const documents = useDocumentStore((s) => s.documents);
   const activeDocumentId = useUiStore((s) => s.activeDocumentId);
+  const onExportCallback = useUiStore((s) => s.onExportCallback);
   const activeDocument = useDocumentStore((s) => s.getActiveDocument(activeDocumentId));
 
   const handleExport = useCallback(async () => {
-    const docsToExport = scope === 'current' && activeDocument
-      ? [activeDocument]
-      : documents;
+    if (!activeDocument) return;
 
-    if (docsToExport.length === 0) return;
-
+    const docsToExport = [activeDocument];
     setExporting(true);
 
     try {
-      const baseName = scope === 'current' && activeDocument
-        ? activeDocument.name.replace(/\s+/g, '_').toLowerCase()
-        : 'reviso_export';
+      const baseName = activeDocument.name.replace(/\s+/g, '_').toLowerCase();
 
       if (format === 'json') {
         const json = exportJson(docsToExport);
-        downloadFile(json, `${baseName}.json`, 'application/json');
+        if (onExportCallback) {
+          onExportCallback('json', new Blob([json], { type: 'application/json' }));
+        } else {
+          downloadFile(json, `${baseName}.json`, 'application/json');
+        }
       } else if (format === 'pdf') {
         const pdfBytes = await exportPdf(docsToExport);
-        downloadFile(pdfBytes, `${baseName}.pdf`, 'application/pdf');
+        if (onExportCallback) {
+          onExportCallback('pdf', new Blob([pdfBytes.buffer as ArrayBuffer], { type: 'application/pdf' }));
+        } else {
+          downloadFile(pdfBytes, `${baseName}.pdf`, 'application/pdf');
+        }
       } else {
         const images = await exportImage(docsToExport);
-        for (const { filename, blob } of images) {
-          const url = URL.createObjectURL(blob);
-          const link = document.createElement('a');
-          link.href = url;
-          link.download = filename;
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-          URL.revokeObjectURL(url);
+        if (onExportCallback) {
+          for (const { blob } of images) {
+            onExportCallback('png', blob);
+          }
+        } else {
+          for (const { filename, blob } of images) {
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+          }
         }
       }
 
@@ -74,7 +81,7 @@ export const ExportDialog: React.FC<ExportDialogProps> = ({ open, onClose }) => 
     } finally {
       setExporting(false);
     }
-  }, [format, scope, documents, activeDocument, onClose]);
+  }, [format, activeDocument, onClose, onExportCallback]);
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
@@ -92,26 +99,6 @@ export const ExportDialog: React.FC<ExportDialogProps> = ({ open, onClose }) => 
               <FormControlLabel value="image" control={<Radio size="small" />} label="PNG — Page images with text overlays" />
             </RadioGroup>
           </FormControl>
-
-          <FormControl>
-            <FormLabel>Scope</FormLabel>
-            <RadioGroup
-              value={scope}
-              onChange={(e) => setScope(e.target.value as ExportScope)}
-            >
-              <FormControlLabel
-                value="current"
-                control={<Radio size="small" />}
-                label={activeDocument ? `Current document: ${activeDocument.name}` : 'Current document'}
-                disabled={!activeDocument}
-              />
-              <FormControlLabel
-                value="all"
-                control={<Radio size="small" />}
-                label={`All documents (${documents.length})`}
-              />
-            </RadioGroup>
-          </FormControl>
         </Box>
       </DialogContent>
       <DialogActions>
@@ -121,7 +108,7 @@ export const ExportDialog: React.FC<ExportDialogProps> = ({ open, onClose }) => 
         <Button
           variant="contained"
           onClick={handleExport}
-          disabled={exporting || (scope === 'current' && !activeDocument)}
+          disabled={exporting || !activeDocument}
         >
           {exporting ? 'Exporting...' : 'Export'}
         </Button>

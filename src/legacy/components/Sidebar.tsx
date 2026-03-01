@@ -1,8 +1,8 @@
 import { Box, Divider } from '@mui/material';
-import { useDocumentStore } from '../../stores/documentStore';
-import { useUiStore } from '../../stores/uiStore';
+import { useDocumentStore } from '../../reviso/stores/documentStore';
+import { useUiStore } from '../../reviso/stores/uiStore';
 import { DocumentList } from './DocumentList';
-import { PageThumbnails } from './PageThumbnails';
+import { PageThumbnails } from '../../reviso/components/layout/PageThumbnails';
 
 const SIDEBAR_WIDTH = 280;
 

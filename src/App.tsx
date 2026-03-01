@@ -1,10 +1,12 @@
 import { useEffect } from 'react';
-import { AppShell } from './reviso/components/layout/AppShell';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { AppShell } from './legacy/components/AppShell';
 import { useDocumentStore } from './reviso/stores/documentStore';
 import { useUiStore } from './reviso/stores/uiStore';
-import { parsePdf } from './reviso/utils/parsePdf';
-import { parseUploadedJson } from './reviso/utils/parseUploadedJson';
+import { parsePdf } from './legacy/utils/parsePdf';
+import { parseUploadedJson } from './legacy/utils/parseUploadedJson';
 import type { Document, TextRegion } from './reviso/types/document';
+import RevisoDemo from './RevisoDemo';
 
 function createPngDocument(width: number, height: number): Document {
   return {
@@ -35,7 +37,7 @@ function loadImageDimensions(src: string): Promise<{ width: number; height: numb
   });
 }
 
-const App: React.FC = () => {
+const LegacyDemo: React.FC = () => {
   const loadDocuments = useDocumentStore((s) => s.loadDocuments);
   const setActiveDocument = useUiStore((s) => s.setActiveDocument);
   const setActivePage = useUiStore((s) => s.setActivePage);
@@ -100,5 +102,14 @@ const App: React.FC = () => {
 
   return <AppShell />;
 };
+
+const App: React.FC = () => (
+  <BrowserRouter>
+    <Routes>
+      <Route path="/" element={<LegacyDemo />} />
+      <Route path="/reviso" element={<RevisoDemo />} />
+    </Routes>
+  </BrowserRouter>
+);
 
 export default App;

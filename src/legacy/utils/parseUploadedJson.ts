@@ -1,4 +1,4 @@
-import type { Document, Page, TextRegion } from '../types/document';
+import type { Document, Page, TextRegion } from '../../reviso/types/document';
 
 function assertString(val: unknown, field: string): asserts val is string {
   if (typeof val !== 'string') throw new Error(`"${field}" must be a string`);

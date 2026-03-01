@@ -11,14 +11,14 @@ import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
 import UndoIcon from '@mui/icons-material/Undo';
 import RedoIcon from '@mui/icons-material/Redo';
-import { useUiStore } from '../../stores/uiStore';
-import { useDocumentStore } from '../../stores/documentStore';
-import { useEditHistoryStore } from '../../stores/editHistoryStore';
-import { ExportDialog } from '../export/ExportDialog';
-import { parseUploadedJson } from '../../utils/parseUploadedJson';
-import { parsePdf } from '../../utils/parsePdf';
-import { DebouncedColorPicker } from '../common/DebouncedColorPicker';
-import type { ViewMode } from '../../types/ui';
+import { useUiStore } from '../../reviso/stores/uiStore';
+import { useDocumentStore } from '../../reviso/stores/documentStore';
+import { useEditHistoryStore } from '../../reviso/stores/editHistoryStore';
+import { ExportDialog } from '../../reviso/components/export/ExportDialog';
+import { parseUploadedJson } from '../utils/parseUploadedJson';
+import { parsePdf } from '../utils/parsePdf';
+import { DebouncedColorPicker } from '../../reviso/components/common/DebouncedColorPicker';
+import type { ViewMode } from '../../reviso/types/ui';
 
 export const TopBar: React.FC = () => {
   const theme = useTheme();
@@ -104,7 +104,7 @@ export const TopBar: React.FC = () => {
   }, []);
 
   const loadParsedDocs = useCallback(
-    (docs: import('../../types/document').Document[]) => {
+    (docs: import('../../reviso/types/document').Document[]) => {
       loadDocuments(docs);
       useEditHistoryStore.getState().clear();
       const firstDoc = docs[0];

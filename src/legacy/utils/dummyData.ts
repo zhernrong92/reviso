@@ -1,4 +1,4 @@
-import type { Document, TextRegion } from '../types/document';
+import type { Document, TextRegion } from '../../reviso/types/document';
 
 const PAGE_WIDTH = 1200;
 const PAGE_HEIGHT = 1600;

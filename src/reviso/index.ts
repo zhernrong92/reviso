@@ -14,4 +14,4 @@ export {
   toPublicRegion,
 } from './utils/typeMappers';
 
-export { AppShell } from './components/layout/AppShell';
+export { Reviso } from './Reviso';

@@ -1,5 +1,5 @@
 import * as pdfjs from 'pdfjs-dist';
-import type { Document } from '../types/document';
+import type { Document } from '../../reviso/types/document';
 
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   'pdfjs-dist/build/pdf.worker.min.mjs',

@@ -7,8 +7,8 @@ import {
   Typography,
 } from '@mui/material';
 import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
-import { useDocumentStore } from '../../stores/documentStore';
-import { useUiStore } from '../../stores/uiStore';
+import { useDocumentStore } from '../../reviso/stores/documentStore';
+import { useUiStore } from '../../reviso/stores/uiStore';
 
 export const DocumentList: React.FC = () => {
   const documents = useDocumentStore((s) => s.documents);

@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { Box, Typography } from '@mui/material';
 import { TransformWrapper, TransformComponent, type ReactZoomPanPinchRef } from 'react-zoom-pan-pinch';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -15,30 +15,53 @@ export const DocumentViewer: React.FC = () => {
   const selectedRegionId = useUiStore((s) => s.selectedRegionId);
   const editorMode = useUiStore((s) => s.editorMode);
   const selectRegion = useUiStore((s) => s.selectRegion);
+  const sidebarOpen = useUiStore((s) => s.sidebarOpen);
+  const editable = useUiStore((s) => s.editable);
   const activePage = useDocumentStore((s) => s.getActivePage(activePageId));
 
   useEditorKeyboard();
 
   const selectedRegion = activePage?.regions.find((r) => r.id === selectedRegionId);
+  const transformRef = useRef<ReactZoomPanPinchRef | null>(null);
 
-  const handleInit = useCallback(
+  const pageWidth = activePage?.width;
+  const pageHeight = activePage?.height;
+
+  const fitToView = useCallback(
     (ref: ReactZoomPanPinchRef) => {
-      if (!activePage) return;
+      if (!pageWidth || !pageHeight) return;
       const wrapper = ref.instance.wrapperComponent;
       if (!wrapper) return;
       const wrapperWidth = wrapper.clientWidth;
       const wrapperHeight = wrapper.clientHeight;
       const fitScale = Math.min(
-        wrapperWidth / activePage.width,
-        wrapperHeight / activePage.height,
+        wrapperWidth / pageWidth,
+        wrapperHeight / pageHeight,
       ) * 0.95;
-      // Use requestAnimationFrame so the wrapper layout is settled
       requestAnimationFrame(() => {
         ref.centerView(fitScale);
       });
     },
-    [activePage],
+    [pageWidth, pageHeight],
   );
+
+  const handleInit = useCallback(
+    (ref: ReactZoomPanPinchRef) => {
+      transformRef.current = ref;
+      fitToView(ref);
+    },
+    [fitToView],
+  );
+
+  // Re-fit when sidebar toggles (container width changes)
+  useEffect(() => {
+    if (!transformRef.current) return;
+    // Wait for the sidebar CSS transition to finish (200ms)
+    const timer = setTimeout(() => {
+      if (transformRef.current) fitToView(transformRef.current);
+    }, 250);
+    return () => clearTimeout(timer);
+  }, [sidebarOpen, fitToView]);
 
   const handleAdvance = useCallback(
     (direction: 'next' | 'prev') => {
@@ -95,7 +118,7 @@ export const DocumentViewer: React.FC = () => {
         >
           <TransformWrapper
             initialScale={0.5}
-            minScale={0.1}
+            minScale={0.5}
             maxScale={4}
             limitToBounds
             centerOnInit
@@ -120,7 +143,7 @@ export const DocumentViewer: React.FC = () => {
                 width={activePage.width}
                 height={activePage.height}
               />
-              {selectedRegion && activePageId && (
+              {editable && selectedRegion && activePageId && (
                 <InlineEditor
                   key={selectedRegion.id}
                   region={selectedRegion}
@@ -130,7 +153,7 @@ export const DocumentViewer: React.FC = () => {
                   onAdvance={handleAdvance}
                 />
               )}
-              {editorMode === 'create' && activePageId && (
+              {editable && editorMode === 'create' && activePageId && (
                 <RegionCreator
                   width={activePage.width}
                   height={activePage.height}

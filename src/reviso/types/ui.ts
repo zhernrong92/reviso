@@ -1,6 +1,12 @@
 export type ViewMode = 'edit' | 'compare';
 export type EditorMode = 'select' | 'create';
 
+export interface FeatureFlags {
+  comparison: boolean;
+  export: boolean;
+  regionCreation: boolean;
+}
+
 export interface RegionDefaults {
   fontColor: string;
   fontFamily: string;
