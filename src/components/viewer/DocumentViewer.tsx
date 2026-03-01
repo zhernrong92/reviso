@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { Box, Typography } from '@mui/material';
-import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
+import { TransformWrapper, TransformComponent, type ReactZoomPanPinchRef } from 'react-zoom-pan-pinch';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useUiStore } from '../../stores/uiStore';
 import { useDocumentStore } from '../../stores/documentStore';
@@ -20,6 +20,25 @@ export const DocumentViewer: React.FC = () => {
   useEditorKeyboard();
 
   const selectedRegion = activePage?.regions.find((r) => r.id === selectedRegionId);
+
+  const handleInit = useCallback(
+    (ref: ReactZoomPanPinchRef) => {
+      if (!activePage) return;
+      const wrapper = ref.instance.wrapperComponent;
+      if (!wrapper) return;
+      const wrapperWidth = wrapper.clientWidth;
+      const wrapperHeight = wrapper.clientHeight;
+      const fitScale = Math.min(
+        wrapperWidth / activePage.width,
+        wrapperHeight / activePage.height,
+      ) * 0.95;
+      // Use requestAnimationFrame so the wrapper layout is settled
+      requestAnimationFrame(() => {
+        ref.centerView(fitScale);
+      });
+    },
+    [activePage],
+  );
 
   const handleAdvance = useCallback(
     (direction: 'next' | 'prev') => {
@@ -75,12 +94,13 @@ export const DocumentViewer: React.FC = () => {
           style={{ width: '100%', height: '100%' }}
         >
           <TransformWrapper
-            initialScale={1}
-            minScale={0.5}
+            initialScale={0.5}
+            minScale={0.1}
             maxScale={4}
             limitToBounds
             centerOnInit
             centerZoomedOut
+            onInit={handleInit}
             panning={{
               excluded: ['inline-editor', 'region-creator'],
               disabled: editorMode === 'create',
