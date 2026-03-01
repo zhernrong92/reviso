@@ -1,11 +1,11 @@
 # AGENTS.md — Master Plan for Reviso
 
 ## Project Overview
-**App:** Reviso — Document Restoration Viewer/Editor
-**Goal:** Help users visually verify and correct OCR results from damaged document restoration with minimal effort
-**Stack:** React 18 + TypeScript + Vite + MUI 6 + Zustand + Framer Motion + pdfjs-dist
-**Scope:** Frontend-only PoC, no backend, no auth, sample data + file upload
-**Current Phase:** All phases complete
+**App:** Reviso — Document Annotation Viewer/Editor (embeddable component)
+**Goal:** Reusable React component for visually verifying and correcting text regions on document images
+**Stack:** React 18 + TypeScript + Vite + MUI 6 + Zustand + Framer Motion
+**Scope:** Frontend-only, embeddable component — no backend, no auth, no file upload
+**Current Phase:** Phase 8 — Component Refactor
 
 ## How I Should Think
 1. **Understand Intent First:** Before answering, identify what the user actually needs
@@ -27,12 +27,14 @@ Refer to these for details (load only when needed):
 - `agent_docs/project_brief.md` — Persistent project rules and conventions
 - `agent_docs/product_requirements.md` — Full PRD (features, user stories, success metrics)
 - `agent_docs/testing.md` — Verification strategy and commands
+- `agent_docs/component_design.md` — Embeddable component API design, layout, bundle strategy, migration plan
 
 ## Current State (Update This!)
 **Last Updated:** March 1, 2026
-**Working On:** Done — all phases complete
-**Recently Completed:** Phase 7+ — Polish & bug fixes (keyboard help, undo/redo, file upload, PDF upload, background color, comparison fixes, color picker perf, image export, sample PDF/PNG as default documents)
+**Working On:** Phase 8 — Component Refactor (converting standalone app → embeddable `<Reviso />` component)
+**Recently Completed:** Phase 7 — Polish (PoC complete)
 **Blocked By:** None
+**Design Doc:** `agent_docs/component_design.md` — full component API, layout, bundle strategy
 
 ## Roadmap
 
@@ -103,6 +105,20 @@ Refer to these for details (load only when needed):
 - [ ] Smooth Framer Motion transitions everywhere
 - [ ] Find-and-replace across regions
 - [ ] Final cross-browser testing (Chrome, Firefox, Safari, Edge)
+
+### Phase 8: Component Refactor ← CURRENT
+See `agent_docs/component_design.md` for full design details.
+- [ ] Remove standalone app shell (AppShell, top-level routing, sample data loading)
+- [ ] Remove file upload feature (drop pdfjs-dist dependency)
+- [ ] Convert TopBar → inline toolbar (lives inside component boundary)
+- [ ] Convert Sidebar → single-document page thumbnails only (no document list)
+- [ ] Create `<Reviso />` wrapper component with props interface
+- [ ] Internalise stores — scoped to component instance (no global singletons)
+- [ ] Wire up onChange/callback props to store subscriptions
+- [ ] Accept host MUI theme via context, with built-in fallback
+
+### Distribution
+Copy-paste — not a published library. See `agent_docs/component_design.md` for folder structure and host project dependencies.
 
 ## Engineering Constraints
 
