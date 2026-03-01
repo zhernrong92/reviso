@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Box, Typography } from '@mui/material';
 import { TransformWrapper, TransformComponent, type ReactZoomPanPinchRef } from 'react-zoom-pan-pinch';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -23,6 +23,7 @@ export const DocumentViewer: React.FC = () => {
 
   const selectedRegion = activePage?.regions.find((r) => r.id === selectedRegionId);
   const transformRef = useRef<ReactZoomPanPinchRef | null>(null);
+  const [minScale, setMinScale] = useState(0.1);
 
   const pageWidth = activePage?.width;
   const pageHeight = activePage?.height;
@@ -38,6 +39,7 @@ export const DocumentViewer: React.FC = () => {
         wrapperWidth / pageWidth,
         wrapperHeight / pageHeight,
       ) * 0.95;
+      setMinScale(fitScale);
       requestAnimationFrame(() => {
         ref.centerView(fitScale);
       });
@@ -117,8 +119,8 @@ export const DocumentViewer: React.FC = () => {
           style={{ width: '100%', height: '100%' }}
         >
           <TransformWrapper
-            initialScale={0.5}
-            minScale={0.5}
+            initialScale={minScale}
+            minScale={minScale}
             maxScale={4}
             limitToBounds
             centerOnInit
