@@ -1,10 +1,10 @@
 import { useEffect } from 'react';
-import { AppShell } from './components/layout/AppShell';
-import { useDocumentStore } from './stores/documentStore';
-import { useUiStore } from './stores/uiStore';
-import { parsePdf } from './utils/parsePdf';
-import { parseUploadedJson } from './utils/parseUploadedJson';
-import type { Document, TextRegion } from './types/document';
+import { AppShell } from './reviso/components/layout/AppShell';
+import { useDocumentStore } from './reviso/stores/documentStore';
+import { useUiStore } from './reviso/stores/uiStore';
+import { parsePdf } from './reviso/utils/parsePdf';
+import { parseUploadedJson } from './reviso/utils/parseUploadedJson';
+import type { Document, TextRegion } from './reviso/types/document';
 
 function createPngDocument(width: number, height: number): Document {
   return {
