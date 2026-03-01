@@ -66,7 +66,7 @@ export const ComparisonSlider: React.FC = () => {
         >
           <TransformWrapper
             initialScale={0.5}
-            minScale={0.1}
+            minScale={0.5}
             maxScale={4}
             limitToBounds
             centerOnInit
