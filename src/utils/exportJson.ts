@@ -11,6 +11,14 @@ interface ExportRegion {
   isEdited: boolean;
   isNew: boolean;
   confidence: number;
+  fontColor?: string;
+  fontFamily?: string;
+  fontWeight?: 'normal' | 'bold';
+  fontStyle?: 'normal' | 'italic';
+  textDecoration?: 'none' | 'line-through';
+  borderColor?: string;
+  borderVisible?: boolean;
+  backgroundColor?: string;
 }
 
 interface ExportPage {
@@ -51,6 +59,14 @@ export function exportJson(documents: Document[]): string {
         isEdited: region.isEdited,
         isNew: region.isNew,
         confidence: region.confidence,
+        ...(region.fontColor !== undefined && { fontColor: region.fontColor }),
+        ...(region.fontFamily !== undefined && { fontFamily: region.fontFamily }),
+        ...(region.fontWeight !== undefined && { fontWeight: region.fontWeight }),
+        ...(region.fontStyle !== undefined && { fontStyle: region.fontStyle }),
+        ...(region.textDecoration !== undefined && { textDecoration: region.textDecoration }),
+        ...(region.borderColor !== undefined && { borderColor: region.borderColor }),
+        ...(region.borderVisible !== undefined && { borderVisible: region.borderVisible }),
+        ...(region.backgroundColor !== undefined && { backgroundColor: region.backgroundColor }),
       })),
     })),
   }));
