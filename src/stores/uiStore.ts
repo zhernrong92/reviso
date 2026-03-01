@@ -32,6 +32,10 @@ const useUiStore = create<UiStoreState>()((set) => ({
   sidebarOpen: true,
   regionDefaults: {
     fontColor: '#e0e0e0',
+    fontFamily: 'Inter',
+    fontWeight: 'normal',
+    fontStyle: 'normal',
+    textDecoration: 'none',
     borderColor: '#0bda90',
     borderVisible: true,
     backgroundColor: 'transparent',

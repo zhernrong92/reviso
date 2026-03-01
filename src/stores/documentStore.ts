@@ -10,7 +10,7 @@ interface DocumentState {
   addRegion: (pageId: string, region: TextRegion) => void;
   deleteRegion: (pageId: string, regionId: string) => void;
   updateRegionBounds: (pageId: string, regionId: string, x1: number, y1: number, x2: number, y2: number) => void;
-  updateRegionStyle: (pageId: string, regionId: string, style: { fontColor?: string; borderColor?: string; borderVisible?: boolean; backgroundColor?: string }) => void;
+  updateRegionStyle: (pageId: string, regionId: string, style: { fontColor?: string; fontFamily?: string; fontWeight?: 'normal' | 'bold'; fontStyle?: 'normal' | 'italic'; textDecoration?: 'none' | 'line-through'; borderColor?: string; borderVisible?: boolean; backgroundColor?: string }) => void;
   restoreSnapshot: (snapshot: Document[]) => void;
   getActiveDocument: (id: string | null) => Document | undefined;
   getActivePage: (id: string | null) => Document['pages'][number] | undefined;
@@ -109,6 +109,10 @@ const useDocumentStore = create<DocumentState>()(
             const region = page.regions.find((r) => r.id === regionId);
             if (region) {
               if (style.fontColor !== undefined) region.fontColor = style.fontColor;
+              if (style.fontFamily !== undefined) region.fontFamily = style.fontFamily;
+              if (style.fontWeight !== undefined) region.fontWeight = style.fontWeight;
+              if (style.fontStyle !== undefined) region.fontStyle = style.fontStyle;
+              if (style.textDecoration !== undefined) region.textDecoration = style.textDecoration;
               if (style.borderColor !== undefined) region.borderColor = style.borderColor;
               if (style.borderVisible !== undefined) region.borderVisible = style.borderVisible;
               if (style.backgroundColor !== undefined) region.backgroundColor = style.backgroundColor;

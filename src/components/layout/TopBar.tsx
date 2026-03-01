@@ -1,5 +1,6 @@
 import { useCallback, useRef, useState } from 'react';
-import { AppBar, Toolbar, IconButton, Typography, Button, Box, Checkbox, ToggleButton, ToggleButtonGroup, Snackbar, Alert } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
+import { AppBar, Toolbar, IconButton, Typography, Button, ToggleButton, ToggleButtonGroup, Snackbar, Alert } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
@@ -20,6 +21,7 @@ import { DebouncedColorPicker } from '../common/DebouncedColorPicker';
 import type { ViewMode } from '../../types/ui';
 
 export const TopBar: React.FC = () => {
+  const theme = useTheme();
   const toggleSidebar = useUiStore((s) => s.toggleSidebar);
   const activeDocumentId = useUiStore((s) => s.activeDocumentId);
   const activePageId = useUiStore((s) => s.activePageId);
@@ -244,74 +246,191 @@ export const TopBar: React.FC = () => {
         )}
 
         {activePage && viewMode === 'edit' && editorMode === 'create' && (
-          <Box sx={{ ml: 1.5, display: 'flex', alignItems: 'center', gap: 1.5 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-              <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                Font
-              </Typography>
+          <div
+            style={{
+              marginLeft: 12,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 4,
+            }}
+          >
+            {/* Font group */}
+            <select
+              value={regionDefaults.fontFamily}
+              onChange={(e) => setRegionDefaults({ fontFamily: e.target.value })}
+              style={{
+                height: 22,
+                fontSize: 10,
+                background: theme.palette.background.default,
+                color: theme.palette.text.primary,
+                border: `1px solid ${theme.palette.divider}`,
+                borderRadius: 2,
+                padding: '0 2px',
+                cursor: 'pointer',
+                outline: 'none',
+                maxWidth: 80,
+              }}
+            >
+              <option value="Inter">Inter</option>
+              <option value="Roboto">Roboto</option>
+              <option value="Arial">Arial</option>
+              <option value="Times New Roman">Times New Roman</option>
+              <option value="Courier New">Courier New</option>
+              <option value="Georgia">Georgia</option>
+            </select>
+            <div
+              onClick={() =>
+                setRegionDefaults({
+                  fontWeight: regionDefaults.fontWeight === 'bold' ? 'normal' : 'bold',
+                })
+              }
+              style={{
+                width: 20,
+                height: 20,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: 11,
+                fontWeight: 700,
+                borderRadius: 2,
+                cursor: 'pointer',
+                userSelect: 'none',
+                background: regionDefaults.fontWeight === 'bold' ? theme.palette.primary.main : 'transparent',
+                color: regionDefaults.fontWeight === 'bold' ? theme.palette.primary.contrastText : theme.palette.text.secondary,
+              }}
+              title="Bold"
+            >
+              B
+            </div>
+            <div
+              onClick={() =>
+                setRegionDefaults({
+                  fontStyle: regionDefaults.fontStyle === 'italic' ? 'normal' : 'italic',
+                })
+              }
+              style={{
+                width: 20,
+                height: 20,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: 11,
+                fontStyle: 'italic',
+                borderRadius: 2,
+                cursor: 'pointer',
+                userSelect: 'none',
+                background: regionDefaults.fontStyle === 'italic' ? theme.palette.primary.main : 'transparent',
+                color: regionDefaults.fontStyle === 'italic' ? theme.palette.primary.contrastText : theme.palette.text.secondary,
+              }}
+              title="Italic"
+            >
+              I
+            </div>
+            <div
+              onClick={() =>
+                setRegionDefaults({
+                  textDecoration:
+                    regionDefaults.textDecoration === 'line-through' ? 'none' : 'line-through',
+                })
+              }
+              style={{
+                width: 20,
+                height: 20,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: 11,
+                textDecoration: 'line-through',
+                borderRadius: 2,
+                cursor: 'pointer',
+                userSelect: 'none',
+                background: regionDefaults.textDecoration === 'line-through' ? theme.palette.primary.main : 'transparent',
+                color: regionDefaults.textDecoration === 'line-through' ? theme.palette.primary.contrastText : theme.palette.text.secondary,
+              }}
+              title="Strikethrough"
+            >
+              S
+            </div>
+            <DebouncedColorPicker
+              value={regionDefaults.fontColor}
+              onChange={(c) => setRegionDefaults({ fontColor: c })}
+              style={{ width: 20, height: 20 }}
+            />
+
+            {/* Divider */}
+            <div style={{ width: 1, height: 16, background: theme.palette.divider, margin: '0 2px' }} />
+
+            {/* Border group */}
+            <span style={{ fontSize: 10, color: theme.palette.text.secondary }}>Border</span>
+            <DebouncedColorPicker
+              value={regionDefaults.borderColor}
+              onChange={(c) => setRegionDefaults({ borderColor: c })}
+              style={{ width: 20, height: 20 }}
+            />
+            <div
+              onClick={() => setRegionDefaults({ borderVisible: !regionDefaults.borderVisible })}
+              style={{
+                width: 14,
+                height: 14,
+                border: `2px solid ${theme.palette.text.secondary}`,
+                borderRadius: 2,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: 10,
+                lineHeight: 1,
+                cursor: 'pointer',
+                userSelect: 'none',
+              }}
+              title={regionDefaults.borderVisible ? 'Hide border' : 'Show border'}
+            >
+              {regionDefaults.borderVisible ? '✓' : ''}
+            </div>
+
+            {/* Divider */}
+            <div style={{ width: 1, height: 16, background: theme.palette.divider, margin: '0 2px' }} />
+
+            {/* BG group */}
+            <span style={{ fontSize: 10, color: theme.palette.text.secondary }}>BG</span>
+            {regionDefaults.backgroundColor && regionDefaults.backgroundColor !== 'transparent' ? (
               <DebouncedColorPicker
-                value={regionDefaults.fontColor}
-                onChange={(c) => setRegionDefaults({ fontColor: c })}
-                style={{ width: 22, height: 22 }}
+                value={regionDefaults.backgroundColor}
+                onChange={(c) => setRegionDefaults({ backgroundColor: c })}
+                style={{ width: 20, height: 20 }}
               />
-            </Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-              <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                Border
-              </Typography>
+            ) : (
               <DebouncedColorPicker
-                value={regionDefaults.borderColor}
-                onChange={(c) => setRegionDefaults({ borderColor: c })}
-                style={{ width: 22, height: 22 }}
+                value="#000000"
+                onChange={(c) => setRegionDefaults({ backgroundColor: c })}
+                style={{ width: 20, height: 20, opacity: 0.4 }}
               />
-            </Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-              <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                BG
-              </Typography>
-              {regionDefaults.backgroundColor === 'transparent' ? (
-                <DebouncedColorPicker
-                  value="#000000"
-                  onChange={(c) => setRegionDefaults({ backgroundColor: c })}
-                  style={{ width: 22, height: 22, opacity: 0.4 }}
-                />
-              ) : (
-                <DebouncedColorPicker
-                  value={regionDefaults.backgroundColor}
-                  onChange={(c) => setRegionDefaults({ backgroundColor: c })}
-                  style={{ width: 22, height: 22 }}
-                />
-              )}
-              <Typography
-                variant="caption"
-                sx={{
-                  color: regionDefaults.backgroundColor === 'transparent' ? 'text.disabled' : 'primary.main',
-                  cursor: 'pointer',
-                  userSelect: 'none',
-                  fontSize: 10,
-                }}
-                onClick={() =>
-                  setRegionDefaults({
-                    backgroundColor:
-                      regionDefaults.backgroundColor === 'transparent' ? '#333333' : 'transparent',
-                  })
-                }
-              >
-                {regionDefaults.backgroundColor === 'transparent' ? 'none' : 'clear'}
-              </Typography>
-            </Box>
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <Checkbox
-                size="small"
-                checked={regionDefaults.borderVisible}
-                onChange={(e) => setRegionDefaults({ borderVisible: e.target.checked })}
-                sx={{ p: 0.25 }}
-              />
-              <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                Visible
-              </Typography>
-            </Box>
-          </Box>
+            )}
+            <div
+              onClick={() =>
+                setRegionDefaults({
+                  backgroundColor:
+                    regionDefaults.backgroundColor === 'transparent' ? '#333333' : 'transparent',
+                })
+              }
+              style={{
+                width: 14,
+                height: 14,
+                border: `2px solid ${theme.palette.text.secondary}`,
+                borderRadius: 2,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: 10,
+                lineHeight: 1,
+                cursor: 'pointer',
+                userSelect: 'none',
+                backgroundColor: regionDefaults.backgroundColor && regionDefaults.backgroundColor !== 'transparent' ? regionDefaults.backgroundColor : 'transparent',
+              }}
+              title={regionDefaults.backgroundColor === 'transparent' ? 'Add background' : 'Clear background'}
+            >
+              {regionDefaults.backgroundColor && regionDefaults.backgroundColor !== 'transparent' ? '✓' : ''}
+            </div>
+          </div>
         )}
 
         <IconButton

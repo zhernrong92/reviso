@@ -76,7 +76,7 @@ export const DocumentViewer: React.FC = () => {
         >
           <TransformWrapper
             initialScale={1}
-            minScale={0.3}
+            minScale={0.5}
             maxScale={4}
             limitToBounds
             centerOnInit

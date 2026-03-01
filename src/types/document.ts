@@ -10,6 +10,10 @@ export interface TextRegion {
   isNew: boolean;
   confidence: number;
   fontColor?: string;
+  fontFamily?: string;
+  fontWeight?: 'normal' | 'bold';
+  fontStyle?: 'normal' | 'italic';
+  textDecoration?: 'none' | 'line-through';
   borderColor?: string;
   borderVisible?: boolean;
   backgroundColor?: string;
