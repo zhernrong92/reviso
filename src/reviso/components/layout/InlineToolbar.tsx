@@ -92,7 +92,7 @@ export const InlineToolbar: React.FC = () => {
 
   const breadcrumb = activeDocument
     ? activePage
-      ? `Page ${activePage.pageNumber} of ${activeDocument.pageCount}`
+      ? `${activeDocument.name} — Page ${activePage.pageNumber} of ${activeDocument.pageCount}`
       : activeDocument.name
     : '';
 
