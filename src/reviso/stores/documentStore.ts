@@ -20,6 +20,39 @@ function deepClone<T>(obj: T): T {
   return JSON.parse(JSON.stringify(obj)) as T;
 }
 
+/** Clone documents for undo history, stripping heavy image data to avoid OOM. */
+function snapshotForHistory(documents: Document[]): Document[] {
+  return documents.map((doc) => ({
+    ...deepClone({ ...doc, pages: [] }),
+    pages: doc.pages.map((page) => ({
+      ...deepClone({ ...page, imageSrc: '', originalImageSrc: '' }),
+      imageSrc: '',
+      originalImageSrc: '',
+    })),
+  }));
+}
+
+/** Restore a lightweight snapshot by merging image data back from current state. */
+function rehydrateSnapshot(snapshot: Document[], current: Document[]): Document[] {
+  const imageMap = new Map<string, { imageSrc: string; originalImageSrc: string }>();
+  for (const doc of current) {
+    for (const page of doc.pages) {
+      imageMap.set(page.id, { imageSrc: page.imageSrc, originalImageSrc: page.originalImageSrc });
+    }
+  }
+  return snapshot.map((doc) => ({
+    ...doc,
+    pages: doc.pages.map((page) => {
+      const images = imageMap.get(page.id);
+      return {
+        ...page,
+        imageSrc: images?.imageSrc ?? page.imageSrc,
+        originalImageSrc: images?.originalImageSrc ?? page.originalImageSrc,
+      };
+    }),
+  }));
+}
+
 const useDocumentStore = create<DocumentState>()(
   immer((set, get) => ({
     documents: [],
@@ -30,7 +63,7 @@ const useDocumentStore = create<DocumentState>()(
       }),
 
     updateRegionText: (pageId, regionId, text) => {
-      const before = deepClone(get().documents);
+      const before = snapshotForHistory(get().documents);
       set((state) => {
         for (const doc of state.documents) {
           const page = doc.pages.find((p) => p.id === pageId);
@@ -44,12 +77,12 @@ const useDocumentStore = create<DocumentState>()(
           }
         }
       });
-      const after = deepClone(get().documents);
+      const after = snapshotForHistory(get().documents);
       useEditHistoryStore.getState().pushEntry(before, after);
     },
 
     addRegion: (pageId, region) => {
-      const before = deepClone(get().documents);
+      const before = snapshotForHistory(get().documents);
       set((state) => {
         for (const doc of state.documents) {
           const page = doc.pages.find((p) => p.id === pageId);
@@ -59,12 +92,12 @@ const useDocumentStore = create<DocumentState>()(
           }
         }
       });
-      const after = deepClone(get().documents);
+      const after = snapshotForHistory(get().documents);
       useEditHistoryStore.getState().pushEntry(before, after);
     },
 
     deleteRegion: (pageId, regionId) => {
-      const before = deepClone(get().documents);
+      const before = snapshotForHistory(get().documents);
       set((state) => {
         for (const doc of state.documents) {
           const page = doc.pages.find((p) => p.id === pageId);
@@ -75,12 +108,12 @@ const useDocumentStore = create<DocumentState>()(
           }
         }
       });
-      const after = deepClone(get().documents);
+      const after = snapshotForHistory(get().documents);
       useEditHistoryStore.getState().pushEntry(before, after);
     },
 
     updateRegionBounds: (pageId, regionId, x1, y1, x2, y2) => {
-      const before = deepClone(get().documents);
+      const before = snapshotForHistory(get().documents);
       set((state) => {
         for (const doc of state.documents) {
           const page = doc.pages.find((p) => p.id === pageId);
@@ -96,12 +129,12 @@ const useDocumentStore = create<DocumentState>()(
           }
         }
       });
-      const after = deepClone(get().documents);
+      const after = snapshotForHistory(get().documents);
       useEditHistoryStore.getState().pushEntry(before, after);
     },
 
     updateRegionStyle: (pageId, regionId, style) => {
-      const before = deepClone(get().documents);
+      const before = snapshotForHistory(get().documents);
       set((state) => {
         for (const doc of state.documents) {
           const page = doc.pages.find((p) => p.id === pageId);
@@ -122,14 +155,17 @@ const useDocumentStore = create<DocumentState>()(
           }
         }
       });
-      const after = deepClone(get().documents);
+      const after = snapshotForHistory(get().documents);
       useEditHistoryStore.getState().pushEntry(before, after);
     },
 
-    restoreSnapshot: (snapshot) =>
+    restoreSnapshot: (snapshot) => {
+      const current = get().documents;
+      const rehydrated = rehydrateSnapshot(snapshot, current);
       set((state) => {
-        state.documents = snapshot;
-      }),
+        state.documents = rehydrated;
+      });
+    },
 
     getActiveDocument: (id) => {
       if (!id) return undefined;

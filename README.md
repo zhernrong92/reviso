@@ -113,6 +113,20 @@ function App() {
 | `backgroundColor` | `string` | `'transparent'` | Region background fill |
 | `textPosition` | `'inside' \| 'top' \| 'bottom' \| 'left' \| 'right'` | `'inside'` | Where text renders relative to the region box |
 
+#### When does `onChange` fire?
+
+`onChange` fires once per discrete user action — it does **not** fire continuously during drag operations.
+
+| Action | When it fires |
+|--------|---------------|
+| Edit text | On commit (Enter, Tab, or blur — not on every keystroke) |
+| Move region | On mouse release (not during drag) |
+| Resize region | On mouse release (not during drag) |
+| Create region | When the new region is added |
+| Delete region | Immediately on delete |
+| Change style | Immediately on each change (bold, italic, color, text position, etc.) |
+| Undo / Redo | Immediately on restore |
+
 ## Development (Demo App)
 
 ### Prerequisites
