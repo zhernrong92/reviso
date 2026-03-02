@@ -99,6 +99,7 @@ export const RegionCreator: React.FC<RegionCreatorProps> = ({ width, height, pag
         borderColor: regionDefaults.borderColor,
         borderVisible: regionDefaults.borderVisible,
         backgroundColor: regionDefaults.backgroundColor,
+        textPosition: regionDefaults.textPosition,
       });
       selectRegion(regionId);
       setEditorMode('select');

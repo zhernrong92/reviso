@@ -45,6 +45,7 @@ const useUiStore = create<UiStoreState>()((set) => ({
     borderColor: '#0bda90',
     borderVisible: true,
     backgroundColor: 'transparent',
+    textPosition: 'inside',
   },
   helpDialogOpen: false,
   editable: true,

@@ -16,6 +16,7 @@ export interface RegionDefaults {
   borderColor: string;
   borderVisible: boolean;
   backgroundColor: string;
+  textPosition: 'inside' | 'top' | 'bottom' | 'left' | 'right';
 }
 
 export interface UiState {

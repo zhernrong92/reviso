@@ -7,7 +7,7 @@ An embeddable React component for visually verifying and correcting text regions
 - **Embeddable Component** — drop `<Reviso />` into any React app with a single import
 - **Document Viewer** — zoom/pan document pages with SVG text region overlays
 - **Inline Editing** — click a region to edit text, Tab/Shift+Tab to navigate between regions
-- **Region Management** — create, resize, move, delete text regions; customise font, color, border, background
+- **Region Management** — create, resize, move, delete text regions; customise font, color, border, background, text position
 - **Comparison Mode** — before/after slider comparing original vs annotated pages
 - **Export** — JSON (structured data), PDF (text at original positions), PNG (page image with overlays)
 - **Undo/Redo** — Ctrl+Z / Ctrl+Shift+Z with full snapshot history
@@ -53,6 +53,16 @@ const document: RevisoDocument = {
           height: 40,
           text: 'Corrected text',
           originalText: 'Original OCR text',
+          // Optional styling
+          fontColor: '#e0e0e0',
+          fontFamily: 'Inter',
+          fontWeight: 'normal',        // 'normal' | 'bold'
+          fontStyle: 'normal',         // 'normal' | 'italic'
+          textDecoration: 'none',      // 'none' | 'line-through'
+          borderColor: '#0bda90',
+          borderVisible: true,
+          backgroundColor: 'transparent',
+          textPosition: 'inside',      // 'inside' | 'top' | 'bottom' | 'left' | 'right'
         },
       ],
     },
@@ -80,13 +90,28 @@ function App() {
 | `showSidebar` | `boolean` | `true` | Show/hide page thumbnail sidebar |
 | `showToolbar` | `boolean` | `true` | Show/hide the inline toolbar |
 | `features` | `{ comparison?, export?, regionCreation? }` | all `true` | Feature toggles |
-| `defaultRegionStyles` | `object` | — | Default styles for new regions |
+| `defaultRegionStyles` | `object` | — | Default styles for new regions (see below) |
 | `theme` | `ThemeOptions` | — | MUI theme overrides |
 | `initialPageId` | `string` | first page | Initial page to display |
 | `onChange` | `(doc: RevisoDocument) => void` | — | Fired on any change |
+| `onRegionChange` | `(event) => void` | — | Granular per-region change event (`{ type, pageId, regionId, region? }`) |
 | `onPageChange` | `(pageId: string) => void` | — | Fired on page navigation |
 | `onSelectionChange` | `(regionId: string \| null) => void` | — | Fired on region select/deselect |
 | `onExport` | `(format, data: Blob) => void` | — | Intercept export (replaces auto-download) |
+
+#### `defaultRegionStyles`
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `fontColor` | `string` | `'#e0e0e0'` | Text color |
+| `fontFamily` | `string` | `'Inter'` | Font family |
+| `fontWeight` | `'normal' \| 'bold'` | `'normal'` | Font weight |
+| `fontStyle` | `'normal' \| 'italic'` | `'normal'` | Font style |
+| `textDecoration` | `'none' \| 'line-through'` | `'none'` | Text decoration |
+| `borderColor` | `string` | `'#0bda90'` | Region border color |
+| `borderVisible` | `boolean` | `true` | Show/hide region border |
+| `backgroundColor` | `string` | `'transparent'` | Region background fill |
+| `textPosition` | `'inside' \| 'top' \| 'bottom' \| 'left' \| 'right'` | `'inside'` | Where text renders relative to the region box |
 
 ## Development (Demo App)
 

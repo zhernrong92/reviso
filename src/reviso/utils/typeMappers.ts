@@ -23,6 +23,7 @@ export function toInternalRegion(region: RevisoRegion): TextRegion {
     borderColor: region.borderColor,
     borderVisible: region.borderVisible,
     backgroundColor: region.backgroundColor,
+    textPosition: region.textPosition,
   };
 }
 
@@ -67,6 +68,7 @@ export function toPublicRegion(region: TextRegion): RevisoRegion {
     borderColor: region.borderColor,
     borderVisible: region.borderVisible,
     backgroundColor: region.backgroundColor,
+    textPosition: region.textPosition,
   };
 }
 

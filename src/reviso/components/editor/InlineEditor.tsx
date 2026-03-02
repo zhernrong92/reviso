@@ -292,6 +292,13 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
     [updateRegionStyle, pageId, region.id],
   );
 
+  const handleTextPositionChange = useCallback(
+    (e: React.ChangeEvent<HTMLSelectElement>) => {
+      updateRegionStyle(pageId, region.id, { textPosition: e.target.value as 'inside' | 'top' | 'bottom' | 'left' | 'right' });
+    },
+    [updateRegionStyle, pageId, region.id],
+  );
+
   const handleToggleBold = useCallback(
     (e: React.MouseEvent) => {
       e.stopPropagation();
@@ -682,6 +689,35 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
         >
           {region.backgroundColor && region.backgroundColor !== 'transparent' ? '✓' : ''}
         </div>
+
+        {/* Divider */}
+        <div style={{ width: 1, height: 16, background: theme.palette.divider }} />
+
+        {/* Text position */}
+        <span style={{ fontSize: 10, color: theme.palette.text.secondary }}>Text</span>
+        <select
+          value={region.textPosition ?? 'inside'}
+          onChange={handleTextPositionChange}
+          onMouseDown={(e) => e.stopPropagation()}
+          style={{
+            height: 20,
+            fontSize: 10,
+            background: theme.palette.background.default,
+            color: theme.palette.text.primary,
+            border: `1px solid ${theme.palette.divider}`,
+            borderRadius: 2,
+            padding: '0 2px',
+            cursor: 'pointer',
+            outline: 'none',
+            maxWidth: 64,
+          }}
+        >
+          <option value="inside">Inside</option>
+          <option value="top">Top</option>
+          <option value="bottom">Bottom</option>
+          <option value="left">Left</option>
+          <option value="right">Right</option>
+        </select>
       </div>
     </div>
   );

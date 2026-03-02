@@ -84,14 +84,35 @@ export const TextRegion = React.memo<TextRegionProps>(
     const w = region.x2 - region.x1;
     const h = region.y2 - region.y1;
     const fontSize = h * 0.65;
+    const pos = region.textPosition ?? 'inside';
 
     const clipId = `clip-${region.id}`;
 
+    const getTextAttrs = () => {
+      switch (pos) {
+        case 'top':
+          return { x: region.x1, y: region.y1 - 4, anchor: 'start' as const, useClip: false };
+        case 'bottom':
+          return { x: region.x1, y: region.y2 + fontSize + 4, anchor: 'start' as const, useClip: false };
+        case 'left':
+          return { x: region.x1 - 4, y: region.y1 + h * 0.75, anchor: 'end' as const, useClip: false };
+        case 'right':
+          return { x: region.x2 + 4, y: region.y1 + h * 0.75, anchor: 'start' as const, useClip: false };
+        case 'inside':
+        default:
+          return { x: region.x1 + 4, y: region.y1 + h * 0.75, anchor: 'start' as const, useClip: true };
+      }
+    };
+
+    const textAttrs = getTextAttrs();
+
     return (
       <g>
-        <clipPath id={clipId}>
-          <rect x={region.x1} y={region.y1} width={w} height={h} />
-        </clipPath>
+        {textAttrs.useClip && (
+          <clipPath id={clipId}>
+            <rect x={region.x1} y={region.y1} width={w} height={h} />
+          </clipPath>
+        )}
         <rect
           x={region.x1}
           y={region.y1}
@@ -109,8 +130,9 @@ export const TextRegion = React.memo<TextRegionProps>(
         />
         {!isSelected && region.currentText && (
           <text
-            x={region.x1 + 4}
-            y={region.y1 + h * 0.75}
+            x={textAttrs.x}
+            y={textAttrs.y}
+            textAnchor={textAttrs.anchor}
             fontSize={fontSize}
             fontFamily={region.fontFamily ?? 'Inter, Roboto, Helvetica, Arial, sans-serif'}
             fontWeight={region.fontWeight ?? 'normal'}
@@ -118,7 +140,7 @@ export const TextRegion = React.memo<TextRegionProps>(
             textDecoration={region.textDecoration ?? 'none'}
             fill={textColor}
             fillOpacity={0.9}
-            clipPath={`url(#${clipId})`}
+            clipPath={textAttrs.useClip ? `url(#${clipId})` : undefined}
             style={{ pointerEvents: 'none', userSelect: 'none' }}
           >
             {region.currentText}

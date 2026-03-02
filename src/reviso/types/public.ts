@@ -18,6 +18,7 @@ export interface RevisoRegion {
   borderColor?: string;
   borderVisible?: boolean;
   backgroundColor?: string;
+  textPosition?: 'inside' | 'top' | 'bottom' | 'left' | 'right';
 }
 
 export interface RevisoPage {
@@ -68,6 +69,7 @@ export interface RevisoProps {
     borderColor?: string;
     borderVisible?: boolean;
     backgroundColor?: string;
+    textPosition?: 'inside' | 'top' | 'bottom' | 'left' | 'right';
   };
 
   /** MUI theme overrides */

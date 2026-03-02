@@ -261,6 +261,32 @@ export const InlineToolbar: React.FC = () => {
               }}
               title={regionDefaults.backgroundColor === 'transparent' ? 'Add background' : 'Clear background'}
             >{regionDefaults.backgroundColor && regionDefaults.backgroundColor !== 'transparent' ? '✓' : ''}</div>
+
+            <div style={{ width: 1, height: 16, background: theme.palette.divider, margin: '0 2px' }} />
+
+            <span style={{ fontSize: 10, color: theme.palette.text.secondary }}>Text</span>
+            <select
+              value={regionDefaults.textPosition}
+              onChange={(e) => setRegionDefaults({ textPosition: e.target.value as 'inside' | 'top' | 'bottom' | 'left' | 'right' })}
+              style={{
+                height: 22,
+                fontSize: 10,
+                background: theme.palette.background.default,
+                color: theme.palette.text.primary,
+                border: `1px solid ${theme.palette.divider}`,
+                borderRadius: 2,
+                padding: '0 2px',
+                cursor: 'pointer',
+                outline: 'none',
+                maxWidth: 64,
+              }}
+            >
+              <option value="inside">Inside</option>
+              <option value="top">Top</option>
+              <option value="bottom">Bottom</option>
+              <option value="left">Left</option>
+              <option value="right">Right</option>
+            </select>
           </div>
         )}
 

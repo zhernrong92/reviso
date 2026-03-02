@@ -17,6 +17,7 @@ export interface TextRegion {
   borderColor?: string;
   borderVisible?: boolean;
   backgroundColor?: string;
+  textPosition?: 'inside' | 'top' | 'bottom' | 'left' | 'right';
 }
 
 export interface Page {
