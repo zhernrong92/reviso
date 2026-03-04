@@ -120,26 +120,28 @@ export const TextRegion = React.memo<TextRegionProps>(
 
     return (
       <g>
-        {textAttrs.useClip && (
+        {textAttrs.useClip && !isSelected && (
           <clipPath id={clipId}>
             <rect x={region.x1} y={region.y1} width={w} height={h} />
           </clipPath>
         )}
-        <rect
-          x={region.x1}
-          y={region.y1}
-          width={w}
-          height={h}
-          fill={style.fill}
-          fillOpacity={style.fillOpacity}
-          stroke={style.stroke}
-          strokeOpacity={style.strokeOpacity}
-          strokeWidth={style.strokeWidth}
-          style={{ cursor: 'pointer', transition: 'all 0.15s ease' }}
-          onClick={handleClick}
-          onMouseEnter={handleMouseEnter}
-          onMouseLeave={handleMouseLeave}
-        />
+        {!isSelected && (
+          <rect
+            x={region.x1}
+            y={region.y1}
+            width={w}
+            height={h}
+            fill={style.fill}
+            fillOpacity={style.fillOpacity}
+            stroke={style.stroke}
+            strokeOpacity={style.strokeOpacity}
+            strokeWidth={style.strokeWidth}
+            style={{ cursor: 'pointer', transition: 'all 0.15s ease' }}
+            onClick={handleClick}
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+          />
+        )}
         {!isSelected && showText && region.currentText && (
           <text
             x={textAttrs.x}
@@ -158,8 +160,8 @@ export const TextRegion = React.memo<TextRegionProps>(
             {region.currentText}
           </text>
         )}
-        {/* Validation badge */}
-        <g
+        {/* Validation badge — hidden when selected (InlineEditor has its own) */}
+        {!isSelected && <g
           onClick={handleToggleValidation}
           style={{ cursor: 'pointer' }}
         >
@@ -184,7 +186,7 @@ export const TextRegion = React.memo<TextRegionProps>(
               style={{ pointerEvents: 'none' }}
             />
           )}
-        </g>
+        </g>}
       </g>
     );
   },

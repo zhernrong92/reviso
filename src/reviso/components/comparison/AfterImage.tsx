@@ -33,9 +33,31 @@ export const AfterImage: React.FC<AfterImageProps> = ({ page }) => {
           const borderHidden = region.borderVisible === false;
 
           const hasBg = region.backgroundColor && region.backgroundColor !== 'transparent';
+          const pos = region.textPosition ?? 'inside';
+          const fs = fontSize(h);
+          const clipId = `after-clip-${region.id}`;
+
+          const getTextAttrs = () => {
+            switch (pos) {
+              case 'top':
+                return { x: region.x1, y: region.y1 - 4, anchor: 'start' as const, useClip: false };
+              case 'bottom':
+                return { x: region.x1, y: region.y2 + fs + 4, anchor: 'start' as const, useClip: false };
+              case 'inside':
+              default:
+                return { x: region.x1 + 4, y: region.y1 + h * 0.75, anchor: 'start' as const, useClip: true };
+            }
+          };
+
+          const textAttrs = getTextAttrs();
 
           return (
             <g key={region.id}>
+              {textAttrs.useClip && (
+                <clipPath id={clipId}>
+                  <rect x={region.x1} y={region.y1} width={w} height={h} />
+                </clipPath>
+              )}
               <rect
                 x={region.x1}
                 y={region.y1}
@@ -49,12 +71,17 @@ export const AfterImage: React.FC<AfterImageProps> = ({ page }) => {
               />
               {region.currentText && (
                 <text
-                  x={region.x1 + 4}
-                  y={region.y1 + h * 0.75}
-                  fontSize={fontSize(h)}
-                  fontFamily="Inter, Roboto, Helvetica, Arial, sans-serif"
+                  x={textAttrs.x}
+                  y={textAttrs.y}
+                  textAnchor={textAttrs.anchor}
+                  fontSize={fs}
+                  fontFamily={region.fontFamily ?? 'Inter, Roboto, Helvetica, Arial, sans-serif'}
+                  fontWeight={region.fontWeight ?? 'normal'}
+                  fontStyle={region.fontStyle ?? 'normal'}
+                  textDecoration={region.textDecoration ?? 'none'}
                   fill={textColor}
                   fillOpacity={0.9}
+                  clipPath={textAttrs.useClip ? `url(#${clipId})` : undefined}
                 >
                   {region.currentText}
                 </text>
