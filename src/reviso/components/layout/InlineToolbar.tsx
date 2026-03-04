@@ -10,6 +10,7 @@ import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
 import UndoIcon from '@mui/icons-material/Undo';
 import RedoIcon from '@mui/icons-material/Redo';
+import TextFieldsIcon from '@mui/icons-material/TextFields';
 import { useUiStore } from '../../stores/uiStore';
 import { useDocumentStore } from '../../stores/documentStore';
 import { useEditHistoryStore } from '../../stores/editHistoryStore';
@@ -27,10 +28,13 @@ export const InlineToolbar: React.FC = () => {
   const setEditorMode = useUiStore((s) => s.setEditorMode);
   const viewMode = useUiStore((s) => s.viewMode);
   const setViewMode = useUiStore((s) => s.setViewMode);
+  const selectedRegionId = useUiStore((s) => s.selectedRegionId);
   const selectRegion = useUiStore((s) => s.selectRegion);
   const regionDefaults = useUiStore((s) => s.regionDefaults);
   const setRegionDefaults = useUiStore((s) => s.setRegionDefaults);
   const editable = useUiStore((s) => s.editable);
+  const showRegionText = useUiStore((s) => s.showRegionText);
+  const toggleRegionText = useUiStore((s) => s.toggleRegionText);
   const features = useUiStore((s) => s.features);
   const activeDocument = useDocumentStore((s) => s.getActiveDocument(activeDocumentId));
   const activePage = useDocumentStore((s) => s.getActivePage(activePageId));
@@ -150,6 +154,65 @@ export const InlineToolbar: React.FC = () => {
             <ChevronRightIcon sx={{ fontSize: 18 }} />
           </IconButton>
         )}
+
+        {activePage && activePage.regions.length > 0 && (() => {
+          const total = activePage.regions.length;
+          const validated = activePage.regions.filter((r) => r.isValidated).length;
+          const hasUnvalidated = validated < total;
+          return (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, ml: 1 }}>
+              <Box
+                sx={{
+                  width: 60,
+                  height: 4,
+                  bgcolor: 'grey.800',
+                  borderRadius: 2,
+                  overflow: 'hidden',
+                }}
+              >
+                <Box
+                  sx={{
+                    width: `${(validated / total) * 100}%`,
+                    height: '100%',
+                    bgcolor: validated === total ? 'success.main' : 'info.main',
+                    borderRadius: 2,
+                    transition: 'width 0.2s ease',
+                  }}
+                />
+              </Box>
+              <Typography
+                variant="caption"
+                sx={{ color: 'text.secondary', fontSize: 10 }}
+              >
+                {validated}/{total}
+              </Typography>
+              {hasUnvalidated && (
+                <IconButton
+                  size="small"
+                  color="info"
+                  aria-label="jump to next unvalidated region"
+                  title="Next unvalidated region"
+                  onClick={() => {
+                    const regions = activePage!.regions;
+                    const currentIdx = regions.findIndex((r) => r.id === selectedRegionId);
+                    // Search forward from current position, wrapping around
+                    for (let i = 1; i <= regions.length; i++) {
+                      const idx = (currentIdx + i) % regions.length;
+                      const r = regions[idx];
+                      if (r && !r.isValidated) {
+                        selectRegion(r.id);
+                        return;
+                      }
+                    }
+                  }}
+                  sx={{ p: 0.25 }}
+                >
+                  <ChevronRightIcon sx={{ fontSize: 14 }} />
+                </IconButton>
+              )}
+            </Box>
+          );
+        })()}
 
         <Box sx={{ flex: 1 }} />
 
@@ -284,8 +347,6 @@ export const InlineToolbar: React.FC = () => {
               <option value="inside">Inside</option>
               <option value="top">Top</option>
               <option value="bottom">Bottom</option>
-              <option value="left">Left</option>
-              <option value="right">Right</option>
             </select>
           </div>
         )}
@@ -299,6 +360,19 @@ export const InlineToolbar: React.FC = () => {
               <RedoIcon sx={{ fontSize: 16 }} />
             </IconButton>
           </>
+        )}
+
+        {activePage && (
+          <IconButton
+            size="small"
+            color={showRegionText ? 'primary' : 'default'}
+            aria-label="toggle region text"
+            onClick={() => toggleRegionText()}
+            title={showRegionText ? 'Hide region text' : 'Show region text'}
+            sx={{ mr: 0.5 }}
+          >
+            <TextFieldsIcon sx={{ fontSize: 16 }} />
+          </IconButton>
         )}
 
         {activePage && features.comparison && (

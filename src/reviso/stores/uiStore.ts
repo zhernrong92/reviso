@@ -11,6 +11,7 @@ interface UiStoreState {
   sidebarOpen: boolean;
   regionDefaults: RegionDefaults;
   helpDialogOpen: boolean;
+  showRegionText: boolean;
   editable: boolean;
   features: FeatureFlags;
   onExportCallback: ((format: 'json' | 'pdf' | 'png', data: Blob) => void) | null;
@@ -23,6 +24,7 @@ interface UiStoreState {
   toggleSidebar: () => void;
   setRegionDefaults: (defaults: Partial<RegionDefaults>) => void;
   setHelpDialogOpen: (open: boolean) => void;
+  toggleRegionText: () => void;
   setEditable: (editable: boolean) => void;
   setFeatures: (features: Partial<FeatureFlags>) => void;
   setOnExportCallback: (cb: ((format: 'json' | 'pdf' | 'png', data: Blob) => void) | null) => void;
@@ -37,17 +39,18 @@ const useUiStore = create<UiStoreState>()((set) => ({
   editorMode: 'select',
   sidebarOpen: true,
   regionDefaults: {
-    fontColor: '#e0e0e0',
+    fontColor: '#1565c0',
     fontFamily: 'Inter',
     fontWeight: 'normal',
     fontStyle: 'normal',
     textDecoration: 'none',
-    borderColor: '#0bda90',
+    borderColor: '#4caf50',
     borderVisible: true,
     backgroundColor: 'transparent',
-    textPosition: 'inside',
+    textPosition: 'top',
   },
   helpDialogOpen: false,
+  showRegionText: true,
   editable: true,
   features: { comparison: true, export: true, regionCreation: true },
   onExportCallback: null,
@@ -62,6 +65,7 @@ const useUiStore = create<UiStoreState>()((set) => ({
   setRegionDefaults: (defaults) =>
     set((state) => ({ regionDefaults: { ...state.regionDefaults, ...defaults } })),
   setHelpDialogOpen: (open) => set({ helpDialogOpen: open }),
+  toggleRegionText: () => set((state) => ({ showRegionText: !state.showRegionText })),
   setEditable: (editable) => set({ editable }),
   setFeatures: (features) =>
     set((state) => ({ features: { ...state.features, ...features } })),

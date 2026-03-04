@@ -8,6 +8,9 @@ An embeddable React component for visually verifying and correcting text regions
 - **Document Viewer** — zoom/pan document pages with SVG text region overlays
 - **Inline Editing** — click a region to edit text, Tab/Shift+Tab to navigate between regions
 - **Region Management** — create, resize, move, delete text regions; customise font, color, border, background, text position
+- **Region Validation** — per-region checkmark to track review progress; progress bar in toolbar shows validated/total count
+- **Text Visibility Toggle** — show/hide all region text labels while keeping region boxes visible
+- **Collapsible Style Toolbar** — region style controls (font, border, background, text position) collapsed behind a gear icon to reduce clutter
 - **Comparison Mode** — before/after slider comparing original vs annotated pages
 - **Export** — JSON (structured data), PDF (text at original positions), PNG (page image with overlays)
 - **Undo/Redo** — Ctrl+Z / Ctrl+Shift+Z with full snapshot history
@@ -54,15 +57,16 @@ const document: RevisoDocument = {
           text: 'Corrected text',
           originalText: 'Original OCR text',
           // Optional styling
-          fontColor: '#e0e0e0',
+          fontColor: '#4dabf7',
           fontFamily: 'Inter',
           fontWeight: 'normal',        // 'normal' | 'bold'
           fontStyle: 'normal',         // 'normal' | 'italic'
           textDecoration: 'none',      // 'none' | 'line-through'
-          borderColor: '#0bda90',
+          borderColor: '#4caf50',
           borderVisible: true,
           backgroundColor: 'transparent',
-          textPosition: 'inside',      // 'inside' | 'top' | 'bottom' | 'left' | 'right'
+          textPosition: 'inside',      // 'inside' | 'top' | 'bottom'
+          isValidated: false,          // validation tracking
         },
       ],
     },
@@ -103,15 +107,15 @@ function App() {
 
 | Property | Type | Default | Description |
 |----------|------|---------|-------------|
-| `fontColor` | `string` | `'#e0e0e0'` | Text color |
+| `fontColor` | `string` | `'#4dabf7'` | Text color (blue) |
 | `fontFamily` | `string` | `'Inter'` | Font family |
 | `fontWeight` | `'normal' \| 'bold'` | `'normal'` | Font weight |
 | `fontStyle` | `'normal' \| 'italic'` | `'normal'` | Font style |
 | `textDecoration` | `'none' \| 'line-through'` | `'none'` | Text decoration |
-| `borderColor` | `string` | `'#0bda90'` | Region border color |
+| `borderColor` | `string` | `'#4caf50'` | Region border color (green) |
 | `borderVisible` | `boolean` | `true` | Show/hide region border |
 | `backgroundColor` | `string` | `'transparent'` | Region background fill |
-| `textPosition` | `'inside' \| 'top' \| 'bottom' \| 'left' \| 'right'` | `'inside'` | Where text renders relative to the region box |
+| `textPosition` | `'inside' \| 'top' \| 'bottom'` | `'inside'` | Where text renders relative to the region box |
 
 #### When does `onChange` fire?
 
@@ -125,6 +129,7 @@ function App() {
 | Create region | When the new region is added |
 | Delete region | Immediately on delete |
 | Change style | Immediately on each change (bold, italic, color, text position, etc.) |
+| Toggle validation | Immediately when region checkmark is clicked |
 | Undo / Redo | Immediately on restore |
 
 ## Development (Demo App)

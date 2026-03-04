@@ -1,18 +1,22 @@
 import React, { useCallback } from 'react';
 import { useTheme } from '@mui/material/styles';
 import type { TextRegion as TextRegionType } from '../../types/document';
+import { useDocumentStore } from '../../stores/documentStore';
 
 interface TextRegionProps {
   region: TextRegionType;
+  pageId: string;
   isSelected: boolean;
   isHovered: boolean;
+  showText: boolean;
   onSelect: (id: string) => void;
   onHover: (id: string | null) => void;
 }
 
 export const TextRegion = React.memo<TextRegionProps>(
-  ({ region, isSelected, isHovered, onSelect, onHover }) => {
+  ({ region, pageId, isSelected, isHovered, showText, onSelect, onHover }) => {
     const theme = useTheme();
+    const toggleRegionValidation = useDocumentStore((s) => s.toggleRegionValidation);
 
     const getStyle = () => {
       if (isSelected) {
@@ -81,6 +85,14 @@ export const TextRegion = React.memo<TextRegionProps>(
       onHover(null);
     }, [onHover]);
 
+    const handleToggleValidation = useCallback(
+      (e: React.MouseEvent) => {
+        e.stopPropagation();
+        toggleRegionValidation(pageId, region.id);
+      },
+      [toggleRegionValidation, pageId, region.id],
+    );
+
     const w = region.x2 - region.x1;
     const h = region.y2 - region.y1;
     const fontSize = h * 0.65;
@@ -128,7 +140,7 @@ export const TextRegion = React.memo<TextRegionProps>(
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
         />
-        {!isSelected && region.currentText && (
+        {!isSelected && showText && region.currentText && (
           <text
             x={textAttrs.x}
             y={textAttrs.y}
@@ -146,6 +158,33 @@ export const TextRegion = React.memo<TextRegionProps>(
             {region.currentText}
           </text>
         )}
+        {/* Validation badge */}
+        <g
+          onClick={handleToggleValidation}
+          style={{ cursor: 'pointer' }}
+        >
+          <title>{region.isValidated ? 'Mark as not validated' : 'Mark as validated'}</title>
+          <circle
+            cx={region.x1 + 8}
+            cy={region.y1 + 8}
+            r={6}
+            fill={region.isValidated ? theme.palette.success.main : theme.palette.grey[700]}
+            fillOpacity={region.isValidated ? 0.9 : 0.5}
+            stroke={region.isValidated ? theme.palette.success.dark : theme.palette.grey[500]}
+            strokeWidth={1}
+          />
+          {region.isValidated && (
+            <path
+              d={`M${region.x1 + 5} ${region.y1 + 8} l2 2 4-4`}
+              fill="none"
+              stroke={theme.palette.success.contrastText}
+              strokeWidth={1.5}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              style={{ pointerEvents: 'none' }}
+            />
+          )}
+        </g>
       </g>
     );
   },

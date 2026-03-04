@@ -7,11 +7,13 @@ interface OverlayLayerProps {
   regions: TextRegionType[];
   width: number;
   height: number;
+  pageId: string;
 }
 
-export const OverlayLayer: React.FC<OverlayLayerProps> = ({ regions, width, height }) => {
+export const OverlayLayer: React.FC<OverlayLayerProps> = ({ regions, width, height, pageId }) => {
   const selectedRegionId = useUiStore((s) => s.selectedRegionId);
   const hoveredRegionId = useUiStore((s) => s.hoveredRegionId);
+  const showRegionText = useUiStore((s) => s.showRegionText);
   const selectRegion = useUiStore((s) => s.selectRegion);
   const hoverRegion = useUiStore((s) => s.hoverRegion);
 
@@ -45,8 +47,10 @@ export const OverlayLayer: React.FC<OverlayLayerProps> = ({ regions, width, heig
         <TextRegion
           key={region.id}
           region={region}
+          pageId={pageId}
           isSelected={region.id === selectedRegionId}
           isHovered={region.id === hoveredRegionId}
+          showText={showRegionText}
           onSelect={handleSelect}
           onHover={handleHover}
         />

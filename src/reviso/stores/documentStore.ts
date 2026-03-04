@@ -11,6 +11,7 @@ interface DocumentState {
   deleteRegion: (pageId: string, regionId: string) => void;
   updateRegionBounds: (pageId: string, regionId: string, x1: number, y1: number, x2: number, y2: number) => void;
   updateRegionStyle: (pageId: string, regionId: string, style: { fontColor?: string; fontFamily?: string; fontWeight?: 'normal' | 'bold'; fontStyle?: 'normal' | 'italic'; textDecoration?: 'none' | 'line-through'; borderColor?: string; borderVisible?: boolean; backgroundColor?: string; textPosition?: 'inside' | 'top' | 'bottom' | 'left' | 'right' }) => void;
+  toggleRegionValidation: (pageId: string, regionId: string) => void;
   restoreSnapshot: (snapshot: Document[]) => void;
   getActiveDocument: (id: string | null) => Document | undefined;
   getActivePage: (id: string | null) => Document['pages'][number] | undefined;
@@ -150,6 +151,24 @@ const useDocumentStore = create<DocumentState>()(
               if (style.borderVisible !== undefined) region.borderVisible = style.borderVisible;
               if (style.backgroundColor !== undefined) region.backgroundColor = style.backgroundColor;
               if (style.textPosition !== undefined) region.textPosition = style.textPosition;
+            }
+            break;
+          }
+        }
+      });
+      const after = snapshotForHistory(get().documents);
+      useEditHistoryStore.getState().pushEntry(before, after);
+    },
+
+    toggleRegionValidation: (pageId, regionId) => {
+      const before = snapshotForHistory(get().documents);
+      set((state) => {
+        for (const doc of state.documents) {
+          const page = doc.pages.find((p) => p.id === pageId);
+          if (page) {
+            const region = page.regions.find((r) => r.id === regionId);
+            if (region) {
+              region.isValidated = !region.isValidated;
             }
             break;
           }

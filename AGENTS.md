@@ -30,8 +30,8 @@ Refer to these for details (load only when needed):
 - `agent_docs/component_design.md` — Embeddable component API design, layout, bundle strategy, migration plan
 
 ## Current State (Update This!)
-**Last Updated:** March 1, 2026
-**Working On:** Nothing — Phase 8 complete
+**Last Updated:** March 4, 2026
+**Working On:** Phase 9 — Region UX Improvements & Validation System
 **Recently Completed:** Phase 8 — Component Refactor (embeddable `<Reviso />` component, all props wired, dead files cleaned up)
 **Blocked By:** None
 **Design Doc:** `agent_docs/component_design.md` — full component API, layout, bundle strategy
@@ -122,6 +122,14 @@ See `agent_docs/component_design.md` for full design details.
 - [x] Move legacy-only files (TopBar, AppShell, Sidebar, DocumentList, parsePdf, parseUploadedJson, dummyData) to `src/legacy/`
 - [x] Fit-to-view on page navigation and sidebar toggle
 - [x] Demo page at `/reviso` with dummy host app layout
+
+### Phase 9: Region UX Improvements & Validation System
+- [x] Default style changes (blue text, green border, no background)
+- [x] Toggle all region text visibility (show/hide text labels, keep boxes)
+- [x] InlineEditor input follows textPosition (top/bottom positioning)
+- [x] Collapse inline style toolbar (gear icon, expand on click)
+- [x] Reposition action buttons (confirm/cancel top-left, delete top-right)
+- [x] Region validation system (per-region checkmark + progress indicator)
 
 ### Distribution
 Copy-paste — not a published library. Copy `src/reviso/` to your project and install peer dependencies. See `agent_docs/component_design.md` for details.

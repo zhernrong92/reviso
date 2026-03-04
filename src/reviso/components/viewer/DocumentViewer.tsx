@@ -144,6 +144,7 @@ export const DocumentViewer: React.FC = () => {
                 regions={activePage.regions}
                 width={activePage.width}
                 height={activePage.height}
+                pageId={activePageId!}
               />
               {editable && selectedRegion && activePageId && (
                 <InlineEditor

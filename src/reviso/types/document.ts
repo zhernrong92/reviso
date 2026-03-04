@@ -18,6 +18,7 @@ export interface TextRegion {
   borderVisible?: boolean;
   backgroundColor?: string;
   textPosition?: 'inside' | 'top' | 'bottom' | 'left' | 'right';
+  isValidated?: boolean;
 }
 
 export interface Page {

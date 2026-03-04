@@ -96,29 +96,22 @@ export const Reviso: React.FC<RevisoProps> = ({
     });
   }, [onChange]);
 
-  // Wire onPageChange callback
+  // Wire onPageChange + onSelectionChange via single uiStore subscription
   useEffect(() => {
-    if (!onPageChange) return;
+    if (!onPageChange && !onSelectionChange) return;
     let prevPageId = useUiStore.getState().activePageId;
+    let prevRegionId = useUiStore.getState().selectedRegionId;
     return useUiStore.subscribe((state) => {
-      if (state.activePageId !== prevPageId) {
+      if (onPageChange && state.activePageId !== prevPageId) {
         prevPageId = state.activePageId;
         if (state.activePageId) onPageChange(state.activePageId);
       }
-    });
-  }, [onPageChange]);
-
-  // Wire onSelectionChange callback
-  useEffect(() => {
-    if (!onSelectionChange) return;
-    let prevRegionId = useUiStore.getState().selectedRegionId;
-    return useUiStore.subscribe((state) => {
-      if (state.selectedRegionId !== prevRegionId) {
+      if (onSelectionChange && state.selectedRegionId !== prevRegionId) {
         prevRegionId = state.selectedRegionId;
         onSelectionChange(state.selectedRegionId);
       }
     });
-  }, [onSelectionChange]);
+  }, [onPageChange, onSelectionChange]);
 
   const showComparison = features?.comparison !== false;
   const showViewer = viewMode === 'edit' || !showComparison;
