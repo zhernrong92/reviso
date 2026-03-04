@@ -387,6 +387,9 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
         width: w,
         height: h,
         zIndex: 10,
+        border: textPos !== 'inside' ? `2px solid ${theme.palette.primary.main}` : undefined,
+        borderRadius: textPos !== 'inside' ? 2 : undefined,
+        boxSizing: 'border-box',
       }}
       onClick={(e) => e.stopPropagation()}
       onMouseDown={(e) => e.stopPropagation()}
