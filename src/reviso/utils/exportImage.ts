@@ -46,11 +46,59 @@ async function renderPage(
     // Text
     if (region.currentText) {
       const fontSize = h * 0.65;
-      ctx.font = `${fontSize}px Inter, Roboto, Helvetica, Arial, sans-serif`;
+      const fontStyle = region.fontStyle === 'italic' ? 'italic ' : '';
+      const fontWeight = region.fontWeight === 'bold' ? 'bold ' : '';
+      const fontFamily = region.fontFamily ?? 'Inter, Roboto, Helvetica, Arial, sans-serif';
+      ctx.font = `${fontStyle}${fontWeight}${fontSize}px ${fontFamily}`;
       ctx.fillStyle = region.fontColor ?? '#e0e0e0';
       ctx.globalAlpha = 0.9;
-      ctx.fillText(region.currentText, region.x1 + 4, region.y1 + h * 0.75);
+
+      const pos = region.textPosition ?? 'inside';
+      let textX: number;
+      let textY: number;
+      switch (pos) {
+        case 'top':
+          textX = region.x1;
+          textY = region.y1 - 4;
+          break;
+        case 'bottom':
+          textX = region.x1;
+          textY = region.y2 + fontSize + 4;
+          break;
+        case 'left':
+          textX = region.x1 - 4;
+          textY = region.y1 + h * 0.75;
+          ctx.textAlign = 'right';
+          break;
+        case 'right':
+          textX = region.x2 + 4;
+          textY = region.y1 + h * 0.75;
+          break;
+        case 'inside':
+        default:
+          textX = region.x1 + 4;
+          textY = region.y1 + h * 0.75;
+          break;
+      }
+
+      ctx.fillText(region.currentText, textX, textY);
+      ctx.textAlign = 'left';
       ctx.globalAlpha = 1;
+
+      // Strikethrough
+      if (region.textDecoration === 'line-through') {
+        const textWidth = ctx.measureText(region.currentText).width;
+        const strikeY = textY - fontSize * 0.3;
+        const startX = pos === 'left' ? textX - textWidth : textX;
+        ctx.strokeStyle = region.fontColor ?? '#e0e0e0';
+        ctx.lineWidth = Math.max(1, fontSize * 0.06);
+        ctx.globalAlpha = 0.9;
+        ctx.beginPath();
+        ctx.moveTo(startX, strikeY);
+        ctx.lineTo(startX + textWidth, strikeY);
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+      }
     }
   }
 

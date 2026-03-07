@@ -19,6 +19,8 @@ interface ExportRegion {
   borderColor?: string;
   borderVisible?: boolean;
   backgroundColor?: string;
+  textPosition?: 'inside' | 'top' | 'bottom' | 'left' | 'right';
+  isValidated?: boolean;
 }
 
 interface ExportPage {
@@ -67,6 +69,8 @@ export function exportJson(documents: Document[]): string {
         ...(region.borderColor !== undefined && { borderColor: region.borderColor }),
         ...(region.borderVisible !== undefined && { borderVisible: region.borderVisible }),
         ...(region.backgroundColor !== undefined && { backgroundColor: region.backgroundColor }),
+        ...(region.textPosition !== undefined && { textPosition: region.textPosition }),
+        ...(region.isValidated !== undefined && { isValidated: region.isValidated }),
       })),
     })),
   }));

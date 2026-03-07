@@ -18,6 +18,14 @@ export const TextRegion = React.memo<TextRegionProps>(
     const theme = useTheme();
     const toggleRegionValidation = useDocumentStore((s) => s.toggleRegionValidation);
 
+    const handleToggleValidation = useCallback(
+      (e: React.MouseEvent) => {
+        e.stopPropagation();
+        toggleRegionValidation(pageId, region.id);
+      },
+      [toggleRegionValidation, pageId, region.id],
+    );
+
     const getStyle = () => {
       if (isSelected) {
         return {
@@ -84,14 +92,6 @@ export const TextRegion = React.memo<TextRegionProps>(
     const handleMouseLeave = useCallback(() => {
       onHover(null);
     }, [onHover]);
-
-    const handleToggleValidation = useCallback(
-      (e: React.MouseEvent) => {
-        e.stopPropagation();
-        toggleRegionValidation(pageId, region.id);
-      },
-      [toggleRegionValidation, pageId, region.id],
-    );
 
     const w = region.x2 - region.x1;
     const h = region.y2 - region.y1;
@@ -160,33 +160,39 @@ export const TextRegion = React.memo<TextRegionProps>(
             {region.currentText}
           </text>
         )}
-        {/* Validation badge — hidden when selected (InlineEditor has its own) */}
-        {!isSelected && <g
-          onClick={handleToggleValidation}
-          style={{ cursor: 'pointer' }}
-        >
-          <title>{region.isValidated ? 'Mark as not validated' : 'Mark as validated'}</title>
-          <circle
-            cx={region.x1 + 8}
-            cy={region.y1 + 8}
-            r={6}
-            fill={region.isValidated ? theme.palette.success.main : theme.palette.grey[700]}
-            fillOpacity={region.isValidated ? 0.9 : 0.5}
-            stroke={region.isValidated ? theme.palette.success.dark : theme.palette.grey[500]}
-            strokeWidth={1}
-          />
-          {region.isValidated && (
-            <path
-              d={`M${region.x1 + 5} ${region.y1 + 8} l2 2 4-4`}
-              fill="none"
-              stroke={theme.palette.success.contrastText}
-              strokeWidth={1.5}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              style={{ pointerEvents: 'none' }}
-            />
-          )}
-        </g>}
+        {/* Validation badge — visible when not editing */}
+        {!isSelected && (() => {
+          const badgeCx = region.x1 - 2;
+          const badgeCy = pos === 'top'
+            ? region.y1 - fontSize - 2
+            : pos === 'bottom'
+              ? region.y2 + 2
+              : region.y1 - 2;
+          return (
+            <g onClick={handleToggleValidation} style={{ cursor: 'pointer' }}>
+              <title>{region.isValidated ? 'Mark as not validated' : 'Mark as validated'}</title>
+              <circle
+                cx={badgeCx}
+                cy={badgeCy}
+                r={6}
+                fill={region.isValidated ? theme.palette.success.main : theme.palette.grey[700]}
+                fillOpacity={region.isValidated ? 0.9 : 0.5}
+                stroke={region.isValidated ? theme.palette.success.dark : theme.palette.grey[500]}
+                strokeWidth={1}
+              />
+              {region.isValidated && (
+                <path
+                  d={`M${badgeCx - 3} ${badgeCy} l2 2 4-4`}
+                  fill="none"
+                  stroke={theme.palette.success.contrastText}
+                  strokeWidth={1.5}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              )}
+            </g>
+          );
+        })()}
       </g>
     );
   },

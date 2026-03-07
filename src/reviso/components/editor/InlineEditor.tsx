@@ -55,6 +55,8 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
   const toggleRegionValidation = useDocumentStore((s) => s.toggleRegionValidation);
   const selectRegion = useUiStore((s) => s.selectRegion);
   const savedRef = useRef(false);
+  const valueRef = useRef(value);
+  valueRef.current = value;
   const draggingRef = useRef<DragKind | null>(null);
 
   useEffect(() => {
@@ -64,6 +66,15 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
       el.select();
     }
   }, []);
+
+  // Save on unmount (handles click-away where blur doesn't fire before unmount)
+  useEffect(() => {
+    return () => {
+      if (!savedRef.current) {
+        updateRegionText(pageId, region.id, valueRef.current);
+      }
+    };
+  }, [updateRegionText, pageId, region.id]);
 
   useEffect(() => {
     setBounds({ x1: region.x1, y1: region.y1, x2: region.x2, y2: region.y2 });
@@ -99,6 +110,11 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
         e.preventDefault();
         savedRef.current = true;
         selectRegion(null);
+      } else if (e.key === 'Delete') {
+        e.preventDefault();
+        savedRef.current = true;
+        deleteRegion(pageId, region.id);
+        selectRegion(null);
       } else if (e.key === 'Tab') {
         e.preventDefault();
         save();
@@ -111,26 +127,6 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
   const handleBlur = useCallback(() => {
     if (!draggingRef.current) save();
   }, [save]);
-
-  const handleConfirm = useCallback(
-    (e: React.MouseEvent) => {
-      e.stopPropagation();
-      e.preventDefault();
-      save();
-      selectRegion(null);
-    },
-    [save, selectRegion],
-  );
-
-  const handleCancel = useCallback(
-    (e: React.MouseEvent) => {
-      e.stopPropagation();
-      e.preventDefault();
-      savedRef.current = true;
-      selectRegion(null);
-    },
-    [selectRegion],
-  );
 
   const handleDelete = useCallback(
     (e: React.MouseEvent) => {
@@ -338,7 +334,6 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
   const h = bounds.y2 - bounds.y1;
   const fontSize = h * 0.65;
   const half = HANDLE_SIZE / 2;
-  const TOOLBAR_HEIGHT = 28;
   const textPos = region.textPosition ?? 'inside';
   const inputH = fontSize + 8;
 
@@ -424,7 +419,7 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
         }}
       />
 
-      {/* Validation tick (top-left) */}
+      {/* Validation circle (top-left) */}
       <div
         onMouseDown={(e) => {
           e.stopPropagation();
@@ -440,112 +435,63 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          background: region.isValidated ? theme.palette.success.main : theme.palette.grey[700],
-          color: region.isValidated ? theme.palette.success.contrastText : theme.palette.grey[400],
-          borderRadius: 4,
           cursor: 'pointer',
           zIndex: 12,
         }}
         title={region.isValidated ? 'Mark as not validated' : 'Mark as validated'}
       >
-        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-          <polyline points="20 6 9 17 4 12" />
+        <svg width="16" height="16" viewBox="0 0 16 16">
+          <circle
+            cx="8"
+            cy="8"
+            r="7"
+            fill={region.isValidated ? theme.palette.success.main : theme.palette.grey[700]}
+            fillOpacity={region.isValidated ? 0.9 : 0.5}
+            stroke={region.isValidated ? theme.palette.success.dark : theme.palette.grey[500]}
+            strokeWidth="1"
+          />
+          {region.isValidated && (
+            <path
+              d="M5 8 l2 2 4-4"
+              fill="none"
+              stroke={theme.palette.success.contrastText}
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          )}
         </svg>
       </div>
 
-      {/* Move handle — drag bar along top edge */}
+      {/* Move handle — drag grip icon at top center */}
       <div
         onMouseDown={handleMoveMouseDown}
         style={{
           position: 'absolute',
-          top: textPos === 'top' ? -(inputH + 2 + HANDLE_SIZE) : -HANDLE_SIZE,
-          left: HANDLE_SIZE + 14,
-          right: HANDLE_SIZE + 46,
+          top: textPos === 'top' ? -(inputH + 2 + HANDLE_SIZE + 2) : -(HANDLE_SIZE + 2),
+          left: '50%',
+          transform: 'translateX(-50%)',
+          width: 24,
           height: HANDLE_SIZE,
           cursor: 'move',
-          background: theme.palette.primary.main,
-          opacity: 0.5,
-          borderRadius: '2px 2px 0 0',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: theme.palette.background.paper,
+          border: `1px solid ${theme.palette.divider}`,
+          borderRadius: 3,
           zIndex: 12,
         }}
         title="Drag to move"
-      />
-
-      {/* Save, Cancel, Delete buttons (top-right) */}
-      <div
-        style={{
-          position: 'absolute',
-          top: textPos === 'top' ? -(inputH + 2 + HANDLE_SIZE + 6) : -(HANDLE_SIZE + 6),
-          right: -HANDLE_SIZE - 6,
-          display: 'flex',
-          gap: 3,
-          zIndex: 12,
-        }}
       >
-        <div
-          onMouseDown={handleConfirm}
-          style={{
-            width: HANDLE_SIZE + 8,
-            height: HANDLE_SIZE + 8,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            background: theme.palette.primary.main,
-            color: theme.palette.primary.contrastText,
-            borderRadius: 4,
-            cursor: 'pointer',
-          }}
-          title="Save (Enter)"
-        >
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
-            <polyline points="17 21 17 13 7 13 7 21" />
-            <polyline points="7 3 7 8 15 8" />
-          </svg>
-        </div>
-        <div
-          onMouseDown={handleCancel}
-          style={{
-            width: HANDLE_SIZE + 8,
-            height: HANDLE_SIZE + 8,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            background: theme.palette.grey[700],
-            color: theme.palette.grey[300],
-            borderRadius: 4,
-            cursor: 'pointer',
-          }}
-          title="Cancel (Esc)"
-        >
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round">
-            <line x1="18" y1="6" x2="6" y2="18" />
-            <line x1="6" y1="6" x2="18" y2="18" />
-          </svg>
-        </div>
-        <div
-          onMouseDown={(e) => handleDelete(e)}
-          style={{
-            width: HANDLE_SIZE + 8,
-            height: HANDLE_SIZE + 8,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            background: theme.palette.error.main,
-            color: theme.palette.error.contrastText,
-            borderRadius: 4,
-            cursor: 'pointer',
-          }}
-          title="Delete region"
-        >
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="3 6 5 6 21 6" />
-            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
-            <path d="M10 11v6" />
-            <path d="M14 11v6" />
-            <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
-          </svg>
-        </div>
+        <svg width="10" height="8" viewBox="0 0 10 8" fill={theme.palette.text.secondary}>
+          <circle cx="2" cy="1.5" r="1" />
+          <circle cx="5" cy="1.5" r="1" />
+          <circle cx="8" cy="1.5" r="1" />
+          <circle cx="2" cy="5.5" r="1" />
+          <circle cx="5" cy="5.5" r="1" />
+          <circle cx="8" cy="5.5" r="1" />
+        </svg>
       </div>
 
       {/* Resize handles */}
@@ -566,11 +512,42 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
         style={{ ...handleStyle('se-resize'), bottom: -half, right: -half }}
       />
 
-      {/* Style toolbar — gear icon + expandable panel */}
+      {/* Delete button + Style toolbar — gear icon + expandable panel */}
       {(() => {
         const toolbarTop = textPos === 'bottom' ? h + inputH + 10 : h + 4;
+        const btnSize = HANDLE_SIZE + 8;
         return (
           <>
+            {/* Delete button */}
+            <div
+              onMouseDown={(e) => handleDelete(e)}
+              style={{
+                position: 'absolute',
+                left: 0,
+                top: toolbarTop,
+                width: btnSize,
+                height: btnSize,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: theme.palette.error.main,
+                color: theme.palette.error.contrastText,
+                border: `1px solid ${theme.palette.divider}`,
+                borderRadius: 4,
+                cursor: 'pointer',
+                zIndex: 12,
+              }}
+              title="Delete region (Delete)"
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="3 6 5 6 21 6" />
+                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                <path d="M10 11v6" />
+                <path d="M14 11v6" />
+                <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+              </svg>
+            </div>
+            {/* Gear icon */}
             <div
               onMouseDown={(e) => {
                 e.stopPropagation();
@@ -579,7 +556,7 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
               }}
               style={{
                 position: 'absolute',
-                left: 0,
+                left: btnSize + 4,
                 top: toolbarTop,
                 width: HANDLE_SIZE + 8,
                 height: HANDLE_SIZE + 8,
@@ -612,12 +589,12 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
                 onMouseDown={(e) => e.stopPropagation()}
                 style={{
                   position: 'absolute',
-                  left: HANDLE_SIZE + 12,
+                  left: btnSize + 4 + HANDLE_SIZE + 12,
                   top: toolbarTop,
-                  height: TOOLBAR_HEIGHT,
+                  height: HANDLE_SIZE + 8,
                   display: 'flex',
                   alignItems: 'center',
-                  gap: 4,
+                  gap: 3,
                   background: theme.palette.background.paper,
                   border: `1px solid ${theme.palette.divider}`,
                   borderRadius: 4,
@@ -626,183 +603,94 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
                   whiteSpace: 'nowrap',
                 }}
               >
-                {/* Font group */}
                 <select
                   value={region.fontFamily ?? 'Inter'}
                   onChange={handleFontFamilyChange}
                   onMouseDown={(e) => e.stopPropagation()}
                   style={{
-                    height: 20,
-                    fontSize: 10,
-                    background: theme.palette.background.default,
-                    color: theme.palette.text.primary,
-                    border: `1px solid ${theme.palette.divider}`,
-                    borderRadius: 2,
-                    padding: '0 2px',
-                    cursor: 'pointer',
-                    outline: 'none',
-                    maxWidth: 80,
+                    height: 16, fontSize: 10,
+                    background: theme.palette.background.default, color: theme.palette.text.primary,
+                    border: `1px solid ${theme.palette.divider}`, borderRadius: 2,
+                    padding: '0 2px', cursor: 'pointer', outline: 'none', maxWidth: 72,
                   }}
                 >
                   <option value="Inter">Inter</option>
                   <option value="Roboto">Roboto</option>
                   <option value="Arial">Arial</option>
-                  <option value="Times New Roman">Times New Roman</option>
-                  <option value="Courier New">Courier New</option>
+                  <option value="Times New Roman">Times NR</option>
+                  <option value="Courier New">Courier</option>
                   <option value="Georgia">Georgia</option>
                 </select>
                 <div
                   onMouseDown={handleToggleBold}
                   style={{
-                    width: 20,
-                    height: 20,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: 11,
-                    fontWeight: 700,
-                    borderRadius: 2,
-                    cursor: 'pointer',
-                    userSelect: 'none',
+                    width: 16, height: 16, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: 10, fontWeight: 700, borderRadius: 2, cursor: 'pointer', userSelect: 'none',
                     background: region.fontWeight === 'bold' ? theme.palette.primary.main : 'transparent',
                     color: region.fontWeight === 'bold' ? theme.palette.primary.contrastText : theme.palette.text.secondary,
                   }}
                   title="Bold"
-                >
-                  B
-                </div>
+                >B</div>
                 <div
                   onMouseDown={handleToggleItalic}
                   style={{
-                    width: 20,
-                    height: 20,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: 11,
-                    fontStyle: 'italic',
-                    borderRadius: 2,
-                    cursor: 'pointer',
-                    userSelect: 'none',
+                    width: 16, height: 16, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: 10, fontStyle: 'italic', borderRadius: 2, cursor: 'pointer', userSelect: 'none',
                     background: region.fontStyle === 'italic' ? theme.palette.primary.main : 'transparent',
                     color: region.fontStyle === 'italic' ? theme.palette.primary.contrastText : theme.palette.text.secondary,
                   }}
                   title="Italic"
-                >
-                  I
-                </div>
+                >I</div>
                 <div
                   onMouseDown={handleToggleStrikethrough}
                   style={{
-                    width: 20,
-                    height: 20,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: 11,
-                    textDecoration: 'line-through',
-                    borderRadius: 2,
-                    cursor: 'pointer',
-                    userSelect: 'none',
+                    width: 16, height: 16, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: 10, textDecoration: 'line-through', borderRadius: 2, cursor: 'pointer', userSelect: 'none',
                     background: region.textDecoration === 'line-through' ? theme.palette.primary.main : 'transparent',
                     color: region.textDecoration === 'line-through' ? theme.palette.primary.contrastText : theme.palette.text.secondary,
                   }}
                   title="Strikethrough"
-                >
-                  S
-                </div>
-                <DebouncedColorPicker
-                  value={region.fontColor ?? theme.palette.text.primary}
-                  onChange={handleFontColorChange}
-                />
-
-                {/* Divider */}
-                <div style={{ width: 1, height: 16, background: theme.palette.divider }} />
-
-                {/* Border group */}
-                <span style={{ fontSize: 10, color: theme.palette.text.secondary }}>Border</span>
-                <DebouncedColorPicker
-                  value={region.borderColor ?? theme.palette.primary.main}
-                  onChange={handleBorderColorChange}
-                />
+                >S</div>
+                <DebouncedColorPicker value={region.fontColor ?? theme.palette.text.primary} onChange={handleFontColorChange} />
+                <div style={{ width: 1, height: 12, background: theme.palette.divider }} />
                 <div
                   onMouseDown={handleToggleBorder}
                   style={{
-                    width: 14,
-                    height: 14,
-                    border: `2px solid ${theme.palette.text.secondary}`,
-                    borderRadius: 2,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: 10,
-                    lineHeight: 1,
-                    cursor: 'pointer',
-                    userSelect: 'none',
+                    width: 16, height: 16,
+                    border: `2px solid ${borderVisible ? (region.borderColor ?? theme.palette.primary.main) : theme.palette.grey[600]}`,
+                    borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: 9, lineHeight: 1, cursor: 'pointer', userSelect: 'none',
+                    opacity: borderVisible ? 1 : 0.4,
                   }}
                   title={borderVisible ? 'Hide border' : 'Show border'}
-                >
-                  {borderVisible ? '✓' : ''}
-                </div>
-
-                {/* Divider */}
-                <div style={{ width: 1, height: 16, background: theme.palette.divider }} />
-
-                {/* Background group */}
-                <span style={{ fontSize: 10, color: theme.palette.text.secondary }}>BG</span>
-                {region.backgroundColor && region.backgroundColor !== 'transparent' ? (
-                  <DebouncedColorPicker
-                    value={region.backgroundColor}
-                    onChange={handleBgColorChange}
-                  />
-                ) : (
-                  <DebouncedColorPicker
-                    value="#000000"
-                    onChange={handleBgColorChange}
-                    style={{ opacity: 0.4 }}
-                  />
-                )}
+                >{borderVisible ? '✓' : ''}</div>
+                <DebouncedColorPicker value={region.borderColor ?? theme.palette.primary.main} onChange={handleBorderColorChange} />
+                <div style={{ width: 1, height: 12, background: theme.palette.divider }} />
                 <div
                   onMouseDown={handleToggleBg}
                   style={{
-                    width: 14,
-                    height: 14,
-                    border: `2px solid ${theme.palette.text.secondary}`,
-                    borderRadius: 2,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: 10,
-                    lineHeight: 1,
-                    cursor: 'pointer',
-                    userSelect: 'none',
+                    width: 16, height: 16, border: `2px solid ${theme.palette.text.secondary}`, borderRadius: 2,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, lineHeight: 1,
+                    cursor: 'pointer', userSelect: 'none',
                     backgroundColor: region.backgroundColor && region.backgroundColor !== 'transparent' ? region.backgroundColor : 'transparent',
                   }}
                   title={region.backgroundColor && region.backgroundColor !== 'transparent' ? 'Clear background' : 'Add background'}
-                >
-                  {region.backgroundColor && region.backgroundColor !== 'transparent' ? '✓' : ''}
-                </div>
-
-                {/* Divider */}
-                <div style={{ width: 1, height: 16, background: theme.palette.divider }} />
-
-                {/* Text position */}
-                <span style={{ fontSize: 10, color: theme.palette.text.secondary }}>Text</span>
+                >{region.backgroundColor && region.backgroundColor !== 'transparent' ? '✓' : ''}</div>
+                {region.backgroundColor && region.backgroundColor !== 'transparent' ? (
+                  <DebouncedColorPicker value={region.backgroundColor} onChange={handleBgColorChange} />
+                ) : (
+                  <DebouncedColorPicker value="#000000" onChange={handleBgColorChange} style={{ opacity: 0.4 }} />
+                )}
+                <div style={{ width: 1, height: 12, background: theme.palette.divider }} />
                 <select
                   value={region.textPosition ?? 'inside'}
                   onChange={handleTextPositionChange}
                   onMouseDown={(e) => e.stopPropagation()}
                   style={{
-                    height: 20,
-                    fontSize: 10,
-                    background: theme.palette.background.default,
-                    color: theme.palette.text.primary,
-                    border: `1px solid ${theme.palette.divider}`,
-                    borderRadius: 2,
-                    padding: '0 2px',
-                    cursor: 'pointer',
-                    outline: 'none',
-                    maxWidth: 64,
+                    height: 16, fontSize: 10,
+                    background: theme.palette.background.default, color: theme.palette.text.primary,
+                    border: `1px solid ${theme.palette.divider}`, borderRadius: 2,
+                    padding: '0 2px', cursor: 'pointer', outline: 'none', maxWidth: 60,
                   }}
                 >
                   <option value="inside">Inside</option>

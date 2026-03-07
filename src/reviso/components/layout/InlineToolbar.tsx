@@ -229,35 +229,22 @@ export const InlineToolbar: React.FC = () => {
         )}
 
         {activePage && viewMode === 'edit' && editable && features.regionCreation && editorMode === 'create' && (
-          <div
-            style={{
-              marginRight: 4,
-              display: 'flex',
-              alignItems: 'center',
-              gap: 4,
-            }}
-          >
+          <div style={{ marginRight: 4, display: 'flex', alignItems: 'center', gap: 3 }}>
             <select
               value={regionDefaults.fontFamily}
               onChange={(e) => setRegionDefaults({ fontFamily: e.target.value })}
               style={{
-                height: 22,
-                fontSize: 10,
-                background: theme.palette.background.default,
-                color: theme.palette.text.primary,
-                border: `1px solid ${theme.palette.divider}`,
-                borderRadius: 2,
-                padding: '0 2px',
-                cursor: 'pointer',
-                outline: 'none',
-                maxWidth: 80,
+                height: 22, fontSize: 10,
+                background: theme.palette.background.default, color: theme.palette.text.primary,
+                border: `1px solid ${theme.palette.divider}`, borderRadius: 2,
+                padding: '0 2px', cursor: 'pointer', outline: 'none', maxWidth: 72,
               }}
             >
               <option value="Inter">Inter</option>
               <option value="Roboto">Roboto</option>
               <option value="Arial">Arial</option>
-              <option value="Times New Roman">Times New Roman</option>
-              <option value="Courier New">Courier New</option>
+              <option value="Times New Roman">Times NR</option>
+              <option value="Courier New">Courier</option>
               <option value="Georgia">Georgia</option>
             </select>
             <div
@@ -291,57 +278,44 @@ export const InlineToolbar: React.FC = () => {
               title="Strikethrough"
             >S</div>
             <DebouncedColorPicker value={regionDefaults.fontColor} onChange={(c) => setRegionDefaults({ fontColor: c })} style={{ width: 20, height: 20 }} />
-
-            <div style={{ width: 1, height: 16, background: theme.palette.divider, margin: '0 2px' }} />
-
-            <span style={{ fontSize: 10, color: theme.palette.text.secondary }}>Border</span>
-            <DebouncedColorPicker value={regionDefaults.borderColor} onChange={(c) => setRegionDefaults({ borderColor: c })} style={{ width: 20, height: 20 }} />
+            <div style={{ width: 1, height: 16, background: theme.palette.divider }} />
             <div
               onClick={() => setRegionDefaults({ borderVisible: !regionDefaults.borderVisible })}
               style={{
-                width: 14, height: 14, border: `2px solid ${theme.palette.text.secondary}`, borderRadius: 2,
-                display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, lineHeight: 1,
-                cursor: 'pointer', userSelect: 'none',
+                width: 20, height: 20,
+                border: `2px solid ${regionDefaults.borderVisible ? (regionDefaults.borderColor ?? theme.palette.primary.main) : theme.palette.grey[600]}`,
+                borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 10, lineHeight: 1, cursor: 'pointer', userSelect: 'none',
+                opacity: regionDefaults.borderVisible ? 1 : 0.4,
               }}
               title={regionDefaults.borderVisible ? 'Hide border' : 'Show border'}
             >{regionDefaults.borderVisible ? '✓' : ''}</div>
-
-            <div style={{ width: 1, height: 16, background: theme.palette.divider, margin: '0 2px' }} />
-
-            <span style={{ fontSize: 10, color: theme.palette.text.secondary }}>BG</span>
-            {regionDefaults.backgroundColor && regionDefaults.backgroundColor !== 'transparent' ? (
-              <DebouncedColorPicker value={regionDefaults.backgroundColor} onChange={(c) => setRegionDefaults({ backgroundColor: c })} style={{ width: 20, height: 20 }} />
-            ) : (
-              <DebouncedColorPicker value="#000000" onChange={(c) => setRegionDefaults({ backgroundColor: c })} style={{ width: 20, height: 20, opacity: 0.4 }} />
-            )}
+            <DebouncedColorPicker value={regionDefaults.borderColor} onChange={(c) => setRegionDefaults({ borderColor: c })} style={{ width: 20, height: 20 }} />
+            <div style={{ width: 1, height: 16, background: theme.palette.divider }} />
             <div
               onClick={() => setRegionDefaults({ backgroundColor: regionDefaults.backgroundColor === 'transparent' ? '#333333' : 'transparent' })}
               style={{
-                width: 14, height: 14, border: `2px solid ${theme.palette.text.secondary}`, borderRadius: 2,
+                width: 20, height: 20, border: `2px solid ${theme.palette.text.secondary}`, borderRadius: 2,
                 display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, lineHeight: 1,
                 cursor: 'pointer', userSelect: 'none',
                 backgroundColor: regionDefaults.backgroundColor && regionDefaults.backgroundColor !== 'transparent' ? regionDefaults.backgroundColor : 'transparent',
               }}
               title={regionDefaults.backgroundColor === 'transparent' ? 'Add background' : 'Clear background'}
             >{regionDefaults.backgroundColor && regionDefaults.backgroundColor !== 'transparent' ? '✓' : ''}</div>
-
-            <div style={{ width: 1, height: 16, background: theme.palette.divider, margin: '0 2px' }} />
-
-            <span style={{ fontSize: 10, color: theme.palette.text.secondary }}>Text</span>
+            {regionDefaults.backgroundColor && regionDefaults.backgroundColor !== 'transparent' ? (
+              <DebouncedColorPicker value={regionDefaults.backgroundColor} onChange={(c) => setRegionDefaults({ backgroundColor: c })} style={{ width: 20, height: 20 }} />
+            ) : (
+              <DebouncedColorPicker value="#000000" onChange={(c) => setRegionDefaults({ backgroundColor: c })} style={{ width: 20, height: 20, opacity: 0.4 }} />
+            )}
+            <div style={{ width: 1, height: 16, background: theme.palette.divider }} />
             <select
               value={regionDefaults.textPosition}
               onChange={(e) => setRegionDefaults({ textPosition: e.target.value as 'inside' | 'top' | 'bottom' | 'left' | 'right' })}
               style={{
-                height: 22,
-                fontSize: 10,
-                background: theme.palette.background.default,
-                color: theme.palette.text.primary,
-                border: `1px solid ${theme.palette.divider}`,
-                borderRadius: 2,
-                padding: '0 2px',
-                cursor: 'pointer',
-                outline: 'none',
-                maxWidth: 64,
+                height: 22, fontSize: 10,
+                background: theme.palette.background.default, color: theme.palette.text.primary,
+                border: `1px solid ${theme.palette.divider}`, borderRadius: 2,
+                padding: '0 2px', cursor: 'pointer', outline: 'none', maxWidth: 60,
               }}
             >
               <option value="inside">Inside</option>
