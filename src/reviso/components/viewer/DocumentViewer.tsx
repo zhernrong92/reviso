@@ -24,6 +24,7 @@ export const DocumentViewer: React.FC = () => {
   const selectedRegion = activePage?.regions.find((r) => r.id === selectedRegionId);
   const transformRef = useRef<ReactZoomPanPinchRef | null>(null);
   const [minScale, setMinScale] = useState(0.1);
+  const [zoomScale, setZoomScale] = useState(1);
 
   const pageWidth = activePage?.width;
   const pageHeight = activePage?.height;
@@ -51,6 +52,7 @@ export const DocumentViewer: React.FC = () => {
     (ref: ReactZoomPanPinchRef) => {
       transformRef.current = ref;
       fitToView(ref);
+      setZoomScale(ref.state.scale);
     },
     [fitToView],
   );
@@ -126,6 +128,7 @@ export const DocumentViewer: React.FC = () => {
             centerOnInit
             centerZoomedOut
             onInit={handleInit}
+            onTransformed={(_ref, state) => setZoomScale(state.scale)}
             panning={{
               excluded: ['inline-editor', 'region-creator'],
               disabled: editorMode === 'create',
@@ -154,6 +157,7 @@ export const DocumentViewer: React.FC = () => {
                   imageWidth={activePage.width}
                   imageHeight={activePage.height}
                   onAdvance={handleAdvance}
+                  zoomScale={zoomScale}
                 />
               )}
               {editable && editorMode === 'create' && activePageId && (

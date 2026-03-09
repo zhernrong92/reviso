@@ -11,6 +11,7 @@ interface InlineEditorProps {
   imageWidth: number;
   imageHeight: number;
   onAdvance: (direction: 'next' | 'prev') => void;
+  zoomScale: number;
 }
 
 type Corner = 'tl' | 'tr' | 'bl' | 'br';
@@ -36,6 +37,7 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
   imageWidth,
   imageHeight,
   onAdvance,
+  zoomScale,
 }) => {
   const theme = useTheme();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -336,6 +338,7 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
   const half = HANDLE_SIZE / 2;
   const textPos = region.textPosition ?? 'inside';
   const inputH = fontSize + 8;
+  const inverseScale = 1 / zoomScale;
 
   const getInputLayout = (): { style: React.CSSProperties; lineHeight: string } => {
     switch (textPos) {
@@ -470,7 +473,7 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
           position: 'absolute',
           top: textPos === 'top' ? -(inputH + 2 + HANDLE_SIZE + 2) : -(HANDLE_SIZE + 2),
           left: '50%',
-          transform: 'translateX(-50%)',
+          transform: `translateX(-50%) scale(${inverseScale})`,
           width: 24,
           height: HANDLE_SIZE,
           cursor: 'move',
@@ -497,19 +500,19 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
       {/* Resize handles */}
       <div
         onMouseDown={handleResizeMouseDown('tl')}
-        style={{ ...handleStyle('nw-resize'), top: -half, left: -half }}
+        style={{ ...handleStyle('nw-resize'), top: -half, left: -half, transform: `scale(${inverseScale})`, transformOrigin: 'top left' }}
       />
       <div
         onMouseDown={handleResizeMouseDown('tr')}
-        style={{ ...handleStyle('ne-resize'), top: -half, right: -half }}
+        style={{ ...handleStyle('ne-resize'), top: -half, right: -half, transform: `scale(${inverseScale})`, transformOrigin: 'top right' }}
       />
       <div
         onMouseDown={handleResizeMouseDown('bl')}
-        style={{ ...handleStyle('sw-resize'), bottom: -half, left: -half }}
+        style={{ ...handleStyle('sw-resize'), bottom: -half, left: -half, transform: `scale(${inverseScale})`, transformOrigin: 'bottom left' }}
       />
       <div
         onMouseDown={handleResizeMouseDown('br')}
-        style={{ ...handleStyle('se-resize'), bottom: -half, right: -half }}
+        style={{ ...handleStyle('se-resize'), bottom: -half, right: -half, transform: `scale(${inverseScale})`, transformOrigin: 'bottom right' }}
       />
 
       {/* Delete button + Style toolbar — gear icon + expandable panel */}
@@ -517,14 +520,11 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
         const toolbarTop = textPos === 'bottom' ? h + inputH + 10 : h + 4;
         const btnSize = HANDLE_SIZE + 8;
         return (
-          <>
+          <div style={{ position: 'absolute', left: 0, top: toolbarTop, transform: `scale(${inverseScale})`, transformOrigin: 'top left', display: 'flex', alignItems: 'center', zIndex: 12 }}>
             {/* Delete button */}
             <div
               onMouseDown={(e) => handleDelete(e)}
               style={{
-                position: 'absolute',
-                left: 0,
-                top: toolbarTop,
                 width: btnSize,
                 height: btnSize,
                 display: 'flex',
@@ -555,9 +555,7 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
                 setShowStyleToolbar((v) => !v);
               }}
               style={{
-                position: 'absolute',
-                left: btnSize + 4,
-                top: toolbarTop,
+                marginLeft: 4,
                 width: HANDLE_SIZE + 8,
                 height: HANDLE_SIZE + 8,
                 display: 'flex',
@@ -588,9 +586,7 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
               <div
                 onMouseDown={(e) => e.stopPropagation()}
                 style={{
-                  position: 'absolute',
-                  left: btnSize + 4 + HANDLE_SIZE + 12,
-                  top: toolbarTop,
+                  marginLeft: 4,
                   height: HANDLE_SIZE + 8,
                   display: 'flex',
                   alignItems: 'center',
@@ -699,7 +695,7 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
                 </select>
               </div>
             )}
-          </>
+          </div>
         );
       })()}
     </div>
