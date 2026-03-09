@@ -79,8 +79,8 @@ export interface RevisoProps {
   /** Initial page to display (page ID). Defaults to first page. */
   initialPageId?: string;
 
-  /** Fired on any region change. Returns the full updated document. */
-  onChange?: (document: RevisoDocument) => void;
+  /** Fired on any region change. Returns only the dirty (modified) pages. */
+  onChange?: (dirtyPages: RevisoPage[]) => void;
 
   /** Granular per-region change event */
   onRegionChange?: (event: {

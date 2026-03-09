@@ -61,8 +61,8 @@ interface RevisoProps {
   // --- Callbacks ---
 
   /** Fired on any region change (edit, move, resize, create, delete).
-   *  Returns the full updated document. */
-  onChange?: (document: RevisoDocument) => void;
+   *  Returns only dirty (modified) pages. */
+  onChange?: (dirtyPages: RevisoPage[]) => void;
 
   /** Granular per-region change event */
   onRegionChange?: (event: {
@@ -124,7 +124,7 @@ interface RevisoRegion {
 // Minimal — just display and edit a document
 <Reviso
   document={myDocument}
-  onChange={(updated) => saveToBackend(updated)}
+  onChange={(dirtyPages) => saveToBackend(dirtyPages)}
 />
 
 // Full — customised with feature toggles and callbacks
@@ -134,7 +134,7 @@ interface RevisoRegion {
   showSidebar={false}
   features={{ comparison: true, export: true, regionCreation: false }}
   theme={{ palette: { primary: { main: '#1976d2' } } }}
-  onChange={(updated) => saveToBackend(updated)}
+  onChange={(dirtyPages) => saveToBackend(dirtyPages)}
   onExport={(format, data) => uploadToS3(format, data)}
   onPageChange={(pageId) => trackAnalytics('page_view', pageId)}
 />

@@ -77,7 +77,7 @@ function App() {
   return (
     <Reviso
       document={document}
-      onChange={(doc) => console.log('Document changed:', doc)}
+      onChange={(dirtyPages) => console.log('Dirty pages:', dirtyPages)}
       onPageChange={(pageId) => console.log('Page:', pageId)}
       onSelectionChange={(regionId) => console.log('Selection:', regionId)}
     />
@@ -97,7 +97,7 @@ function App() {
 | `defaultRegionStyles` | `object` | — | Default styles for new regions (see below) |
 | `theme` | `ThemeOptions` | — | MUI theme overrides |
 | `initialPageId` | `string` | first page | Initial page to display |
-| `onChange` | `(doc: RevisoDocument) => void` | — | Fired on any change |
+| `onChange` | `(dirtyPages: RevisoPage[]) => void` | — | Fired on any change, returns only modified pages |
 | `onRegionChange` | `(event) => void` | — | Granular per-region change event (`{ type, pageId, regionId, region? }`) |
 | `onPageChange` | `(pageId: string) => void` | — | Fired on page navigation |
 | `onSelectionChange` | `(regionId: string \| null) => void` | — | Fired on region select/deselect |
@@ -119,7 +119,7 @@ function App() {
 
 #### When does `onChange` fire?
 
-`onChange` fires once per discrete user action — it does **not** fire continuously during drag operations.
+`onChange` fires once per discrete user action — it does **not** fire continuously during drag operations. It returns only dirty (modified) pages, not the full document. A page is considered dirty if any region was edited, created, or deleted.
 
 | Action | When it fires |
 |--------|---------------|

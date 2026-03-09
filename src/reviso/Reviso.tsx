@@ -10,7 +10,7 @@ import { useDocumentStore } from './stores/documentStore';
 import { useUiStore } from './stores/uiStore';
 import { useEditHistoryStore } from './stores/editHistoryStore';
 import { useNavigationKeyboard } from './hooks/useNavigationKeyboard';
-import { toInternalDocument, toPublicDocument } from './utils/typeMappers';
+import { toInternalDocument, toPublicPage } from './utils/typeMappers';
 import type { RevisoProps } from './types/public';
 
 export const Reviso: React.FC<RevisoProps> = ({
@@ -45,6 +45,9 @@ export const Reviso: React.FC<RevisoProps> = ({
 
   useNavigationKeyboard();
 
+  // Track original region counts per page for dirty detection (deletions)
+  const originalRegionCountsRef = useRef<Map<string, number>>(new Map());
+
   // Load document into store on mount / when document prop changes
   const prevDocIdRef = useRef<string | null>(null);
   useEffect(() => {
@@ -54,6 +57,13 @@ export const Reviso: React.FC<RevisoProps> = ({
     const internalDoc = toInternalDocument(revisoDocument);
     loadDocuments([internalDoc]);
     setActiveDocument(internalDoc.id);
+
+    // Snapshot original region counts for dirty detection
+    const counts = new Map<string, number>();
+    for (const page of internalDoc.pages) {
+      counts.set(page.id, page.regions.length);
+    }
+    originalRegionCountsRef.current = counts;
 
     const targetPageId = initialPageId ?? internalDoc.pages[0]?.id;
     if (targetPageId) setActivePage(targetPageId);
@@ -87,12 +97,22 @@ export const Reviso: React.FC<RevisoProps> = ({
     return () => setOnExportCallback(null);
   }, [onExport, setOnExportCallback]);
 
-  // Wire onChange callback to store
+  // Wire onChange callback to store — emit only dirty pages
   useEffect(() => {
     if (!onChange) return;
     return useDocumentStore.subscribe((state) => {
       const doc = state.documents[0];
-      if (doc) onChange(toPublicDocument(doc));
+      if (!doc) return;
+      const originalCounts = originalRegionCountsRef.current;
+      const dirtyPages = doc.pages.filter((page) => {
+        // Page is dirty if region count changed (addition/deletion)
+        if (page.regions.length !== (originalCounts.get(page.id) ?? 0)) return true;
+        // Or if any region was edited or newly created
+        return page.regions.some((r) => r.isEdited || r.isNew);
+      });
+      if (dirtyPages.length > 0) {
+        onChange(dirtyPages.map(toPublicPage));
+      }
     });
   }, [onChange]);
 

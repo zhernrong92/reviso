@@ -138,7 +138,7 @@ const RevisoDemo: React.FC = () => {
         <Box sx={{ flex: 1, overflow: 'hidden' }}>
           <Reviso
             document={document}
-            onChange={(doc) => console.log('onChange', doc)}
+            onChange={(dirtyPages) => console.log('onChange dirtyPages', dirtyPages)}
             onPageChange={(pageId) => console.log('onPageChange', pageId)}
             onSelectionChange={(regionId) => console.log('onSelectionChange', regionId)}
           />
