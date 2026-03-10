@@ -30,9 +30,9 @@ Refer to these for details (load only when needed):
 - `agent_docs/component_design.md` — Embeddable component API design, layout, bundle strategy, migration plan
 
 ## Current State (Update This!)
-**Last Updated:** March 4, 2026
-**Working On:** Phase 9 — Region UX Improvements & Validation System
-**Recently Completed:** Phase 8 — Component Refactor (embeddable `<Reviso />` component, all props wired, dead files cleaned up)
+**Last Updated:** March 10, 2026
+**Working On:** Phase 10 — Library Packaging & Publishing
+**Recently Completed:** Phase 9 — Region UX, validation, zoom fixes, onChange dirty pages
 **Blocked By:** None
 **Design Doc:** `agent_docs/component_design.md` — full component API, layout, bundle strategy
 
@@ -123,16 +123,31 @@ See `agent_docs/component_design.md` for full design details.
 - [x] Fit-to-view on page navigation and sidebar toggle
 - [x] Demo page at `/reviso` with dummy host app layout
 
-### Phase 9: Region UX Improvements & Validation System
+### Phase 9: Region UX Improvements & Validation System ✓
 - [x] Default style changes (blue text, green border, no background)
 - [x] Toggle all region text visibility (show/hide text labels, keep boxes)
 - [x] InlineEditor input follows textPosition (top/bottom positioning)
 - [x] Collapse inline style toolbar (gear icon, expand on click)
 - [x] Reposition action buttons (confirm/cancel top-left, delete top-right)
 - [x] Region validation system (per-region checkmark + progress indicator)
+- [x] onChange returns only dirty pages instead of full document
+- [x] Resize handles and toolbar stay constant size regardless of zoom level
+- [x] Fix zoom viewport shift on region select (preventScroll)
+- [x] Pan-to-region navigation (view follows when jumping to next region)
 
-### Distribution
-Copy-paste — not a published library. Copy `src/reviso/` to your project and install peer dependencies. See `agent_docs/component_design.md` for details.
+### Phase 10: Library Packaging & Publishing
+**Package:** `@zhernrong92/reviso` on GitHub Packages (public)
+
+- [ ] Create library entry point (`src/reviso/index.ts`) with public API exports
+- [ ] Configure Vite library mode (`build.lib`) — ESM + CJS output
+- [ ] Generate TypeScript declarations (`vite-plugin-dts`)
+- [ ] Configure `package.json` for publishing (name, version, main, module, types, exports, files, peerDependencies)
+- [ ] Externalize peer dependencies (react, react-dom, @mui/material, framer-motion, zustand)
+- [ ] Add `.npmrc` for GitHub Packages registry
+- [ ] Add `npm run build:lib` script
+- [ ] Test local install in a separate project (`npm pack` → `npm install`)
+- [ ] Publish v0.1.0 to GitHub Packages
+- [ ] Add consumer usage docs to README (install, setup, minimal example)
 
 ## Engineering Constraints
 
