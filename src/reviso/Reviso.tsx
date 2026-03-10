@@ -112,6 +112,12 @@ export const Reviso: React.FC<RevisoProps> = ({
       });
       if (dirtyPages.length > 0) {
         onChange(dirtyPages.map(toPublicPage));
+        // Reset dirty flags and update region counts so the same changes aren't re-emitted
+        const dirtyPageIds = dirtyPages.map((p) => p.id);
+        useDocumentStore.getState().clearDirtyFlags(dirtyPageIds);
+        for (const page of dirtyPages) {
+          originalCounts.set(page.id, page.regions.length);
+        }
       }
     });
   }, [onChange]);
