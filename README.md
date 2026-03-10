@@ -132,6 +132,79 @@ function App() {
 | Toggle validation | Immediately when region checkmark is clicked |
 | Undo / Redo | Immediately on restore |
 
+### Theming
+
+Reviso automatically inherits the MUI theme from a parent `ThemeProvider`. You can also pass a `theme` prop for component-level overrides — these are deep-merged on top of the inherited theme.
+
+#### Option 1: Inherit from host app theme
+
+Wrap your app (or a parent component) with MUI's `ThemeProvider`. Reviso will pick up the palette, typography, and other tokens automatically.
+
+```tsx
+import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { Reviso } from '@zhernrong92/reviso';
+
+const appTheme = createTheme({
+  palette: {
+    mode: 'dark',
+    primary: { main: '#90caf9' },
+  },
+});
+
+function App() {
+  return (
+    <ThemeProvider theme={appTheme}>
+      {/* Reviso inherits dark mode, primary color, etc. */}
+      <Reviso document={document} />
+    </ThemeProvider>
+  );
+}
+```
+
+#### Option 2: Override via `theme` prop
+
+Pass MUI `ThemeOptions` directly to the `theme` prop. These overrides are deep-merged on top of whatever theme Reviso inherits from the parent.
+
+```tsx
+<Reviso
+  document={document}
+  theme={{
+    palette: {
+      mode: 'dark',
+      primary: { main: '#ce93d8' },
+      background: { default: '#1a1a2e', paper: '#16213e' },
+    },
+    typography: {
+      fontFamily: '"Fira Code", monospace',
+    },
+  }}
+/>
+```
+
+#### Option 3: Combine both
+
+Use a host theme for global styles and the `theme` prop for Reviso-specific tweaks.
+
+```tsx
+const appTheme = createTheme({
+  palette: { mode: 'dark' },
+  typography: { fontFamily: '"Inter", sans-serif' },
+});
+
+<ThemeProvider theme={appTheme}>
+  <Reviso
+    document={document}
+    theme={{
+      palette: {
+        primary: { main: '#ff7043' },
+      },
+    }}
+  />
+</ThemeProvider>
+```
+
+In this example, Reviso uses the host's dark mode and Inter font, but overrides the primary color to deep orange.
+
 ## Development (Demo App)
 
 ### Prerequisites
