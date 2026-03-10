@@ -1,6 +1,6 @@
-# Reviso
+# @zhernrong92/reviso
 
-An embeddable React component for visually verifying and correcting text regions on document images. Upload PDFs or images, draw text regions, edit text inline, and export as JSON, PDF, or PNG.
+An embeddable React component for visually verifying and correcting text regions on document images. Draw text regions, edit text inline, and export as JSON, PDF, or PNG.
 
 ## Features
 
@@ -18,23 +18,33 @@ An embeddable React component for visually verifying and correcting text regions
 - **Feature Toggles** — enable/disable editing, region creation, comparison, export via props
 - **Keyboard Shortcuts** — press `?` to see all available shortcuts
 
-## Using the Component
+## Installation
 
-### 1. Copy the component
+### 1. Configure registry
 
-Copy the `src/reviso/` folder into your project.
+Add to your project's `.npmrc`:
 
-### 2. Install peer dependencies
-
-```bash
-npm install @mui/material @mui/icons-material @emotion/react @emotion/styled zustand immer framer-motion react-zoom-pan-pinch react-compare-slider jspdf pdf-lib nanoid
+```
+@zhernrong92:registry=https://npm.pkg.github.com
 ```
 
-### 3. Import and use
+### 2. Install
+
+```bash
+npm install @zhernrong92/reviso
+```
+
+### 3. Install peer dependencies
+
+```bash
+npm install react react-dom @mui/material @mui/icons-material @emotion/react @emotion/styled framer-motion
+```
+
+## Usage
 
 ```tsx
-import { Reviso } from './reviso';
-import type { RevisoDocument } from './reviso';
+import { Reviso } from '@zhernrong92/reviso';
+import type { RevisoDocument } from '@zhernrong92/reviso';
 
 const document: RevisoDocument = {
   id: 'doc-1',
@@ -56,17 +66,6 @@ const document: RevisoDocument = {
           height: 40,
           text: 'Corrected text',
           originalText: 'Original OCR text',
-          // Optional styling
-          fontColor: '#4dabf7',
-          fontFamily: 'Inter',
-          fontWeight: 'normal',        // 'normal' | 'bold'
-          fontStyle: 'normal',         // 'normal' | 'italic'
-          textDecoration: 'none',      // 'none' | 'line-through'
-          borderColor: '#4caf50',
-          borderVisible: true,
-          backgroundColor: 'transparent',
-          textPosition: 'inside',      // 'inside' | 'top' | 'bottom'
-          isValidated: false,          // validation tracking
         },
       ],
     },
@@ -85,7 +84,21 @@ function App() {
 }
 ```
 
-### Props
+### Wrap with MUI ThemeProvider
+
+Reviso inherits your app's MUI theme. Wrap it in a `ThemeProvider` or pass overrides via the `theme` prop:
+
+```tsx
+import { ThemeProvider, createTheme } from '@mui/material/styles';
+
+const theme = createTheme({ palette: { mode: 'dark' } });
+
+<ThemeProvider theme={theme}>
+  <Reviso document={document} />
+</ThemeProvider>
+```
+
+## Props
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
@@ -103,7 +116,7 @@ function App() {
 | `onSelectionChange` | `(regionId: string \| null) => void` | — | Fired on region select/deselect |
 | `onExport` | `(format, data: Blob) => void` | — | Intercept export (replaces auto-download) |
 
-#### `defaultRegionStyles`
+### `defaultRegionStyles`
 
 | Property | Type | Default | Description |
 |----------|------|---------|-------------|
@@ -117,7 +130,29 @@ function App() {
 | `backgroundColor` | `string` | `'transparent'` | Region background fill |
 | `textPosition` | `'inside' \| 'top' \| 'bottom'` | `'inside'` | Where text renders relative to the region box |
 
-#### When does `onChange` fire?
+### `RevisoRegion`
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `id` | `string` | yes | Unique region identifier |
+| `x` | `number` | yes | X position (pixels from left) |
+| `y` | `number` | yes | Y position (pixels from top) |
+| `width` | `number` | yes | Region width in pixels |
+| `height` | `number` | yes | Region height in pixels |
+| `text` | `string` | yes | Current text content |
+| `originalText` | `string` | no | Original text (for diff tracking) |
+| `fontColor` | `string` | no | Text color |
+| `fontFamily` | `string` | no | Font family |
+| `fontWeight` | `'normal' \| 'bold'` | no | Font weight |
+| `fontStyle` | `'normal' \| 'italic'` | no | Font style |
+| `textDecoration` | `'none' \| 'line-through'` | no | Text decoration |
+| `borderColor` | `string` | no | Border color |
+| `borderVisible` | `boolean` | no | Show/hide border |
+| `backgroundColor` | `string` | no | Background fill |
+| `textPosition` | `'inside' \| 'top' \| 'bottom' \| 'left' \| 'right'` | no | Text placement relative to region |
+| `isValidated` | `boolean` | no | Validation tracking |
+
+### When does `onChange` fire?
 
 `onChange` fires once per discrete user action — it does **not** fire continuously during drag operations. It returns only dirty (modified) pages, not the full document. A page is considered dirty if any region was edited, created, or deleted.
 
@@ -132,7 +167,7 @@ function App() {
 | Toggle validation | Immediately when region checkmark is clicked |
 | Undo / Redo | Immediately on restore |
 
-## Development (Demo App)
+## Development
 
 ### Prerequisites
 
@@ -142,7 +177,7 @@ function App() {
 ### Setup
 
 ```bash
-git clone <repo-url>
+git clone https://github.com/zhernrong92/reviso.git
 cd reviso
 npm install
 npm run dev
@@ -158,42 +193,17 @@ The dev server runs two demo routes:
 |---------|-------------|
 | `npm run dev` | Start Vite dev server |
 | `npm run build` | Production build (type-check + bundle) |
+| `npm run build:lib` | Build library for publishing |
 | `npm run preview` | Preview production build |
 | `npm run type-check` | TypeScript type checking |
 | `npm run lint` | ESLint check |
 
-## Project Structure
+### Publishing
 
-```
-reviso/
-├── public/                        # Static assets
-│   ├── sample-doc.pdf             # Sample PDF for demos
-│   └── sample-receipt.png         # Sample PNG for demos
-├── src/
-│   ├── reviso/                    # ← EMBEDDABLE COMPONENT (copy this folder)
-│   │   ├── components/
-│   │   │   ├── common/            # KeyboardHelpDialog, DebouncedColorPicker
-│   │   │   ├── comparison/        # ComparisonSlider, AfterImage
-│   │   │   ├── editor/            # InlineEditor, RegionCreator
-│   │   │   ├── export/            # ExportDialog
-│   │   │   ├── layout/            # InlineToolbar, PageThumbnails
-│   │   │   └── viewer/            # DocumentViewer, PageImage, OverlayLayer
-│   │   ├── hooks/                 # useNavigationKeyboard, useEditorKeyboard
-│   │   ├── stores/                # Zustand stores (document, ui, editHistory)
-│   │   ├── types/                 # TypeScript types (public API + internal)
-│   │   ├── utils/                 # Export, type mappers, helpers
-│   │   ├── theme/                 # MUI dark theme config
-│   │   ├── Reviso.tsx             # Main component entry point
-│   │   └── index.ts               # Barrel exports
-│   ├── legacy/                    # Legacy demo files (not part of component)
-│   │   ├── components/            # AppShell, TopBar, Sidebar, DocumentList
-│   │   └── utils/                 # parsePdf, parseUploadedJson, dummyData
-│   ├── App.tsx                    # Demo app with routing
-│   ├── RevisoDemo.tsx             # Component demo page
-│   └── main.tsx                   # Entry point
-├── AGENTS.md                      # Development roadmap
-├── CLAUDE.md                      # Claude Code configuration
-└── agent_docs/                    # Technical documentation
+```bash
+npm login --registry=https://npm.pkg.github.com
+npm run build:lib
+npm publish
 ```
 
 ## Tech Stack
@@ -202,7 +212,7 @@ reviso/
 |------------|---------|
 | React 18 | UI framework |
 | TypeScript 5 (strict) | Type safety |
-| Vite 5 | Dev server + bundler |
+| Vite 5 | Dev server + library bundler |
 | MUI 6 | Component library, theming |
 | Zustand 5 + Immer | State management |
 | Framer Motion | Page transitions |
