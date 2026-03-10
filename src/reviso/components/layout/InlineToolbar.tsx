@@ -11,6 +11,7 @@ import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
 import UndoIcon from '@mui/icons-material/Undo';
 import RedoIcon from '@mui/icons-material/Redo';
 import TextFieldsIcon from '@mui/icons-material/TextFields';
+import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import { useUiStore } from '../../stores/uiStore';
 import { useDocumentStore } from '../../stores/documentStore';
 import { useEditHistoryStore } from '../../stores/editHistoryStore';
@@ -374,6 +375,15 @@ export const InlineToolbar: React.FC = () => {
             Export
           </Button>
         )}
+
+        <IconButton
+          size="small"
+          onClick={() => useUiStore.getState().setHelpDialogOpen(true)}
+          title="Keyboard shortcuts (?)"
+          sx={{ ml: 0.5, p: 0.5 }}
+        >
+          <HelpOutlineIcon sx={{ fontSize: 16 }} />
+        </IconButton>
       </Box>
 
       <ExportDialog open={exportDialogOpen} onClose={() => setExportDialogOpen(false)} />
