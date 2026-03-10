@@ -12,7 +12,6 @@ interface DocumentState {
   updateRegionBounds: (pageId: string, regionId: string, x1: number, y1: number, x2: number, y2: number) => void;
   updateRegionStyle: (pageId: string, regionId: string, style: { fontColor?: string; fontFamily?: string; fontWeight?: 'normal' | 'bold'; fontStyle?: 'normal' | 'italic'; textDecoration?: 'none' | 'line-through'; borderColor?: string; borderVisible?: boolean; backgroundColor?: string; textPosition?: 'inside' | 'top' | 'bottom' | 'left' | 'right' }) => void;
   toggleRegionValidation: (pageId: string, regionId: string) => void;
-  clearDirtyFlags: (pageIds: string[]) => void;
   restoreSnapshot: (snapshot: Document[]) => void;
   getActiveDocument: (id: string | null) => Document | undefined;
   getActivePage: (id: string | null) => Document['pages'][number] | undefined;
@@ -178,20 +177,6 @@ const useDocumentStore = create<DocumentState>()(
       const after = snapshotForHistory(get().documents);
       useEditHistoryStore.getState().pushEntry(before, after);
     },
-
-    clearDirtyFlags: (pageIds) =>
-      set((state) => {
-        const pageIdSet = new Set(pageIds);
-        for (const doc of state.documents) {
-          for (const page of doc.pages) {
-            if (!pageIdSet.has(page.id)) continue;
-            for (const region of page.regions) {
-              region.isEdited = false;
-              region.isNew = false;
-            }
-          }
-        }
-      }),
 
     restoreSnapshot: (snapshot) => {
       const current = get().documents;

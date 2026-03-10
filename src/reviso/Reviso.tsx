@@ -45,8 +45,8 @@ export const Reviso: React.FC<RevisoProps> = ({
 
   useNavigationKeyboard();
 
-  // Track original region counts per page for dirty detection (deletions)
-  const originalRegionCountsRef = useRef<Map<string, number>>(new Map());
+  // Snapshot of last-emitted page state for dirty detection
+  const lastEmittedRef = useRef<Map<string, string>>(new Map());
 
   // Load document into store on mount / when document prop changes
   const prevDocIdRef = useRef<string | null>(null);
@@ -58,12 +58,12 @@ export const Reviso: React.FC<RevisoProps> = ({
     loadDocuments([internalDoc]);
     setActiveDocument(internalDoc.id);
 
-    // Snapshot original region counts for dirty detection
-    const counts = new Map<string, number>();
+    // Snapshot initial page state for dirty detection
+    const snapshot = new Map<string, string>();
     for (const page of internalDoc.pages) {
-      counts.set(page.id, page.regions.length);
+      snapshot.set(page.id, JSON.stringify(toPublicPage(page)));
     }
-    originalRegionCountsRef.current = counts;
+    lastEmittedRef.current = snapshot;
 
     const targetPageId = initialPageId ?? internalDoc.pages[0]?.id;
     if (targetPageId) setActivePage(targetPageId);
@@ -97,27 +97,28 @@ export const Reviso: React.FC<RevisoProps> = ({
     return () => setOnExportCallback(null);
   }, [onExport, setOnExportCallback]);
 
-  // Wire onChange callback to store — emit only dirty pages
+  // Wire onChange callback to store — emit only dirty pages (snapshot-based diff)
   useEffect(() => {
     if (!onChange) return;
     return useDocumentStore.subscribe((state) => {
       const doc = state.documents[0];
       if (!doc) return;
-      const originalCounts = originalRegionCountsRef.current;
-      const dirtyPages = doc.pages.filter((page) => {
-        // Page is dirty if region count changed (addition/deletion)
-        if (page.regions.length !== (originalCounts.get(page.id) ?? 0)) return true;
-        // Or if any region was edited or newly created
-        return page.regions.some((r) => r.isEdited || r.isNew);
-      });
-      if (dirtyPages.length > 0) {
-        onChange(dirtyPages.map(toPublicPage));
-        // Reset dirty flags and update region counts so the same changes aren't re-emitted
-        const dirtyPageIds = dirtyPages.map((p) => p.id);
-        useDocumentStore.getState().clearDirtyFlags(dirtyPageIds);
-        for (const page of dirtyPages) {
-          originalCounts.set(page.id, page.regions.length);
+      const lastEmitted = lastEmittedRef.current;
+      // Build list of changed pages with their serialized form
+      const dirty: { publicPage: ReturnType<typeof toPublicPage>; json: string }[] = [];
+      for (const page of doc.pages) {
+        const publicPage = toPublicPage(page);
+        const json = JSON.stringify(publicPage);
+        if (json !== (lastEmitted.get(page.id) ?? '')) {
+          dirty.push({ publicPage, json });
         }
+      }
+      if (dirty.length > 0) {
+        // Update snapshot before calling onChange to prevent re-entrance
+        for (const entry of dirty) {
+          lastEmitted.set(entry.publicPage.id, entry.json);
+        }
+        onChange(dirty.map((d) => d.publicPage));
       }
     });
   }, [onChange]);
