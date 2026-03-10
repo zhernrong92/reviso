@@ -255,12 +255,53 @@ The dev server runs two demo routes:
 | `npm run type-check` | TypeScript type checking |
 | `npm run lint` | ESLint check |
 
-### Publishing
+### Building the Library
+
+The library build is separate from the demo app build. It produces ESM (`.mjs`) and CommonJS (`.cjs`) bundles with TypeScript declarations.
 
 ```bash
-npm login --registry=https://npm.pkg.github.com
+# Build the library (outputs to dist/)
 npm run build:lib
-npm publish
+```
+
+This generates:
+- `dist/index.mjs` — ES module
+- `dist/index.cjs` — CommonJS module
+- `dist/index.d.ts` — TypeScript declarations
+
+Peer dependencies (React, MUI, Emotion, Framer Motion) are **not** bundled — consumers must install them separately.
+
+### Testing Locally
+
+To test the library in another project before publishing:
+
+```bash
+# 1. Build and pack
+npm run build:lib
+npm pack
+
+# 2. In the consumer project, install from the tgz
+npm install /path/to/zhernrong92-reviso-x.x.x.tgz
+```
+
+### Publishing to GitHub Packages
+
+```bash
+# 1. Login (requires a GitHub PAT with packages:write scope)
+npm login --registry=https://npm.pkg.github.com
+
+# 2. Bump version
+npm version patch --no-git-tag-version
+
+# 3. Build and publish
+npm run build:lib
+npm publish --registry=https://npm.pkg.github.com
+```
+
+The package is published as `@zhernrong92/reviso` to GitHub Packages. Consumers need to configure their `.npmrc`:
+
+```
+@zhernrong92:registry=https://npm.pkg.github.com
 ```
 
 ## Tech Stack

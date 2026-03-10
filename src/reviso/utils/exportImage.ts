@@ -6,7 +6,20 @@ function loadImage(src: string): Promise<HTMLImageElement> {
     img.crossOrigin = 'anonymous';
     img.onload = () => resolve(img);
     img.onerror = () => reject(new Error('Failed to load page image'));
-    img.src = src;
+    // For data URLs or blob URLs, use directly; for remote URLs, fetch as blob to avoid CORS tainting
+    if (src.startsWith('data:') || src.startsWith('blob:')) {
+      img.src = src;
+    } else {
+      fetch(src)
+        .then((res) => {
+          if (!res.ok) throw new Error(`Failed to fetch image: ${res.status}`);
+          return res.blob();
+        })
+        .then((blob) => {
+          img.src = URL.createObjectURL(blob);
+        })
+        .catch(reject);
+    }
   });
 }
 
