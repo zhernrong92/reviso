@@ -1,6 +1,6 @@
 {
-  "name": "@zhernrong92/reviso",
-  "version": "0.1.3",
+  "name": "react-reviso",
+  "version": "0.1.0",
   "type": "module",
   "description": "React component for document annotation viewing and editing",
   "main": "dist/index.cjs",
@@ -65,7 +65,8 @@
     "vite-plugin-dts": "^4.5.4"
   },
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
+    "registry": "https://registry.npmjs.org",
+    "access": "public"
   },
   "repository": {
     "type": "git",

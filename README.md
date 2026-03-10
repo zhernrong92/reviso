@@ -1,4 +1,4 @@
-# @zhernrong92/reviso
+# react-reviso
 
 An embeddable React component for visually verifying and correcting text regions on document images. Draw text regions, edit text inline, and export as JSON, PDF, or PNG.
 
@@ -20,21 +20,11 @@ An embeddable React component for visually verifying and correcting text regions
 
 ## Installation
 
-### 1. Configure registry
-
-Add to your project's `.npmrc`:
-
-```
-@zhernrong92:registry=https://npm.pkg.github.com
-```
-
-### 2. Install
-
 ```bash
-npm install @zhernrong92/reviso
+npm install react-reviso
 ```
 
-### 3. Install peer dependencies
+### Peer dependencies
 
 ```bash
 npm install react react-dom @mui/material @mui/icons-material @emotion/react @emotion/styled framer-motion
@@ -43,8 +33,8 @@ npm install react react-dom @mui/material @mui/icons-material @emotion/react @em
 ## Usage
 
 ```tsx
-import { Reviso } from '@zhernrong92/reviso';
-import type { RevisoDocument } from '@zhernrong92/reviso';
+import { Reviso } from 'react-reviso';
+import type { RevisoDocument } from 'react-reviso';
 
 const document: RevisoDocument = {
   id: 'doc-1',
@@ -281,27 +271,21 @@ npm run build:lib
 npm pack
 
 # 2. In the consumer project, install from the tgz
-npm install /path/to/zhernrong92-reviso-x.x.x.tgz
+npm install /path/to/react-reviso-x.x.x.tgz
 ```
 
-### Publishing to GitHub Packages
+### Publishing to npm
 
 ```bash
-# 1. Login (requires a GitHub PAT with packages:write scope)
-npm login --registry=https://npm.pkg.github.com
+# 1. Login
+npm login
 
 # 2. Bump version
 npm version patch --no-git-tag-version
 
 # 3. Build and publish
 npm run build:lib
-npm publish --registry=https://npm.pkg.github.com
-```
-
-The package is published as `@zhernrong92/reviso` to GitHub Packages. Consumers need to configure their `.npmrc`:
-
-```
-@zhernrong92:registry=https://npm.pkg.github.com
+npm publish --access public
 ```
 
 ## Tech Stack
