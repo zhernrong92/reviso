@@ -64,7 +64,7 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
   useEffect(() => {
     const el = inputRef.current;
     if (el) {
-      el.focus();
+      el.focus({ preventScroll: true });
       el.select();
     }
   }, []);
@@ -195,7 +195,7 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
         window.removeEventListener('mousemove', handleMouseMove);
         window.removeEventListener('mouseup', handleMouseUp);
         commitBounds();
-        inputRef.current?.focus();
+        inputRef.current?.focus({ preventScroll: true });
       };
 
       window.addEventListener('mousemove', handleMouseMove);
@@ -232,7 +232,7 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
         window.removeEventListener('mousemove', handleMouseMove);
         window.removeEventListener('mouseup', handleMouseUp);
         commitBounds();
-        inputRef.current?.focus();
+        inputRef.current?.focus({ preventScroll: true });
       };
 
       window.addEventListener('mousemove', handleMouseMove);
@@ -500,19 +500,19 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
       {/* Resize handles */}
       <div
         onMouseDown={handleResizeMouseDown('tl')}
-        style={{ ...handleStyle('nw-resize'), top: -half, left: -half, transform: `scale(${inverseScale})`, transformOrigin: 'top left' }}
+        style={{ ...handleStyle('nw-resize'), top: -half, left: -half, transform: `scale(${inverseScale})`, transformOrigin: 'center' }}
       />
       <div
         onMouseDown={handleResizeMouseDown('tr')}
-        style={{ ...handleStyle('ne-resize'), top: -half, right: -half, transform: `scale(${inverseScale})`, transformOrigin: 'top right' }}
+        style={{ ...handleStyle('ne-resize'), top: -half, right: -half, transform: `scale(${inverseScale})`, transformOrigin: 'center' }}
       />
       <div
         onMouseDown={handleResizeMouseDown('bl')}
-        style={{ ...handleStyle('sw-resize'), bottom: -half, left: -half, transform: `scale(${inverseScale})`, transformOrigin: 'bottom left' }}
+        style={{ ...handleStyle('sw-resize'), bottom: -half, left: -half, transform: `scale(${inverseScale})`, transformOrigin: 'center' }}
       />
       <div
         onMouseDown={handleResizeMouseDown('br')}
-        style={{ ...handleStyle('se-resize'), bottom: -half, right: -half, transform: `scale(${inverseScale})`, transformOrigin: 'bottom right' }}
+        style={{ ...handleStyle('se-resize'), bottom: -half, right: -half, transform: `scale(${inverseScale})`, transformOrigin: 'center' }}
       />
 
       {/* Delete button + Style toolbar — gear icon + expandable panel */}

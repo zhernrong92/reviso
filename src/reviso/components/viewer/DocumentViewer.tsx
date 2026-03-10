@@ -67,6 +67,28 @@ export const DocumentViewer: React.FC = () => {
     return () => clearTimeout(timer);
   }, [sidebarOpen, fitToView]);
 
+  // Pan view to center on the selected region when it changes
+  useEffect(() => {
+    if (!selectedRegion || !transformRef.current) return;
+    const ref = transformRef.current;
+    const wrapper = ref.instance.wrapperComponent;
+    if (!wrapper) return;
+
+    const scale = ref.state.scale;
+    const wrapperWidth = wrapper.clientWidth;
+    const wrapperHeight = wrapper.clientHeight;
+
+    // Region center in content coordinates
+    const regionCenterX = (selectedRegion.x1 + selectedRegion.x2) / 2;
+    const regionCenterY = (selectedRegion.y1 + selectedRegion.y2) / 2;
+
+    // Target position: place region center at wrapper center
+    const targetX = wrapperWidth / 2 - regionCenterX * scale;
+    const targetY = wrapperHeight / 2 - regionCenterY * scale;
+
+    ref.setTransform(targetX, targetY, scale, 300, 'easeOut');
+  }, [selectedRegionId]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const handleAdvance = useCallback(
     (direction: 'next' | 'prev') => {
       if (!activePage || !selectedRegionId) return;
