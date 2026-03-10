@@ -31,8 +31,8 @@ Refer to these for details (load only when needed):
 
 ## Current State (Update This!)
 **Last Updated:** March 10, 2026
-**Working On:** Phase 10 — Library Packaging & Publishing
-**Recently Completed:** Phase 9 — Region UX, validation, zoom fixes, onChange dirty pages
+**Working On:** Done — all phases complete
+**Recently Completed:** Phase 10 — Library packaging, GitHub Packages publishing (v0.1.2), theming docs, bug fixes
 **Blocked By:** None
 **Design Doc:** `agent_docs/component_design.md` — full component API, layout, bundle strategy
 
@@ -135,19 +135,23 @@ See `agent_docs/component_design.md` for full design details.
 - [x] Fix zoom viewport shift on region select (preventScroll)
 - [x] Pan-to-region navigation (view follows when jumping to next region)
 
-### Phase 10: Library Packaging & Publishing
+### Phase 10: Library Packaging & Publishing ✓
 **Package:** `@zhernrong92/reviso` on GitHub Packages (public)
 
-- [ ] Create library entry point (`src/reviso/index.ts`) with public API exports
-- [ ] Configure Vite library mode (`build.lib`) — ESM + CJS output
-- [ ] Generate TypeScript declarations (`vite-plugin-dts`)
-- [ ] Configure `package.json` for publishing (name, version, main, module, types, exports, files, peerDependencies)
-- [ ] Externalize peer dependencies (react, react-dom, @mui/material, framer-motion, zustand)
-- [ ] Add `.npmrc` for GitHub Packages registry
-- [ ] Add `npm run build:lib` script
-- [ ] Test local install in a separate project (`npm pack` → `npm install`)
-- [ ] Publish v0.1.0 to GitHub Packages
-- [ ] Add consumer usage docs to README (install, setup, minimal example)
+- [x] Create library entry point (`src/reviso/index.ts`) with public API exports
+- [x] Configure Vite library mode (`build.lib`) — ESM + CJS output
+- [x] Generate TypeScript declarations (`vite-plugin-dts`)
+- [x] Configure `package.json` for publishing (name, version, main, module, types, exports, files, peerDependencies)
+- [x] Externalize peer dependencies (react, react-dom, @mui/material, framer-motion, zustand)
+- [x] Add `.npmrc` for GitHub Packages registry
+- [x] Add `npm run build:lib` script
+- [x] Test local install in a separate project (`npm pack` → `npm install`)
+- [x] Publish to GitHub Packages (v0.1.2)
+- [x] Add consumer usage docs to README (install, setup, minimal example, theming)
+- [x] Widen MUI peer dependencies to support v6 and v7
+- [x] Default `isValidated: false` on new regions
+- [x] Add keyboard shortcuts help button in toolbar
+- [x] Reset dirty flags after `onChange` fires to prevent re-emitting
 
 ## Engineering Constraints
 
