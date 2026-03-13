@@ -1,6 +1,6 @@
 {
   "name": "react-reviso",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "type": "module",
   "description": "React component for document restoration QA, review, and correction",
   "main": "dist/index.cjs",
