@@ -1,8 +1,8 @@
 {
   "name": "react-reviso",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "type": "module",
-  "description": "React component for document annotation viewing and editing",
+  "description": "React component for document restoration QA, review, and correction",
   "main": "dist/index.cjs",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
