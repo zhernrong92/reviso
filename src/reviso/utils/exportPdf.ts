@@ -55,34 +55,10 @@ export async function exportPdf(documents: Document[]): Promise<Uint8Array> {
         else if (isItalic) fontKey = 'italic';
         const font = fonts[fontKey];
 
-        // Compute text position matching the SVG overlay logic
+        // Always render text inside the region box (textPosition is edit-mode only)
         // pdf-lib uses bottom-left origin; SVG uses top-left, so flip Y
-        const pos = region.textPosition ?? 'inside';
-        let textX: number;
-        let textY: number;
-        switch (pos) {
-          case 'top':
-            textX = region.x1;
-            textY = page.height - (region.y1 - 4);
-            break;
-          case 'bottom':
-            textX = region.x1;
-            textY = page.height - (region.y2 + fontSize + 4);
-            break;
-          case 'left':
-            textX = region.x1 - 4 - font.widthOfTextAtSize(region.currentText, fontSize);
-            textY = page.height - (region.y1 + h * 0.75);
-            break;
-          case 'right':
-            textX = region.x2 + 4;
-            textY = page.height - (region.y1 + h * 0.75);
-            break;
-          case 'inside':
-          default:
-            textX = region.x1 + 4;
-            textY = page.height - (region.y1 + h * 0.75);
-            break;
-        }
+        const textX = region.x1 + 4;
+        const textY = page.height - (region.y1 + h * 0.75);
 
         pdfPage.drawText(region.currentText, {
           x: textX,
