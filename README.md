@@ -1,22 +1,29 @@
 # react-reviso
 
-An embeddable React component for visually verifying and correcting text regions on document images. Draw text regions, edit text inline, and export as JSON, PDF, or PNG.
+An embeddable React component for reviewing and correcting OCR text on restored document images. Designed for QA workflows — users preview restored documents, validate regions, compare original vs restored, and edit corrections when needed.
 
 ## Features
 
-- **Embeddable Component** — drop `<Reviso />` into any React app with a single import
-- **Document Viewer** — zoom/pan document pages with SVG text region overlays
+- **Preview-First UX** — default view shows restored documents for QA review, editing is entered explicitly
+- **Side-by-Side Comparison** — original (left) vs restored (right) with independent zoom/pan
+- **Slider Comparison** — drag slider overlay comparing original vs restored, horizontal or vertical orientation
+- **Region Validation** — click checkmarks to mark regions as validated; progress bar tracks review completion
 - **Inline Editing** — click a region to edit text, Tab/Shift+Tab to navigate between regions
 - **Region Management** — create, resize, move, delete text regions; customise font, color, border, background, text position
-- **Region Validation** — per-region checkmark to track review progress; progress bar in toolbar shows validated/total count
-- **Text Visibility Toggle** — show/hide all region text labels while keeping region boxes visible
-- **Collapsible Style Toolbar** — region style controls (font, border, background, text position) collapsed behind a gear icon to reduce clutter
-- **Comparison Mode** — before/after slider comparing original vs annotated pages
-- **Export** — JSON (structured data), PDF (text at original positions), PNG (page image with overlays)
+- **Auto Background Detection** — restored preview automatically detects and fills region backgrounds from the document image
+- **Export** — JSON (structured data), PDF (text at original positions), PNG (restored page render)
 - **Undo/Redo** — Ctrl+Z / Ctrl+Shift+Z with full snapshot history
+- **Fit to View** — reset zoom across all view modes from toolbar
 - **Theme Integration** — inherits host app's MUI theme, accepts theme overrides
 - **Feature Toggles** — enable/disable editing, region creation, comparison, export via props
 - **Keyboard Shortcuts** — press `?` to see all available shortcuts
+
+## Workflow
+
+1. **Preview** (default) — review restored documents in side-by-side or slider comparison mode
+2. **Validate** — click checkmarks on regions to confirm OCR corrections are accurate
+3. **Edit** (on demand) — enter edit mode to fix text, create/delete regions, adjust styles
+4. **Export** — download corrected document as JSON, PDF, or PNG
 
 ## Installation
 
@@ -43,7 +50,7 @@ const document: RevisoDocument = {
     {
       id: 'page-1',
       pageNumber: 1,
-      imageSrc: '/path/to/page-image.png',
+      imageSrc: '/path/to/restored-image.png',
       originalImageSrc: '/path/to/original-image.png',
       width: 1200,
       height: 1600,
@@ -149,8 +156,8 @@ In this example, Reviso uses the host's dark mode and Inter font, but overrides 
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
-| `document` | `RevisoDocument` | required | The document to display and edit |
-| `editable` | `boolean` | `true` | Enable/disable editing |
+| `document` | `RevisoDocument` | required | The document to display and review |
+| `editable` | `boolean` | `true` | Enable/disable editing (when false, preview and validation only) |
 | `showSidebar` | `boolean` | `true` | Show/hide page thumbnail sidebar |
 | `showToolbar` | `boolean` | `true` | Show/hide the inline toolbar |
 | `features` | `{ comparison?, export?, regionCreation? }` | all `true` | Feature toggles |
@@ -167,7 +174,7 @@ In this example, Reviso uses the host's dark mode and Inter font, but overrides 
 
 | Property | Type | Default | Description |
 |----------|------|---------|-------------|
-| `fontColor` | `string` | `'#4dabf7'` | Text color (blue) |
+| `fontColor` | `string` | `'#1565c0'` | Text color (blue) |
 | `fontFamily` | `string` | `'Inter'` | Font family |
 | `fontWeight` | `'normal' \| 'bold'` | `'normal'` | Font weight |
 | `fontStyle` | `'normal' \| 'italic'` | `'normal'` | Font style |
@@ -175,7 +182,7 @@ In this example, Reviso uses the host's dark mode and Inter font, but overrides 
 | `borderColor` | `string` | `'#4caf50'` | Region border color (green) |
 | `borderVisible` | `boolean` | `true` | Show/hide region border |
 | `backgroundColor` | `string` | `'transparent'` | Region background fill |
-| `textPosition` | `'inside' \| 'top' \| 'bottom'` | `'inside'` | Where text renders relative to the region box |
+| `textPosition` | `'inside' \| 'top' \| 'bottom'` | `'top'` | Where text renders relative to the region box |
 
 ### `RevisoRegion`
 
@@ -197,7 +204,7 @@ In this example, Reviso uses the host's dark mode and Inter font, but overrides 
 | `borderVisible` | `boolean` | no | Show/hide border |
 | `backgroundColor` | `string` | no | Background fill |
 | `textPosition` | `'inside' \| 'top' \| 'bottom' \| 'left' \| 'right'` | no | Text placement relative to region |
-| `isValidated` | `boolean` | no | Validation tracking |
+| `isValidated` | `boolean` | no | Whether the region has been reviewed and confirmed |
 
 ### When does `onChange` fire?
 
@@ -213,6 +220,39 @@ In this example, Reviso uses the host's dark mode and Inter font, but overrides 
 | Change style | Immediately on each change (bold, italic, color, text position, etc.) |
 | Toggle validation | Immediately when region checkmark is clicked |
 | Undo / Redo | Immediately on restore |
+
+## View Modes
+
+### Preview Mode (default)
+
+The default landing view for QA review. Two sub-layouts:
+
+- **Side-by-Side** — original image (left) + restored image (right) with independent zoom/pan. Validation checkmarks overlay the restored pane.
+- **Slider** — single overlay with a draggable comparison slider. Supports horizontal (left/right) and vertical (top/bottom) orientation. No validation checkmarks in this mode.
+
+### Edit Mode
+
+Entered via the "Edit" button in the toolbar or `Ctrl+E`. Full editing capabilities:
+- Select, edit text, create/resize/delete regions
+- Undo/redo, style controls, text visibility toggle
+- Return to preview via the "Preview" button or `Ctrl+E`
+
+## Keyboard Shortcuts
+
+| Shortcut | Action |
+|----------|--------|
+| `Ctrl+E` | Toggle Preview / Edit mode |
+| `Escape` | Exit edit mode (when nothing selected) |
+| `← / →` | Previous / Next page |
+| `PageUp / PageDown` | Previous / Next page |
+| `Ctrl+↑ / Ctrl+↓` | Previous / Next document |
+| `Ctrl+Z` | Undo |
+| `Ctrl+Shift+Z` | Redo |
+| `N` | Toggle create mode |
+| `Delete` | Delete selected region |
+| `Tab / Shift+Tab` | Next / Previous region |
+| `Enter` | Confirm edit |
+| `?` | Show keyboard shortcuts help |
 
 ## Development
 
@@ -299,6 +339,6 @@ npm publish --access public
 | Zustand 5 + Immer | State management |
 | Framer Motion | Page transitions |
 | react-zoom-pan-pinch | Document viewer zoom/pan |
-| react-compare-slider | Before/after comparison |
+| react-compare-slider | Before/after comparison slider |
 | pdf-lib | PDF export generation |
 | nanoid | Unique ID generation |

@@ -6,34 +6,15 @@
 |-------|-----------|---------|---------|
 | Framework | React | 18.x | UI framework |
 | Language | TypeScript | 5.x | Strict mode, no `any` |
-| Build Tool | Vite | 5.x | Dev server + bundler |
+| Build Tool | Vite | 5.x | Dev server + library bundler |
 | UI Library | MUI 6 | 6.x | Component library, dark theme |
 | State | Zustand | 5.x | State management (3 stores) |
 | Middleware | Immer | 11.x | Immutable updates for nested state |
 | Animations | Framer Motion | 12.x | Page transitions, layout animations |
 | Zoom/Pan | react-zoom-pan-pinch | 3.x | Document viewer zoom/pan |
-| Comparison | react-compare-slider | 3.x | Before/after slider |
-| PDF Import | pdfjs-dist | 5.x | Render PDF pages to canvas in browser |
+| Comparison | react-compare-slider | 3.x | Before/after slider (horizontal + vertical) |
 | PDF Export | pdf-lib | 1.x | Positional text PDF generation |
 | IDs | nanoid | 5.x | Unique ID generation for regions |
-
-## Project Initialisation
-
-```bash
-npm create vite@latest reviso -- --template react-ts
-cd reviso
-npm install
-
-# Core dependencies
-npm install @mui/material @mui/icons-material @emotion/react @emotion/styled
-npm install zustand immer
-npm install framer-motion
-npm install react-zoom-pan-pinch react-compare-slider
-npm install pdf-lib pdfjs-dist nanoid
-
-# Dev dependencies (should already be present from Vite template)
-# typescript, vite, @vitejs/plugin-react, @types/react, @types/react-dom
-```
 
 ## Project Structure
 
@@ -43,264 +24,132 @@ reviso/
 │   ├── sample-doc.pdf              # Default sample PDF (loaded on startup)
 │   └── sample-receipt.png          # Default sample PNG (loaded on startup)
 ├── sample/                         # Extra sample files for upload testing
-│   ├── sample-upload.json
-│   ├── sample-pdf-regions.json
-│   ├── file-example_PDF_1MB.pdf
-│   └── sample receipt.png
 ├── src/
-│   ├── components/
-│   │   ├── common/
-│   │   │   ├── DebouncedColorPicker.tsx  # Color picker with blur-commit (no lag)
-│   │   │   └── KeyboardHelpDialog.tsx    # Shortcut help overlay (? key)
-│   │   ├── comparison/
-│   │   │   ├── AfterImage.tsx            # Restored page with region overlays
-│   │   │   └── ComparisonSlider.tsx      # Before/after with zoom/pan
-│   │   ├── editor/
-│   │   │   ├── InlineEditor.tsx          # Text input, resize, move, delete, style toolbar
-│   │   │   └── RegionCreator.tsx         # Draw new regions on document
-│   │   ├── export/
-│   │   │   └── ExportDialog.tsx          # Export options (JSON / PDF / PNG)
-│   │   ├── layout/
-│   │   │   ├── AppShell.tsx              # Top-level layout (sidebar + main)
-│   │   │   ├── TopBar.tsx                # Breadcrumb, nav, undo/redo, upload, export
-│   │   │   └── Sidebar.tsx              # Document list + page thumbnails
-│   │   └── viewer/
-│   │       ├── DocumentViewer.tsx        # Main viewer (zoom/pan wrapper)
-│   │       ├── OverlayLayer.tsx          # SVG overlay container
-│   │       ├── PageImage.tsx             # Document page image
-│   │       └── TextRegion.tsx            # Single region (SVG rect + text)
-│   ├── hooks/
-│   │   ├── useEditorKeyboard.ts          # Delete, Tab, Escape, N shortcuts
-│   │   └── useNavigationKeyboard.ts      # Arrows, Ctrl+E, Ctrl+Z, ?, etc.
-│   ├── stores/
-│   │   ├── documentStore.ts              # Documents, pages, regions (immer)
-│   │   ├── editHistoryStore.ts           # Undo/redo snapshot stack
-│   │   └── uiStore.ts                    # UI state (selection, mode, sidebar)
-│   ├── types/
-│   │   ├── document.ts                   # Document, Page, TextRegion
-│   │   └── ui.ts                         # ViewMode, EditorMode, RegionDefaults
-│   ├── utils/
-│   │   ├── downloadFile.ts               # Blob download helper
-│   │   ├── dummyData.ts                  # Generated dummy data (legacy)
-│   │   ├── exportImage.ts                # PNG export (canvas rendering)
-│   │   ├── exportJson.ts                 # JSON export
-│   │   ├── exportPdf.ts                  # PDF export (pdf-lib)
-│   │   ├── parsePdf.ts                   # PDF import (pdfjs-dist)
-│   │   └── parseUploadedJson.ts          # JSON upload validation/parsing
+│   ├── reviso/                     # ← EMBEDDABLE COMPONENT (published as react-reviso)
+│   │   ├── Reviso.tsx              # Main entry — routes between preview/edit modes
+│   │   ├── index.ts                # Public API exports
+│   │   ├── components/
+│   │   │   ├── common/
+│   │   │   │   ├── DebouncedColorPicker.tsx
+│   │   │   │   └── KeyboardHelpDialog.tsx
+│   │   │   ├── comparison/
+│   │   │   │   ├── AfterImage.tsx          # Restored page with auto background colors
+│   │   │   │   ├── ComparisonSlider.tsx    # Slider comparison (horizontal/vertical)
+│   │   │   │   ├── PreviewSideBySide.tsx   # Original vs restored dual-pane
+│   │   │   │   └── ValidationOverlay.tsx   # Clickable validation checkmarks
+│   │   │   ├── editor/
+│   │   │   │   ├── InlineEditor.tsx        # Text input, resize, move, delete, style
+│   │   │   │   └── RegionCreator.tsx       # Draw new regions on document
+│   │   │   ├── export/
+│   │   │   │   └── ExportDialog.tsx
+│   │   │   ├── layout/
+│   │   │   │   ├── InlineToolbar.tsx       # Mode-specific toolbar
+│   │   │   │   └── PageThumbnails.tsx      # Page sidebar
+│   │   │   └── viewer/
+│   │   │       ├── DocumentViewer.tsx      # Edit mode viewer (zoom/pan)
+│   │   │       ├── OverlayLayer.tsx        # SVG overlay container
+│   │   │       ├── PageImage.tsx           # Document page image
+│   │   │       └── TextRegion.tsx          # Single region (SVG rect + text)
+│   │   ├── hooks/
+│   │   │   ├── useAutoBackgroundColors.ts  # Dominant color detection for preview
+│   │   │   ├── useEditorKeyboard.ts        # Delete, Tab, Escape, N shortcuts
+│   │   │   └── useNavigationKeyboard.ts    # Arrows, Ctrl+E, Ctrl+Z, ?, etc.
+│   │   ├── stores/
+│   │   │   ├── documentStore.ts            # Documents, pages, regions (immer)
+│   │   │   ├── editHistoryStore.ts         # Undo/redo snapshot stack
+│   │   │   └── uiStore.ts                  # View mode, layout, selection, features
+│   │   ├── types/
+│   │   │   ├── document.ts                 # Document, Page, TextRegion (internal)
+│   │   │   ├── index.ts                    # Re-exports
+│   │   │   ├── public.ts                   # RevisoDocument, RevisoPage, RevisoRegion, RevisoProps
+│   │   │   └── ui.ts                       # ViewMode, PreviewLayout, SliderOrientation, etc.
+│   │   └── utils/
+│   │       ├── downloadFile.ts
+│   │       ├── exportImage.ts              # PNG export (canvas rendering)
+│   │       ├── exportJson.ts
+│   │       ├── exportPdf.ts                # PDF export (pdf-lib)
+│   │       └── typeMappers.ts              # Public ↔ internal type conversion
+│   ├── legacy/                     # Legacy standalone app (demo only)
+│   │   ├── components/
+│   │   │   ├── AppShell.tsx
+│   │   │   ├── TopBar.tsx
+│   │   │   ├── Sidebar.tsx
+│   │   │   └── DocumentList.tsx
+│   │   └── utils/
+│   │       ├── dummyData.ts
+│   │       ├── parsePdf.ts
+│   │       └── parseUploadedJson.ts
 │   ├── theme/
-│   │   └── theme.ts                      # MUI 6 dark theme (#0bda90)
-│   ├── App.tsx                           # Root — loads default sample documents
-│   └── main.tsx                          # Entry point
-├── index.html
-├── package.json
-├── tsconfig.json
-├── vite.config.ts
-├── AGENTS.md                             # Development roadmap
-├── CLAUDE.md                             # Claude Code instructions
-├── README.md                             # Setup and run guide
-└── agent_docs/                           # Detailed docs for AI agents
+│   │   └── theme.ts                # MUI 6 dark theme
+│   ├── App.tsx                     # Root — loads sample documents, legacy routes
+│   └── main.tsx                    # Entry point
+├── AGENTS.md                       # Development roadmap
+├── CLAUDE.md                       # Claude Code instructions
+├── README.md                       # Consumer documentation
+└── agent_docs/                     # Detailed docs for AI agents
 ```
 
-## MUI 6 Dark Theme Configuration
+## Key State (uiStore)
 
 ```typescript
-// src/theme/theme.ts
-import { createTheme } from '@mui/material/styles';
+// View modes and layout
+ViewMode: 'preview' | 'edit'               // default: 'preview'
+PreviewLayout: 'side-by-side' | 'slider'   // default: 'side-by-side'
+SliderOrientation: 'horizontal' | 'vertical' // default: 'horizontal'
+EditorMode: 'select' | 'create'            // default: 'select'
 
-const theme = createTheme({
-  palette: {
-    mode: 'dark',
-    primary: {
-      main: '#0bda90',
-      light: '#4de8ab',
-      dark: '#08a86e',
-      contrastText: '#000000',
-    },
-    background: {
-      default: '#0a0a0a',
-      paper: '#141414',
-    },
-    text: {
-      primary: '#e0e0e0',
-      secondary: '#a0a0a0',
-    },
-  },
-  typography: {
-    fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
-  },
-  shape: {
-    borderRadius: 8,
-  },
-  components: {
-    MuiButton: {
-      styleOverrides: {
-        root: { textTransform: 'none' },
-      },
-    },
-  },
-});
+// UI state
+showValidationIcons: boolean               // default: true
+fitToViewTrigger: number                   // incremented to trigger fit-to-view
+showRegionText: boolean                    // default: true
+sidebarOpen: boolean                       // default: true
 
-export default theme;
+// Feature flags
+features: { comparison, export, regionCreation }  // all default: true
 ```
 
 ## Zustand Store Patterns
 
-### documentStore (with immer + history)
+### documentStore (with immer)
 ```typescript
-import { create } from 'zustand';
-import { immer } from 'zustand/middleware/immer';
-
-// Use immer for nested state updates (documents → pages → regions)
-// Each mutation captures before/after snapshots for undo/redo
-const useDocumentStore = create<DocumentState>()(
-  immer((set, get) => ({
-    documents: [],
-    updateRegionText: (pageId, regionId, text) => {
-      const before = deepClone(get().documents);
-      set((state) => {
-        // immer allows direct mutation syntax
-        const page = findPage(state.documents, pageId);
-        if (page) {
-          const region = page.regions.find((r) => r.id === regionId);
-          if (region) {
-            region.currentText = text;
-            region.isEdited = text !== region.originalText;
-          }
-        }
-      });
-      const after = deepClone(get().documents);
-      useEditHistoryStore.getState().pushEntry(before, after);
-    },
-  }))
-);
+// Immer for nested state updates (documents → pages → regions)
+// Snapshot-based dirty detection for onChange
+// Dirty flags reset after onChange fires
 ```
 
 ### editHistoryStore (snapshot-based undo/redo)
 ```typescript
-// Stores { before, after } snapshots for each mutation
-// undo() restores `before`, redo() restores `after`
+// Stores full document snapshots
 // Max 50 history entries
+// undo() / redo() return snapshot for documentStore.restoreSnapshot()
 ```
 
-### uiStore (no immer needed — flat state)
+### uiStore (no immer — flat state)
 ```typescript
-import { create } from 'zustand';
-
-const useUiStore = create<UiState>()((set) => ({
-  activeDocumentId: null,
-  activePageId: null,
-  selectedRegionId: null,
-  viewMode: 'edit',
-  helpDialogOpen: false,
-  // ... flat state, no immer needed
-}));
-```
-
-## SVG Overlay Pattern
-
-```typescript
-// SVG sized to match image, positioned absolutely on top
-<svg
-  width={imageWidth}
-  height={imageHeight}
-  viewBox={`0 0 ${imageWidth} ${imageHeight}`}
-  style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none' }}
->
-  {regions.map((region) => (
-    <g key={region.id} style={{ pointerEvents: 'all' }}>
-      <rect
-        x={region.x1} y={region.y1}
-        width={region.x2 - region.x1}
-        height={region.y2 - region.y1}
-        fill={region.backgroundColor ?? 'transparent'}
-        stroke={region.borderColor ?? theme.palette.primary.main}
-        strokeOpacity={0.3}
-      />
-    </g>
-  ))}
-</svg>
-```
-
-## Zoom/Pan Pattern
-
-```typescript
-// Both image and SVG inside the same TransformComponent
-// Used in DocumentViewer (edit mode) and ComparisonSlider (compare mode)
-<TransformWrapper initialScale={1} minScale={0.3} maxScale={4}
-  limitToBounds centerOnInit centerZoomedOut>
-  <TransformComponent>
-    <div style={{ position: 'relative' }}>
-      <PageImage src={page.imageSrc} />
-      <OverlayLayer regions={page.regions} />
-    </div>
-  </TransformComponent>
-</TransformWrapper>
-```
-
-## Export Patterns
-
-### JSON Export
-```typescript
-// Serialises Document[] to clean JSON string
-```
-
-### PDF Export (pdf-lib)
-```typescript
-import { PDFDocument, StandardFonts } from 'pdf-lib';
-
-// Key: PDF Y-axis is bottom-up, our JSON is top-down
-// Convert: pdfY = imageHeight - region.y1 - h * 0.75
-page.drawText(region.currentText, {
-  x: region.x1 + 4,
-  y: pdfY,
-  size: fontSize,
-  font,
-});
-```
-
-### PNG Image Export (canvas)
-```typescript
-// Renders page image + region overlays to an offscreen canvas
-// Draws: background image → region fills → borders → text
-// Exports as PNG blob via canvas.toBlob()
-```
-
-## PDF Import (pdfjs-dist)
-
-```typescript
-import * as pdfjs from 'pdfjs-dist';
-
-// Configure worker for off-main-thread rendering
-pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-  'pdfjs-dist/build/pdf.worker.min.mjs',
-  import.meta.url,
-).toString();
-
-// Each page rendered to canvas at 2x scale → data URL → imageSrc
+// setViewMode always deselects region and resets editor mode
+// fitToViewTrigger pattern: increment from toolbar, watch via useEffect in viewers
 ```
 
 ## Key Library Notes
 
-### pdfjs-dist
-- Renders PDF pages to `<canvas>` in the browser
-- Worker runs in separate thread for non-blocking rendering
-- Canvas converted to PNG data URL for use as page `imageSrc`
-
 ### react-zoom-pan-pinch
-- Wraps content in CSS transform — children zoom together automatically
-- `limitToBounds` prevents panning outside document bounds
-- `panning.excluded` class names exempt elements from pan capture
+- Used in DocumentViewer, PreviewSideBySide (2 instances), ComparisonSlider
+- `limitToBounds` + `centerZoomedOut` for contained viewing
+- `panning.excluded` class names exempt editor elements from pan capture
+- Fit-to-view via `ref.centerView(fitScale, 0)`
 
 ### react-compare-slider
-- Accepts any React children (not just images)
-- "After" side renders live SVG overlay with corrected text
-- Wrapped in TransformWrapper for zoom/pan in compare mode
+- `portrait` prop enables vertical (top-down) slider orientation
+- `ReactCompareSliderHandle` accepts `portrait` prop for correct handle rendering
+- Wrapped in TransformWrapper for zoom/pan in comparison mode
 
-### Framer Motion
-- `AnimatePresence` for page transition mount/unmount animations
-- `motion.div` with `initial`/`animate`/`exit` for transitions
+### Auto Background Colors
+- `useAutoBackgroundColors` hook detects dominant background color per region
+- Uses image sampling + color bucketing algorithm
+- Applied in AfterImage for realistic restored document preview
+- Edit mode always uses transparent backgrounds
 
-### pdf-lib
-- Pure JavaScript, works in browser
-- `drawText()` with precise x/y positioning
-- PDF coordinate origin is bottom-left (flip Y axis)
+### Export
+- **JSON:** Structured document data with corrected text
+- **PDF:** pdf-lib with text at original bounding box positions (Y-axis flipped)
+- **PNG:** Canvas rendering of restored page (AfterImage rendered to offscreen canvas)

@@ -5,6 +5,7 @@ import { InlineToolbar } from './components/layout/InlineToolbar';
 import { PageThumbnails } from './components/layout/PageThumbnails';
 import { DocumentViewer } from './components/viewer/DocumentViewer';
 import { ComparisonSlider } from './components/comparison/ComparisonSlider';
+import { PreviewSideBySide } from './components/comparison/PreviewSideBySide';
 import { KeyboardHelpDialog } from './components/common/KeyboardHelpDialog';
 import { useDocumentStore } from './stores/documentStore';
 import { useUiStore } from './stores/uiStore';
@@ -37,6 +38,7 @@ export const Reviso: React.FC<RevisoProps> = ({
   const setActivePage = useUiStore((s) => s.setActivePage);
   const sidebarOpen = useUiStore((s) => s.sidebarOpen);
   const viewMode = useUiStore((s) => s.viewMode);
+  const previewLayout = useUiStore((s) => s.previewLayout);
   const setEditorMode = useUiStore((s) => s.setEditorMode);
   const setEditable = useUiStore((s) => s.setEditable);
   const setFeatures = useUiStore((s) => s.setFeatures);
@@ -140,8 +142,16 @@ export const Reviso: React.FC<RevisoProps> = ({
     });
   }, [onPageChange, onSelectionChange]);
 
-  const showComparison = features?.comparison !== false;
-  const showViewer = viewMode === 'edit' || !showComparison;
+  const renderMainContent = () => {
+    if (viewMode === 'edit') {
+      return <DocumentViewer />;
+    }
+    // Preview mode
+    if (previewLayout === 'slider') {
+      return <ComparisonSlider />;
+    }
+    return <PreviewSideBySide />;
+  };
 
   const content = (
     <Box
@@ -172,7 +182,7 @@ export const Reviso: React.FC<RevisoProps> = ({
             <PageThumbnails />
           </Box>
         )}
-        {showViewer ? <DocumentViewer /> : <ComparisonSlider />}
+        {renderMainContent()}
       </Box>
       <KeyboardHelpDialog />
     </Box>

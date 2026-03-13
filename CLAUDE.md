@@ -1,9 +1,10 @@
 # CLAUDE.md — Claude Code Configuration for Reviso
 
 ## Project Context
-**App:** Reviso — Document Restoration Viewer/Editor
+**App:** Reviso — Document Restoration QA & Review Tool (embeddable React component)
+**Package:** `react-reviso` on npm
 **Stack:** React 18 + TypeScript + Vite + MUI 6 + Zustand + Framer Motion
-**Stage:** MVP PoC Development
+**Stage:** Published PoC, iterating on UX
 **User Level:** Developer
 
 ## Directives
@@ -18,6 +19,7 @@
 ## Commands
 - `npm run dev` — Start Vite dev server
 - `npm run build` — Production build
+- `npm run build:lib` — Build library for publishing (ESM + CJS)
 - `npm run lint` — ESLint check
 - `npm run type-check` — TypeScript type checking (`tsc --noEmit`)
 - `npm run preview` — Preview production build
@@ -28,7 +30,8 @@
 - **Zustand with immer** — for documentStore (nested state updates)
 - **Framer Motion** — for page transitions and layout animations
 - **SVG overlays** — for text region rendering on document images
-- **Layer-based structure** — src/components, src/hooks, src/stores, src/types, src/utils, src/theme
+- **Preview-first UX** — default view is preview/review mode, editing entered explicitly
+- **Component structure** — embeddable component under `src/reviso/`, legacy demo under `src/legacy/`
 
 ## Current Phase
 Check `AGENTS.md` → "Current State" section for what to work on next.

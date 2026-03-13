@@ -1,4 +1,6 @@
-export type ViewMode = 'edit' | 'preview';
+export type ViewMode = 'preview' | 'edit';
+export type PreviewLayout = 'side-by-side' | 'slider';
+export type SliderOrientation = 'horizontal' | 'vertical';
 export type EditorMode = 'select' | 'create';
 
 export interface FeatureFlags {
@@ -25,7 +27,9 @@ export interface UiState {
   selectedRegionId: string | null;
   hoveredRegionId: string | null;
   viewMode: ViewMode;
+  previewLayout: PreviewLayout;
   editorMode: EditorMode;
   sidebarOpen: boolean;
+  showValidationIcons: boolean;
   regionDefaults: RegionDefaults;
 }

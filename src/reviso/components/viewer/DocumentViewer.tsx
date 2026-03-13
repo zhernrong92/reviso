@@ -15,6 +15,7 @@ export const DocumentViewer: React.FC = () => {
   const editorMode = useUiStore((s) => s.editorMode);
   const selectRegion = useUiStore((s) => s.selectRegion);
   const sidebarOpen = useUiStore((s) => s.sidebarOpen);
+  const fitToViewTrigger = useUiStore((s) => s.fitToViewTrigger);
   const editable = useUiStore((s) => s.editable);
   const activePage = useDocumentStore((s) => s.getActivePage(activePageId));
 
@@ -65,6 +66,12 @@ export const DocumentViewer: React.FC = () => {
     }, 250);
     return () => clearTimeout(timer);
   }, [sidebarOpen, fitToView]);
+
+  // Fit to view when triggered from toolbar
+  useEffect(() => {
+    if (!transformRef.current || fitToViewTrigger === 0) return;
+    fitToView(transformRef.current);
+  }, [fitToViewTrigger, fitToView]);
 
   // Pan view to center on the selected region when it changes
   useEffect(() => {

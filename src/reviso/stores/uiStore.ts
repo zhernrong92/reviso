@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { ViewMode, EditorMode, RegionDefaults, FeatureFlags } from '../types/ui';
+import type { ViewMode, PreviewLayout, SliderOrientation, EditorMode, RegionDefaults, FeatureFlags } from '../types/ui';
 
 interface UiStoreState {
   activeDocumentId: string | null;
@@ -7,8 +7,12 @@ interface UiStoreState {
   selectedRegionId: string | null;
   hoveredRegionId: string | null;
   viewMode: ViewMode;
+  previewLayout: PreviewLayout;
+  sliderOrientation: SliderOrientation;
   editorMode: EditorMode;
   sidebarOpen: boolean;
+  showValidationIcons: boolean;
+  fitToViewTrigger: number;
   regionDefaults: RegionDefaults;
   helpDialogOpen: boolean;
   showRegionText: boolean;
@@ -20,8 +24,12 @@ interface UiStoreState {
   selectRegion: (id: string | null) => void;
   hoverRegion: (id: string | null) => void;
   setViewMode: (mode: ViewMode) => void;
+  setPreviewLayout: (layout: PreviewLayout) => void;
+  setSliderOrientation: (orientation: SliderOrientation) => void;
   setEditorMode: (mode: EditorMode) => void;
   toggleSidebar: () => void;
+  toggleValidationIcons: () => void;
+  triggerFitToView: () => void;
   setRegionDefaults: (defaults: Partial<RegionDefaults>) => void;
   setHelpDialogOpen: (open: boolean) => void;
   toggleRegionText: () => void;
@@ -35,9 +43,13 @@ const useUiStore = create<UiStoreState>()((set) => ({
   activePageId: null,
   selectedRegionId: null,
   hoveredRegionId: null,
-  viewMode: 'edit',
+  viewMode: 'preview',
+  previewLayout: 'side-by-side',
+  sliderOrientation: 'horizontal',
   editorMode: 'select',
   sidebarOpen: true,
+  showValidationIcons: true,
+  fitToViewTrigger: 0,
   regionDefaults: {
     fontColor: '#1565c0',
     fontFamily: 'Inter',
@@ -61,10 +73,15 @@ const useUiStore = create<UiStoreState>()((set) => ({
   hoverRegion: (id) => set({ hoveredRegionId: id }),
   setViewMode: (mode) => set({
     viewMode: mode,
-    ...(mode === 'preview' ? { selectedRegionId: null, editorMode: 'select' as const } : {}),
+    selectedRegionId: null,
+    editorMode: 'select' as const,
   }),
+  setPreviewLayout: (layout) => set({ previewLayout: layout }),
+  setSliderOrientation: (orientation) => set({ sliderOrientation: orientation }),
   setEditorMode: (mode) => set({ editorMode: mode }),
   toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen })),
+  toggleValidationIcons: () => set((state) => ({ showValidationIcons: !state.showValidationIcons })),
+  triggerFitToView: () => set((state) => ({ fitToViewTrigger: state.fitToViewTrigger + 1 })),
   setRegionDefaults: (defaults) =>
     set((state) => ({ regionDefaults: { ...state.regionDefaults, ...defaults } })),
   setHelpDialogOpen: (open) => set({ helpDialogOpen: open }),

@@ -10,7 +10,6 @@ export function useNavigationKeyboard() {
   const setActivePage = useUiStore((s) => s.setActivePage);
   const viewMode = useUiStore((s) => s.viewMode);
   const setViewMode = useUiStore((s) => s.setViewMode);
-  const selectRegion = useUiStore((s) => s.selectRegion);
   const setEditorMode = useUiStore((s) => s.setEditorMode);
   const setHelpDialogOpen = useUiStore((s) => s.setHelpDialogOpen);
 
@@ -46,10 +45,22 @@ export function useNavigationKeyboard() {
         return;
       }
 
+      // Ctrl+E — toggle between preview and edit
       if (e.ctrlKey && e.key === 'e') {
         e.preventDefault();
         setViewMode(viewMode === 'edit' ? 'preview' : 'edit');
         return;
+      }
+
+      // Escape in edit mode — go back to preview
+      if (e.key === 'Escape' && viewMode === 'edit') {
+        const state = useUiStore.getState();
+        // Only switch to preview if nothing is selected and not in create mode
+        if (!state.selectedRegionId && state.editorMode === 'select') {
+          e.preventDefault();
+          setViewMode('preview');
+          return;
+        }
       }
 
       if (e.ctrlKey && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) {
@@ -70,8 +81,9 @@ export function useNavigationKeyboard() {
         return;
       }
 
+      // Page navigation — works in all modes
       if (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'PageUp' || e.key === 'PageDown') {
-        if (!activeDocument || !activePageId || viewMode === 'preview') return;
+        if (!activeDocument || !activePageId) return;
         e.preventDefault();
         const pages = activeDocument.pages;
         const currentIdx = pages.findIndex((p) => p.id === activePageId);
@@ -89,5 +101,5 @@ export function useNavigationKeyboard() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [activeDocumentId, activePageId, documents, activeDocument, setActiveDocument, setActivePage, viewMode, setViewMode, selectRegion, setEditorMode, setHelpDialogOpen, restoreSnapshot]);
+  }, [activeDocumentId, activePageId, documents, activeDocument, setActiveDocument, setActivePage, viewMode, setViewMode, setEditorMode, setHelpDialogOpen, restoreSnapshot]);
 }

@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { Box, Typography, Tooltip } from '@mui/material';
 import { TransformWrapper, TransformComponent, type ReactZoomPanPinchRef } from 'react-zoom-pan-pinch';
 import { ReactCompareSlider, ReactCompareSliderImage, ReactCompareSliderHandle } from 'react-compare-slider';
@@ -7,29 +7,34 @@ import { useDocumentStore } from '../../stores/documentStore';
 import { AfterImage } from './AfterImage';
 import { useAutoBackgroundColors } from '../../hooks/useAutoBackgroundColors';
 
-const SliderHandle: React.FC = () => (
-  <Tooltip title="Slide to compare" placement="top" arrow>
+interface SliderHandleProps {
+  portrait?: boolean;
+}
+
+const SliderHandle: React.FC<SliderHandleProps> = ({ portrait }) => (
+  <Tooltip title="Slide to compare" placement={portrait ? 'right' : 'top'} arrow>
     <div style={{ display: 'flex', height: '100%' }}>
-      <ReactCompareSliderHandle />
+      <ReactCompareSliderHandle portrait={portrait} />
     </div>
   </Tooltip>
 );
 
 export const ComparisonSlider: React.FC = () => {
   const activePageId = useUiStore((s) => s.activePageId);
+  const sliderOrientation = useUiStore((s) => s.sliderOrientation);
+  const fitToViewTrigger = useUiStore((s) => s.fitToViewTrigger);
   const activePage = useDocumentStore((s) => s.getActivePage(activePageId));
   const autoBackgroundColors = useAutoBackgroundColors(activePage);
+  const transformRef = useRef<ReactZoomPanPinchRef | null>(null);
 
-  const handleInit = useCallback(
+  const fitToView = useCallback(
     (ref: ReactZoomPanPinchRef) => {
       if (!activePage) return;
       const wrapper = ref.instance.wrapperComponent;
       if (!wrapper) return;
-      const wrapperWidth = wrapper.clientWidth;
-      const wrapperHeight = wrapper.clientHeight;
       const fitScale = Math.min(
-        wrapperWidth / activePage.width,
-        wrapperHeight / activePage.height,
+        wrapper.clientWidth / activePage.width,
+        wrapper.clientHeight / activePage.height,
       ) * 0.95;
       requestAnimationFrame(() => {
         ref.centerView(fitScale, 0);
@@ -37,6 +42,20 @@ export const ComparisonSlider: React.FC = () => {
     },
     [activePage],
   );
+
+  const handleInit = useCallback(
+    (ref: ReactZoomPanPinchRef) => {
+      transformRef.current = ref;
+      fitToView(ref);
+    },
+    [fitToView],
+  );
+
+  // Fit to view when triggered from toolbar
+  useEffect(() => {
+    if (!transformRef.current || fitToViewTrigger === 0) return;
+    fitToView(transformRef.current);
+  }, [fitToViewTrigger, fitToView]);
 
   if (!activePage) {
     return (
@@ -64,7 +83,7 @@ export const ComparisonSlider: React.FC = () => {
         bgcolor: 'background.default',
       }}
     >
-      <div key={activePageId} style={{ width: '100%', height: '100%' }}>
+      <div key={`${activePageId}-${sliderOrientation}`} style={{ width: '100%', height: '100%' }}>
           <TransformWrapper
             initialScale={0.5}
             minScale={0.5}
@@ -87,7 +106,8 @@ export const ComparisonSlider: React.FC = () => {
                     style={{ width: activePage.width, height: activePage.height, display: 'block' }}
                   />
                 }
-                handle={<SliderHandle />}
+                handle={<SliderHandle portrait={sliderOrientation === 'vertical'} />}
+                portrait={sliderOrientation === 'vertical'}
                 position={100}
                 style={{ width: activePage.width, height: activePage.height }}
               />

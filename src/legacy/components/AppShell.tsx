@@ -3,6 +3,7 @@ import { TopBar } from './TopBar';
 import { Sidebar } from './Sidebar';
 import { DocumentViewer } from '../../reviso/components/viewer/DocumentViewer';
 import { ComparisonSlider } from '../../reviso/components/comparison/ComparisonSlider';
+import { PreviewSideBySide } from '../../reviso/components/comparison/PreviewSideBySide';
 import { KeyboardHelpDialog } from '../../reviso/components/common/KeyboardHelpDialog';
 import { useUiStore } from '../../reviso/stores/uiStore';
 import { useNavigationKeyboard } from '../../reviso/hooks/useNavigationKeyboard';
@@ -10,14 +11,21 @@ import { useNavigationKeyboard } from '../../reviso/hooks/useNavigationKeyboard'
 export const AppShell: React.FC = () => {
   const sidebarOpen = useUiStore((s) => s.sidebarOpen);
   const viewMode = useUiStore((s) => s.viewMode);
+  const previewLayout = useUiStore((s) => s.previewLayout);
   useNavigationKeyboard();
+
+  const renderMain = () => {
+    if (viewMode === 'edit') return <DocumentViewer />;
+    if (previewLayout === 'slider') return <ComparisonSlider />;
+    return <PreviewSideBySide />;
+  };
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
       <TopBar />
       <Box sx={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
         <Sidebar open={sidebarOpen} />
-        {viewMode === 'edit' ? <DocumentViewer /> : <ComparisonSlider />}
+        {renderMain()}
       </Box>
       <KeyboardHelpDialog />
     </Box>

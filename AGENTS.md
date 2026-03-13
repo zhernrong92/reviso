@@ -1,11 +1,15 @@
 # AGENTS.md — Master Plan for Reviso
 
 ## Project Overview
-**App:** Reviso — Document Annotation Viewer/Editor (embeddable component)
-**Goal:** Reusable React component for visually verifying and correcting text regions on document images
+**App:** Reviso — Document Restoration QA & Review Tool (embeddable component)
+**Goal:** Reusable React component for reviewing, validating, and correcting OCR text on restored document images
 **Stack:** React 18 + TypeScript + Vite + MUI 6 + Zustand + Framer Motion
 **Scope:** Frontend-only, embeddable component — no backend, no auth, no file upload
-**Current Phase:** Phase 8 — Component Refactor
+**Current Phase:** Phase 12 — Preview-First UX Redesign (complete)
+
+## Product Vision
+
+Reviso is a preview-first document restoration review tool. Users land in a QA/review mode where they can compare original vs restored documents, validate OCR corrections region-by-region, and only enter edit mode when corrections are needed. The workflow is: **Preview → Validate → Edit (if needed) → Export**.
 
 ## How I Should Think
 1. **Understand Intent First:** Before answering, identify what the user actually needs
@@ -25,193 +29,116 @@ Refer to these for details (load only when needed):
 - `agent_docs/tech_stack.md` — Tech stack, libraries, versions, and setup
 - `agent_docs/code_patterns.md` — Code style, component patterns, state management patterns
 - `agent_docs/project_brief.md` — Persistent project rules and conventions
-- `agent_docs/product_requirements.md` — Full PRD (features, user stories, success metrics)
 - `agent_docs/testing.md` — Verification strategy and commands
-- `agent_docs/component_design.md` — Embeddable component API design, layout, bundle strategy, migration plan
+- `agent_docs/component_design.md` — Embeddable component API design, layout, bundle strategy
 
 ## Current State (Update This!)
 **Last Updated:** March 13, 2026
-**Working On:** Phase 11 — Preview Mode & Auto Background Detection (all steps complete, needs visual verification)
-**Recently Completed:** Phase 10 — Library packaging, npm publishing (v0.1.1), theming docs, bug fixes
+**Working On:** Polish & bug fixes
+**Recently Completed:** Phase 12 — Preview-first UX, side-by-side comparison, slider comparison (horizontal + vertical), validation overlay, fit-to-view
 **Blocked By:** None
 **Design Doc:** `agent_docs/component_design.md` — full component API, layout, bundle strategy
 
+## Architecture Overview
+
+### View Modes
+- **Preview mode** (default) — restored-document view for QA and validation
+  - **Side-by-side**: original image (left) + restored image (right), independent zoom/pan, validation checkmarks on restored side
+  - **Slider comparison**: single overlay with drag slider (original vs restored), horizontal or vertical orientation, no validation checkmarks
+- **Edit mode** — full editing (select, edit text, create/resize/delete regions, undo/redo)
+  - Entered explicitly via "Edit" button or Ctrl+E
+  - Preview hidden while editing
+  - Exit via "Preview" button (eye icon) or Ctrl+E
+
+### Key Components
+| Component | Location | Purpose |
+|-----------|----------|---------|
+| `Reviso` | `src/reviso/Reviso.tsx` | Main entry point, routes between view modes |
+| `PreviewSideBySide` | `src/reviso/components/comparison/` | Original vs restored dual-pane view |
+| `ComparisonSlider` | `src/reviso/components/comparison/` | Slider comparison (horizontal/vertical) |
+| `AfterImage` | `src/reviso/components/comparison/` | Restored document render with auto background colors |
+| `ValidationOverlay` | `src/reviso/components/comparison/` | Clickable validation checkmarks on regions |
+| `DocumentViewer` | `src/reviso/components/viewer/` | Edit mode viewer with zoom/pan |
+| `InlineToolbar` | `src/reviso/components/layout/` | Mode-specific toolbar (preview controls vs edit controls) |
+| `InlineEditor` | `src/reviso/components/editor/` | Text editing with style controls |
+| `RegionCreator` | `src/reviso/components/editor/` | Draw new regions on document |
+
+### Stores
+| Store | Purpose |
+|-------|---------|
+| `documentStore` | Document data, regions, validation state (immer for nested updates) |
+| `uiStore` | View mode, preview layout, slider orientation, selection, editor mode, feature flags |
+| `editHistoryStore` | Undo/redo snapshot stack |
+
 ## Roadmap
 
-### Phase 1: Foundation (Day 1-2) ✓
+### Phase 1: Foundation ✓
 - [x] Vite + React 18 + TypeScript project scaffold
-- [x] MUI 6 dark theme configuration (primary: `#0bda90`)
+- [x] MUI 6 dark theme configuration
 - [x] Zustand stores (documentStore, uiStore) with TypeScript types
-- [x] Dummy data creation (2 documents, 2-3 pages each, ~20 regions per page with intentional OCR errors)
+- [x] Dummy data creation
 - [x] AppShell layout (sidebar + main viewer + top bar)
-- [x] Dummy page images (placeholder or generated)
 
-### Phase 2: Core Viewer (Day 3-4) ✓
-- [x] PageImage component (render document image)
-- [x] OverlayLayer + TextRegion (SVG overlay with regions)
+### Phase 2: Core Viewer ✓
+- [x] PageImage component, OverlayLayer + TextRegion (SVG overlay)
 - [x] react-zoom-pan-pinch integration (zoom/pan with overlay sync)
 - [x] Region visual states (default, hover, selected)
 - [x] Sidebar with document list and page thumbnails
-- [x] Page navigation (click sidebar + top bar prev/next)
+- [x] Page navigation
 
-### Phase 3: Inline Editing (Day 5-6) ✓
-- [x] InlineEditor component (positioned HTML input over selected region)
-- [x] Click to select → edit workflow
-- [x] Enter to confirm, Escape to cancel
-- [x] Tab/Shift+Tab to advance forward/backward through regions
-- [x] Visual "edited" state on modified regions (green highlight)
-- [x] Visual "new" state on created regions (orange highlight)
-- [x] RegionCreator (draw new region on document + type text)
-- [x] Region resize (corner drag handles)
-- [x] Region move (drag bar along top edge)
-- [x] Region delete (× button + Delete/Backspace key)
-- [x] Per-region style properties (fontColor, borderColor, borderVisible)
-- [x] Default style settings for new regions (TopBar controls in create mode)
-- [x] SVG text rendering inside regions (visible without selecting)
-- [x] Panning limits (limitToBounds + centerZoomedOut)
-- [x] Global keyboard shortcuts (Escape deselect, n toggle create mode)
-- [x] useEditorKeyboard hook
+### Phase 3: Inline Editing ✓
+- [x] InlineEditor component, click to select → edit workflow
+- [x] Tab/Shift+Tab navigation, Enter/Escape handling
+- [x] Visual states for edited (green) and new (orange) regions
+- [x] RegionCreator, region resize/move/delete
+- [x] Per-region style properties, default style settings
+- [x] SVG text rendering, panning limits, keyboard shortcuts
 
-### Phase 4: Multi-Document Navigation (Day 7) ✓
-- [x] Document switching in sidebar with smooth transitions
-- [x] Framer Motion page/document transition animations
-- [x] Breadcrumb in top bar (Document > Page X of Y)
-- [x] Keyboard shortcuts for navigation (arrows, Page Up/Down)
+### Phase 4: Multi-Document Navigation ✓
+- [x] Document switching, Framer Motion transitions, breadcrumb, keyboard nav
 
-### Phase 5: Comparison Slider (Day 8-9) ✓
-- [x] react-compare-slider integration
-- [x] BeforeView (original damaged image with generated damage effects)
-- [x] AfterView (image + corrected text overlay)
-- [x] View mode toggle (Edit ↔ Compare) in top bar
-- [x] Ctrl+E keyboard shortcut for toggle
+### Phase 5: Comparison Slider ✓
+- [x] react-compare-slider integration with before/after views
+- [x] View mode toggle, Ctrl+E shortcut
 
-### Phase 6: Export (Day 9-10) ✓
-- [x] JSON export (corrected data in original schema format)
-- [x] PDF export with pdf-lib (text at correct bounding box positions)
-- [x] PNG image export (page image + region overlays rendered to canvas)
-- [x] Export dialog with format selection (JSON / PDF / PNG)
-- [x] Download trigger (single button)
+### Phase 6: Export ✓
+- [x] JSON, PDF (pdf-lib), PNG (canvas) export with dialog
 
-### Phase 7: Polish (Day 11-14) ✓
-- [x] Keyboard shortcut help overlay (triggered by `?`)
-- [ ] ~~Progress indicator~~ (removed)
-- [x] Undo/redo (snapshot-based editHistoryStore, Ctrl+Z / Ctrl+Shift+Z, TopBar buttons)
-- [x] File upload — JSON + PDF (pdfjs-dist renders pages to canvas data URLs)
-- [x] Sample PDF + PNG as default startup documents (loaded from `public/`)
-- [x] Sample JSON files in `sample/` folder for manual upload testing
-- [x] Region background color (per-region + global default, transparent toggle)
-- [x] Debounced color pickers (DebouncedColorPicker component — commits on blur)
-- [x] Comparison view fixes (locked page nav in compare mode, added TransformWrapper for zoom/pan)
-- [ ] Smooth Framer Motion transitions everywhere
-- [ ] Find-and-replace across regions
-- [ ] Final cross-browser testing (Chrome, Firefox, Safari, Edge)
+### Phase 7: Polish ✓
+- [x] Keyboard help overlay, undo/redo, file upload (legacy)
+- [x] Region background color, debounced color pickers
+- [x] Sample documents
 
 ### Phase 8: Component Refactor ✓
-See `agent_docs/component_design.md` for full design details.
-
-- [x] Define public API types (RevisoDocument/Page/Region/Props) + type mappers
-- [x] Restructure code into `src/reviso/` folder (copy-paste ready)
-- [x] Split Sidebar into DocumentList (app-level) + PageThumbnails (component-level)
-- [x] Create `<Reviso />` wrapper component with RevisoProps interface
-- [x] Convert TopBar → InlineToolbar (compact, lives inside component boundary)
-- [x] Wire Reviso props → internal stores (document, callbacks, editable, features, defaultRegionStyles, onExport)
-- [x] Accept single document instead of multi-document array
-- [x] Remove file upload (host app responsibility)
-- [x] Accept host MUI theme via ThemeProvider passthrough
-- [x] Make features toggleable via props (editable, showSidebar, showToolbar, comparison, export, regionCreation)
-- [x] Move legacy-only files (TopBar, AppShell, Sidebar, DocumentList, parsePdf, parseUploadedJson, dummyData) to `src/legacy/`
-- [x] Fit-to-view on page navigation and sidebar toggle
-- [x] Demo page at `/reviso` with dummy host app layout
+- [x] Public API types, `<Reviso />` wrapper, InlineToolbar
+- [x] Single document mode, feature toggles, theme passthrough
+- [x] Legacy files moved to `src/legacy/`
 
 ### Phase 9: Region UX Improvements & Validation System ✓
-- [x] Default style changes (blue text, green border, no background)
-- [x] Toggle all region text visibility (show/hide text labels, keep boxes)
-- [x] InlineEditor input follows textPosition (top/bottom positioning)
-- [x] Collapse inline style toolbar (gear icon, expand on click)
-- [x] Reposition action buttons (confirm/cancel top-left, delete top-right)
 - [x] Region validation system (per-region checkmark + progress indicator)
-- [x] onChange returns only dirty pages instead of full document
-- [x] Resize handles and toolbar stay constant size regardless of zoom level
-- [x] Fix zoom viewport shift on region select (preventScroll)
-- [x] Pan-to-region navigation (view follows when jumping to next region)
+- [x] onChange returns only dirty pages, resize handles scale with zoom
+- [x] Pan-to-region navigation, text visibility toggle
 
 ### Phase 10: Library Packaging & Publishing ✓
-**Package:** `@zhernrong92/reviso` on GitHub Packages (public)
+- [x] Vite library mode (ESM + CJS), TypeScript declarations
+- [x] Published as `react-reviso` on npm
+- [x] Consumer docs in README
 
-- [x] Create library entry point (`src/reviso/index.ts`) with public API exports
-- [x] Configure Vite library mode (`build.lib`) — ESM + CJS output
-- [x] Generate TypeScript declarations (`vite-plugin-dts`)
-- [x] Configure `package.json` for publishing (name, version, main, module, types, exports, files, peerDependencies)
-- [x] Externalize peer dependencies (react, react-dom, @mui/material, framer-motion, zustand)
-- [x] Add `.npmrc` for GitHub Packages registry
-- [x] Add `npm run build:lib` script
-- [x] Test local install in a separate project (`npm pack` → `npm install`)
-- [x] Publish to GitHub Packages (v0.1.2)
-- [x] Add consumer usage docs to README (install, setup, minimal example, theming)
-- [x] Widen MUI peer dependencies to support v6 and v7
-- [x] Default `isValidated: false` on new regions
-- [x] Add keyboard shortcuts help button in toolbar
-- [x] Reset dirty flags after `onChange` fires to prevent re-emitting
+### Phase 11: Preview Mode & Auto Background Detection ✓
+- [x] Auto background color detection (dominant color bucketing)
+- [x] AfterImage component for restored preview rendering
+- [x] Preview PNG export with auto backgrounds
 
-### Phase 11: Preview Mode & Auto Background Detection
-**Goal:** Add a "Preview" rendering mode that produces a restored-document view — annotated text overlays original text inside region boxes with auto-detected background color. Compare mode uses preview rendering as the "after" side.
-
-**Concept:**
-- **Edit mode** — current behavior, regions always have transparent backgrounds for clear comparison with source image. Text positioned at user-chosen location (top/inside/bottom).
-- **Preview mode** (new) — read-only restored-document view. All region text rendered *inside* the box, background filled with auto-detected (or user-overridden) color to cover original text underneath.
-- **Compare mode** (updated) — slider compares original image vs preview rendering.
-
-**Steps:**
-
-#### Step 1: Expand viewMode & UI toggle ✓
-- [x] Add `'preview'` to `viewMode` type (`'edit' | 'preview' | 'compare'`)
-- [x] Keep existing Edit ↔ Compare toggle in toolbar
-- [x] Add separate Preview button (eye icon) in toolbar for quick preview toggle
-- [x] Keyboard shortcut `P` for preview toggle
-- [x] Preview mode is read-only — no region selection, no InlineEditor
-
-#### Step 2: Auto background color detection ✓
-- [x] Create `detectRegionBackgrounds` util + `useAutoBackgroundColors` hook
-- [x] Canvas-based pixel sampling within each region's bounding box
-- [x] Sampling strategy: edge pixels (4 edges, 6 samples each), median per RGB channel
-- [x] Cache by page ID + region bounds (recomputes on page change or region resize)
-- [x] Priority: user-defined `backgroundColor` (non-transparent) > auto-detected color
-
-#### Step 3: Reframe background color control in InlineEditor ✓
-- [x] Keep color picker, tooltip reframed as "Set custom preview background" / "Reset to auto-detect"
-- [x] Toggle shows "A" (auto) when no override set, "✓" when custom color active
-- [x] User-set color overrides auto-detection; toggle clears back to auto
-- [x] In edit mode rendering: regions always transparent background (ignore backgroundColor)
-
-#### Step 4: Preview rendering via DocumentViewer ✓
-- [x] Extended DocumentViewer + OverlayLayer + TextRegion with `isPreview` mode
-- [x] Each region rendered with opaque bg fill (user-defined or auto-detected)
-- [x] Text always rendered *inside* the region (ignores `textPosition`)
-- [x] No selection highlights, no hover states, no editor controls
-- [x] Reuses existing zoom/pan (TransformWrapper)
-
-#### Step 5: Update ComparisonSlider / AfterImage ✓
-- [x] AfterImage uses preview rendering logic (opaque bg, text inside)
-- [x] Same auto-detected background color approach via `useAutoBackgroundColors` hook
-- [x] Shared rendering logic between TextRegion (preview mode) and AfterImage
-
-#### Step 6: Update public API & backward compatibility ✓
-- [x] `backgroundColor` prop on `RevisoRegion` still accepted — no breaking change
-- [x] New behavior: bg color only affects preview/compare modes, never edit mode
-- [x] `'preview'` added to `ViewMode` type
-- [x] Existing callers see no visual change in edit mode (just bg color controls reframed)
-
-#### Step 7: Preview download/export ✓
-- [x] Download button (SaveAlt icon) appears in toolbar when in preview mode
-- [x] PNG export: `exportPreviewPageAsBlob` renders base image + preview overlay to canvas
-- [x] Wired to `onExport` callback if provided by caller
-- [x] Auto-downloads as `{docname}_page{N}_preview.png` otherwise
-
-#### Step 8: Polish ✓
-- [x] Small regions handled (fallback to #f5f5f0 when region too small to sample)
-- [x] Text clipped to region bounds in preview (clipPath + canvas clip)
-- [x] CORS images handled (crossOrigin + fetch-to-blob fallback)
-- [x] Keyboard shortcuts help updated with `P` shortcut
+### Phase 12: Preview-First UX Redesign ✓
+- [x] Preview mode as default view (side-by-side + slider sub-views)
+- [x] Side-by-side: original (left) vs restored (right) with independent zoom/pan
+- [x] Slider comparison: horizontal and vertical orientation
+- [x] ValidationOverlay with clickable checkmarks in side-by-side mode
+- [x] Validation progress bar in toolbar (both modes)
+- [x] Edit mode entered via button, exited via "Preview" button (eye icon) or Ctrl+E
+- [x] Fit-to-view button in toolbar (all modes)
+- [x] Mode-specific toolbar controls
+- [x] Keyboard shortcuts updated (Ctrl+E toggle, Escape exits edit mode)
 
 ## Engineering Constraints
 
@@ -222,16 +149,15 @@ See `agent_docs/component_design.md` for full design details.
 - Use strict TypeScript config (`"strict": true`)
 
 ### Architectural Rules
-- Components in `src/components/` organised by feature area (layout, viewer, editor, comparison, export, common)
-- Hooks in `src/hooks/` — extract reusable logic from components
-- Stores in `src/stores/` — three separate Zustand stores (document, ui, editHistory)
-- Types in `src/types/` — shared type definitions
-- Utils in `src/utils/` — pure functions (coordinate transforms, export logic)
-- Theme in `src/theme/` — MUI 6 theme configuration only
+- Components in `src/reviso/components/` organised by feature area (layout, viewer, editor, comparison, export, common)
+- Hooks in `src/reviso/hooks/` — extract reusable logic from components
+- Stores in `src/reviso/stores/` — three separate Zustand stores (document, ui, editHistory)
+- Types in `src/reviso/types/` — shared type definitions
+- Utils in `src/reviso/utils/` — pure functions (coordinate transforms, export logic)
 
 ### Library Governance
 - Check existing `package.json` before adding any new dependency
-- Prefer native browser APIs over libraries (e.g., `fetch` over axios)
+- Prefer native browser APIs over libraries
 - Total production dependencies should stay ≤ 15
 - No deprecated patterns or libraries
 
@@ -239,7 +165,6 @@ See `agent_docs/component_design.md` for full design details.
 - Use MUI theme tokens exclusively — no raw hex values in components
 - Use `sx` prop or `styled()` for MUI component styling
 - Framer Motion for complex transitions, MUI built-in transitions for simple show/hide
-- All interactive elements must have visible focus indicators
 
 ### The "No Apologies" Rule
 - Do NOT apologise for errors — fix them immediately

@@ -1,39 +1,54 @@
 # Project Brief (Persistent)
 
 ## Product Vision
-Reviso helps users visually verify and correct OCR results from damaged document restoration with minimal effort. It's a frontend-only PoC proving that a well-designed viewer/editor can make OCR correction fast and intuitive.
+Reviso is a preview-first document restoration QA tool. It helps users visually review OCR corrections on restored documents, validate region-by-region accuracy, compare original vs restored versions, and make corrections when needed. The core workflow is **Preview → Validate → Edit → Export**.
 
 ## Target Users
-- **Primary:** Data entry operators correcting OCR output
-- **Secondary:** QA teams reviewing restoration quality
+- **Primary:** QA teams reviewing document restoration quality
+- **Secondary:** Data entry operators correcting OCR output
 - **Tertiary:** Anyone reviewing digitised document results
 
 ## Core UX Principles
-1. **Minimal clicks** — inline editing, no modals, auto-advance after confirming edits
-2. **Visual clarity on dark theme** — text overlays clearly visible against both UI chrome and document images
-3. **Smooth and responsive** — all transitions at 60fps, no jarring layout shifts
-4. **Always oriented** — user always knows which document, which page, what's been edited
-5. **Keyboard-friendly** — power users can review and edit without touching the mouse
+1. **Preview-first** — users land in review mode, not edit mode. Editing is explicit and intentional.
+2. **Minimal clicks** — inline editing, no modals, auto-advance after confirming edits
+3. **Visual clarity on dark theme** — text overlays clearly visible against both UI chrome and document images
+4. **Smooth and responsive** — all transitions at 60fps, no jarring layout shifts
+5. **Always oriented** — user always knows which document, which page, what's been validated
+6. **Keyboard-friendly** — power users can review and edit without touching the mouse
+
+## View Modes
+
+### Preview Mode (default)
+The landing view for QA review. Two sub-layouts:
+- **Side-by-side** — original image (left) vs restored image (right), independent zoom/pan, validation checkmarks on restored side
+- **Slider comparison** — draggable comparison slider (horizontal or vertical), no validation checkmarks
+
+### Edit Mode (on demand)
+Full editing entered via "Edit" button or Ctrl+E:
+- Select, edit text, create/resize/delete regions
+- Undo/redo, style controls, text visibility toggle
+- Return to preview via "Preview" button (eye icon) or Ctrl+E
 
 ## Coding Conventions
 
 ### Architecture
-- Layer-based organisation: components, hooks, stores, types, utils, theme
+- Self-contained embeddable component under `src/reviso/`
 - Three separate Zustand stores: documentStore (data), uiStore (UI state), editHistoryStore (undo/redo)
 - SVG overlay for text regions on document images
-- HTML input for inline text editing (not SVG foreignObject)
+- HTML input for inline text editing
+- Auto background color detection for restored preview rendering
 
 ### Quality Gates
 - TypeScript strict mode, zero `any` types
 - MUI theme tokens only, no raw colours in components
 - Visual verification after every UI change
 - No console errors or unhandled exceptions
-- Cross-browser check before completion (Chrome, Firefox, Safari, Edge)
 
 ### Key Commands
 ```bash
 npm run dev          # Start Vite dev server (http://localhost:5173)
 npm run build        # Production build
+npm run build:lib    # Build library for publishing (ESM + CJS)
 npm run lint         # ESLint
 npm run type-check   # tsc --noEmit
 npm run preview      # Preview production build
@@ -71,24 +86,21 @@ docs: description     # Documentation
 ### Keyboard Shortcuts
 | Shortcut | Action | Active When |
 |----------|--------|-------------|
-| `Tab` | Next region | Always |
-| `Shift+Tab` | Previous region | Always |
+| `Ctrl+E` | Toggle Preview / Edit mode | Always |
+| `Escape` | Exit edit mode / deselect | Edit mode |
+| `Tab` / `Shift+Tab` | Next / Previous region | Edit mode |
 | `Enter` | Confirm edit | Editing |
-| `Escape` | Cancel edit / deselect | Editing / Selected |
 | `ArrowRight` / `PageDown` | Next page | Not editing |
 | `ArrowLeft` / `PageUp` | Previous page | Not editing |
-| `n` | New region mode | Not editing |
+| `N` | Toggle create mode | Edit mode |
 | `Delete` | Delete selected region | Region selected |
-| `Ctrl+E` | Toggle Edit ↔ Compare | Always |
-| `Ctrl+S` | Export JSON | Always |
 | `?` | Show shortcut help | Always |
 
 ## Constraints
 - **Frontend only** — no backend, no API calls, no server
-- **Dummy data** — bundled JSON + images, plus optional file upload
 - **Desktop only** — no mobile responsive layout
 - **No auth** — no login, no users
-- **1-2 week timeline** — strict phase boundaries, Phase 7 is "if time permits"
+- **Published as `react-reviso`** on npm — embeddable component, not standalone app
 - **Budget: $0** — all free/open-source tools
 
 ## Update Cadence

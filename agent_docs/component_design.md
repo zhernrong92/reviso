@@ -1,21 +1,51 @@
 # Component Design — Reviso as an Embeddable Component
 
 ## Goal
-Refactor Reviso from a standalone app into a reusable, embeddable React component (`<Reviso />`) that can be dropped into any codebase.
+Reviso is a reusable, embeddable React component (`<Reviso />`) for reviewing, validating, and correcting OCR text on restored document images. It is published as `react-reviso` on npm.
 
 ## Core Design Decisions
 
+### Preview-first UX
+The component defaults to preview mode — users land in a QA/review view, not an editor. This reflects the primary use case: reviewing restoration quality and validating OCR corrections. Editing is available on demand.
+
 ### Uncontrolled by default
-The component manages its own internal state (selected page, selected region, zoom, editor mode). The host app provides data in and receives callbacks out. This keeps integration simple — no need to wire up a store.
+The component manages its own internal state (selected page, selected region, zoom, view mode, editor mode). The host app provides data in and receives callbacks out.
 
 ### Single document mode
-The component accepts **one document at a time**. The host app is responsible for document selection (e.g., a list page where the user clicks a document, then navigates to a detail page with `<Reviso />`). Multi-document navigation is removed from the component's responsibility.
+The component accepts **one document at a time**. The host app is responsible for document selection. Multi-document navigation is removed from the component's responsibility.
 
 ### No file upload
 Upload/import is the host app's responsibility. The host fetches or receives the document data however it wants, then passes it to `<Reviso />` as a prop.
 
 ### Theme integration
-The component should inherit the host app's MUI theme. If the host wraps in a `<ThemeProvider>`, Reviso uses those tokens. Optionally, Reviso can accept a `theme` prop to override or extend. Falls back to a built-in dark theme if no host theme is detected.
+The component inherits the host app's MUI theme. If the host wraps in a `<ThemeProvider>`, Reviso uses those tokens. Optionally accepts a `theme` prop to override or extend.
+
+---
+
+## View Modes
+
+### Preview Mode (default)
+Two sub-layouts selectable via toolbar toggle:
+
+**Side-by-side:**
+- Left pane: original image with "Original" label
+- Right pane: restored image (AfterImage with auto background colors) with "Restored" label
+- Independent zoom/pan per pane (separate TransformWrappers)
+- ValidationOverlay on restored pane (clickable checkmarks to mark regions validated)
+- Show/hide validation icons via toolbar toggle
+
+**Slider comparison:**
+- Single overlay with ReactCompareSlider
+- Horizontal (left/right) or vertical (top/bottom) orientation
+- No validation checkmarks (too complex with slider interaction)
+- Own TransformWrapper for zoom/pan
+
+### Edit Mode
+Entered via "Edit" button or Ctrl+E:
+- DocumentViewer with full editing capabilities
+- InlineEditor for text editing, RegionCreator for new regions
+- Undo/redo, style controls, text visibility toggle
+- Exit via "Preview" button (eye icon) or Ctrl+E or Escape (when nothing selected)
 
 ---
 
@@ -25,10 +55,10 @@ The component should inherit the host app's MUI theme. If the host wraps in a `<
 
 ```tsx
 interface RevisoProps {
-  /** The document to display and edit */
+  /** The document to display and review */
   document: RevisoDocument;
 
-  /** Enable/disable editing (default: true). When false, read-only viewer. */
+  /** Enable/disable editing (default: true). When false, preview and validation only. */
   editable?: boolean;
 
   /** Show/hide the page thumbnail sidebar (default: true) */
@@ -39,18 +69,13 @@ interface RevisoProps {
 
   /** Feature toggles */
   features?: {
-    comparison?: boolean;   // Before/after comparison slider (default: true)
-    export?: boolean;       // Export dialog — JSON/PDF/PNG (default: true)
-    regionCreation?: boolean; // Draw new regions (default: true)
+    comparison?: boolean;     // Comparison views (default: true)
+    export?: boolean;         // Export dialog — JSON/PDF/PNG (default: true)
+    regionCreation?: boolean; // Draw new regions in edit mode (default: true)
   };
 
   /** Default styles for newly created regions */
-  defaultRegionStyles?: {
-    fontColor?: string;
-    borderColor?: string;
-    backgroundColor?: string;
-    borderVisible?: boolean;
-  };
+  defaultRegionStyles?: Partial<RegionDefaults>;
 
   /** MUI theme overrides (merged with host theme or built-in default) */
   theme?: ThemeOptions;
@@ -60,8 +85,7 @@ interface RevisoProps {
 
   // --- Callbacks ---
 
-  /** Fired on any region change (edit, move, resize, create, delete).
-   *  Returns only dirty (modified) pages. */
+  /** Fired on any region change. Returns only dirty (modified) pages. */
   onChange?: (dirtyPages: RevisoPage[]) => void;
 
   /** Granular per-region change event */
@@ -69,7 +93,7 @@ interface RevisoProps {
     type: 'update' | 'create' | 'delete';
     pageId: string;
     regionId: string;
-    region?: RevisoRegion; // undefined for delete
+    region?: RevisoRegion;
   }) => void;
 
   /** Fired when user navigates to a different page */
@@ -78,8 +102,7 @@ interface RevisoProps {
   /** Fired when user selects/deselects a region */
   onSelectionChange?: (regionId: string | null) => void;
 
-  /** Intercept export instead of auto-downloading.
-   *  If provided, the component calls this instead of triggering a download. */
+  /** Intercept export instead of auto-downloading */
   onExport?: (format: 'json' | 'pdf' | 'png', data: Blob) => void;
 }
 ```
@@ -96,7 +119,7 @@ interface RevisoDocument {
 interface RevisoPage {
   id: string;
   pageNumber: number;
-  imageSrc: string;            // URL or data URI for the page image
+  imageSrc: string;            // Restored/corrected page image
   originalImageSrc: string;    // Original/damaged version (for comparison)
   width: number;
   height: number;
@@ -110,40 +133,42 @@ interface RevisoRegion {
   width: number;
   height: number;
   text: string;
-  originalText?: string;       // For tracking edits / comparison
+  originalText?: string;
   fontColor?: string;
+  fontFamily?: string;
+  fontWeight?: 'normal' | 'bold';
+  fontStyle?: 'normal' | 'italic';
+  textDecoration?: 'none' | 'line-through';
   borderColor?: string;
-  backgroundColor?: string;
   borderVisible?: boolean;
+  backgroundColor?: string;
+  textPosition?: 'inside' | 'top' | 'bottom' | 'left' | 'right';
+  isValidated?: boolean;
 }
 ```
 
-### Usage Example
+### Usage Examples
 
 ```tsx
-// Minimal — just display and edit a document
-<Reviso
-  document={myDocument}
-  onChange={(dirtyPages) => saveToBackend(dirtyPages)}
-/>
-
-// Full — customised with feature toggles and callbacks
-<Reviso
-  document={myDocument}
-  editable
-  showSidebar={false}
-  features={{ comparison: true, export: true, regionCreation: false }}
-  theme={{ palette: { primary: { main: '#1976d2' } } }}
-  onChange={(dirtyPages) => saveToBackend(dirtyPages)}
-  onExport={(format, data) => uploadToS3(format, data)}
-  onPageChange={(pageId) => trackAnalytics('page_view', pageId)}
-/>
-
-// Read-only viewer
+// QA review mode — preview and validate
 <Reviso
   document={myDocument}
   editable={false}
-  features={{ comparison: true, export: false }}
+  onChange={(dirtyPages) => saveValidationState(dirtyPages)}
+/>
+
+// Full editing with export callback
+<Reviso
+  document={myDocument}
+  onChange={(dirtyPages) => saveToBackend(dirtyPages)}
+  onExport={(format, data) => uploadToS3(format, data)}
+/>
+
+// Minimal viewer with custom theme
+<Reviso
+  document={myDocument}
+  features={{ export: false, regionCreation: false }}
+  theme={{ palette: { primary: { main: '#1976d2' } } }}
 />
 ```
 
@@ -151,64 +176,76 @@ interface RevisoRegion {
 
 ## Layout
 
-The component is a **self-contained rectangular container** that fills its parent. No assumptions about being full-screen. The host app controls placement and sizing.
+The component is a **self-contained rectangular container** that fills its parent.
 
+### Preview Mode (Side-by-Side)
 ```
-┌──────────────────────────────────────────┐
-│ [◀ ▶] Page 1/3 │ Edit │ Compare │ Export │  ← inline toolbar (optional)
-├────────┬─────────────────────────────────┤
-│  p1    │                                 │
-│  p2    │         Viewer / Editor         │
-│  p3    │                                 │
-│        │                                 │
-└────────┴─────────────────────────────────┘
+┌──────────────────────────────────────────────────────┐
+│ ☰ [◀ ▶] Doc — Page 1/3  2/5  │ SbS│Slider│ ✓ │Edit│ Export │ ?
+├────────┬────────────────────┬────────────────────────┤
+│  p1    │    Original        │      Restored          │
+│  p2    │                    │        ✓ ✓ ✓          │
+│  p3    │                    │                        │
+└────────┴────────────────────┴────────────────────────┘
 ```
 
-- **Inline toolbar** replaces the current TopBar. Lives inside the component boundary, not at the page top level.
-- **Page sidebar** shows page thumbnails for the single document (no document list). Toggleable via `showSidebar` prop.
-- **No top-level AppShell** — the component doesn't render a shell, just its own content area.
+### Edit Mode
+```
+┌──────────────────────────────────────────────────────┐
+│ ☰ [◀ ▶] Doc — Page 1/3  2/5  │ New Region │ U R │ 👁 Preview │ Export │ ?
+├────────┬─────────────────────────────────────────────┤
+│  p1    │                                             │
+│  p2    │              Document Viewer                │
+│  p3    │            (zoom/pan + overlays)            │
+└────────┴─────────────────────────────────────────────┘
+```
 
 ---
 
-## Distribution Strategy
+## Key State
 
-**Copy-paste component** — not a published library. The `<Reviso />` component code (folder) is copied directly into the host project's codebase. This allows easy modification without versioning overhead.
+```typescript
+// uiStore
+ViewMode: 'preview' | 'edit'           // default: 'preview'
+PreviewLayout: 'side-by-side' | 'slider' // default: 'side-by-side'
+SliderOrientation: 'horizontal' | 'vertical' // default: 'horizontal'
+showValidationIcons: boolean            // default: true
+fitToViewTrigger: number                // incremented to trigger fit-to-view
+EditorMode: 'select' | 'create'        // default: 'select'
+```
 
-### Dependencies the host project must have
-The host project needs these in its `package.json`:
+---
+
+## Distribution
+
+Published as `react-reviso` on npm. ESM + CJS bundles with TypeScript declarations.
+
+### Peer Dependencies
 - `react`, `react-dom` (18+)
-- `@mui/material`, `@emotion/react`, `@emotion/styled`
+- `@mui/material`, `@mui/icons-material`, `@emotion/react`, `@emotion/styled`
 - `framer-motion`
-- `zustand`
+
+### Bundled Dependencies
+- `zustand`, `immer`
 - `react-zoom-pan-pinch`
-- `react-compare-slider` (if comparison feature is used)
-- `pdf-lib` (if PDF export feature is used)
+- `react-compare-slider`
+- `pdf-lib`
+- `nanoid`
 
-### Removals from PoC
-- **pdfjs-dist** — removed entirely (no upload feature)
-- **Sample data / public assets** — not copied, host provides real data
-
-### File structure when copied
+### File Structure
 ```
-src/components/reviso/     ← drop this folder into host project
+src/reviso/
   Reviso.tsx               ← main entry component
-  types.ts                 ← RevisoDocument, RevisoPage, RevisoRegion
-  stores/                  ← internal Zustand stores
-  components/              ← viewer, editor, comparison, export, toolbar
-  hooks/                   ← internal hooks
-  utils/                   ← coordinate transforms, export logic
+  index.ts                 ← public API exports
+  types/                   ← RevisoDocument, RevisoPage, RevisoRegion, UI types
+  stores/                  ← documentStore, uiStore, editHistoryStore
+  components/
+    layout/                ← InlineToolbar, PageThumbnails
+    viewer/                ← DocumentViewer, PageImage, OverlayLayer, TextRegion
+    editor/                ← InlineEditor, RegionCreator
+    comparison/            ← PreviewSideBySide, ComparisonSlider, AfterImage, ValidationOverlay
+    export/                ← ExportDialog
+    common/                ← KeyboardHelpDialog, DebouncedColorPicker
+  hooks/                   ← useEditorKeyboard, useNavigationKeyboard, useAutoBackgroundColors
+  utils/                   ← export logic, coordinate transforms
 ```
-
----
-
-## Migration Path (PoC → Component)
-
-### Phase 8: Component Refactor
-1. Remove standalone app shell (AppShell, top-level routing, sample data loading)
-2. Remove file upload feature (drop pdfjs-dist dependency)
-3. Convert TopBar → inline toolbar
-4. Convert Sidebar → single-document page thumbnails only (no document list)
-5. Create `<Reviso />` wrapper component with props interface
-6. Internalise stores — scoped to component instance (no global singletons)
-7. Wire up onChange/callback props to store subscriptions
-8. Accept host MUI theme via context, with built-in fallback
