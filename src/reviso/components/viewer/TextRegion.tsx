@@ -26,6 +26,22 @@ export const TextRegion = React.memo<TextRegionProps>(
       [toggleRegionValidation, pageId, region.id],
     );
 
+    const handleClick = useCallback(
+      (e: React.MouseEvent) => {
+        e.stopPropagation();
+        onSelect(region.id);
+      },
+      [onSelect, region.id],
+    );
+
+    const handleMouseEnter = useCallback(() => {
+      onHover(region.id);
+    }, [onHover, region.id]);
+
+    const handleMouseLeave = useCallback(() => {
+      onHover(null);
+    }, [onHover]);
+
     const getStyle = () => {
       if (isSelected) {
         return {
@@ -45,26 +61,14 @@ export const TextRegion = React.memo<TextRegionProps>(
           strokeWidth: 1.5,
         };
       }
-      if (region.isEdited) {
-        const hasBg = region.backgroundColor && region.backgroundColor !== 'transparent';
-        return {
-          fill: hasBg ? region.backgroundColor : 'transparent',
-          fillOpacity: hasBg ? 1 : 0,
-          stroke: theme.palette.primary.light,
-          strokeOpacity: 0.6,
-          strokeWidth: 1,
-        };
-      }
-      {
-        const hasBg = region.backgroundColor && region.backgroundColor !== 'transparent';
-        return {
-          fill: hasBg ? region.backgroundColor : 'transparent',
-          fillOpacity: hasBg ? 1 : 0,
-          stroke: theme.palette.primary.main,
-          strokeOpacity: 0.3,
-          strokeWidth: 1,
-        };
-      }
+      // In edit mode, always transparent background
+      return {
+        fill: 'transparent',
+        fillOpacity: 0,
+        stroke: region.isEdited ? theme.palette.primary.light : theme.palette.primary.main,
+        strokeOpacity: region.isEdited ? 0.6 : 0.3,
+        strokeWidth: 1,
+      };
     };
 
     const baseStyle = getStyle();
@@ -76,22 +80,6 @@ export const TextRegion = React.memo<TextRegionProps>(
       strokeWidth: borderHidden ? 0 : baseStyle.strokeWidth,
     };
     const textColor = region.fontColor ?? theme.palette.text.primary;
-
-    const handleClick = useCallback(
-      (e: React.MouseEvent) => {
-        e.stopPropagation();
-        onSelect(region.id);
-      },
-      [onSelect, region.id],
-    );
-
-    const handleMouseEnter = useCallback(() => {
-      onHover(region.id);
-    }, [onHover, region.id]);
-
-    const handleMouseLeave = useCallback(() => {
-      onHover(null);
-    }, [onHover]);
 
     const w = region.x2 - region.x1;
     const h = region.y2 - region.y1;

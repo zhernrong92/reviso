@@ -48,12 +48,7 @@ export function useNavigationKeyboard() {
 
       if (e.ctrlKey && e.key === 'e') {
         e.preventDefault();
-        const newMode = viewMode === 'edit' ? 'compare' : 'edit';
-        setViewMode(newMode);
-        if (newMode === 'compare') {
-          selectRegion(null);
-          setEditorMode('select');
-        }
+        setViewMode(viewMode === 'edit' ? 'preview' : 'edit');
         return;
       }
 
@@ -76,7 +71,7 @@ export function useNavigationKeyboard() {
       }
 
       if (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'PageUp' || e.key === 'PageDown') {
-        if (!activeDocument || !activePageId || viewMode === 'compare') return;
+        if (!activeDocument || !activePageId || viewMode === 'preview') return;
         e.preventDefault();
         const pages = activeDocument.pages;
         const currentIdx = pages.findIndex((p) => p.id === activePageId);

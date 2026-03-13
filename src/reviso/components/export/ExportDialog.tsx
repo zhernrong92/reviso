@@ -19,9 +19,10 @@ import { useUiStore } from '../../stores/uiStore';
 import { exportJson } from '../../utils/exportJson';
 import { exportPdf } from '../../utils/exportPdf';
 import { exportImage } from '../../utils/exportImage';
+import { exportPreviewPageAsBlob } from '../../utils/exportPreviewImage';
 import { downloadFile } from '../../utils/downloadFile';
 
-type ExportFormat = 'json' | 'pdf' | 'image';
+type ExportFormat = 'json' | 'pdf' | 'image' | 'preview';
 
 interface ExportDialogProps {
   open: boolean;
@@ -111,6 +112,23 @@ export const ExportDialog: React.FC<ExportDialogProps> = ({ open, onClose }) => 
         } else {
           downloadFile(pdfBytes, `${baseName}.pdf`, 'application/pdf');
         }
+      } else if (format === 'preview') {
+        for (const page of filteredDocument.pages) {
+          const blob = await exportPreviewPageAsBlob(page);
+          if (onExportCallback) {
+            onExportCallback('png', blob);
+          } else {
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            const suffix = filteredDocument.pages.length > 1 ? `_page${page.pageNumber}` : '';
+            link.download = `${baseName}${suffix}_preview.png`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+          }
+        }
       } else {
         const images = await exportImage(docsToExport);
         if (onExportCallback) {
@@ -151,6 +169,7 @@ export const ExportDialog: React.FC<ExportDialogProps> = ({ open, onClose }) => 
               <FormControlLabel value="json" control={<Radio size="small" />} label="JSON — Corrected data" />
               <FormControlLabel value="pdf" control={<Radio size="small" />} label="PDF — Text at original positions" />
               <FormControlLabel value="image" control={<Radio size="small" />} label="PNG — Images with text overlays" />
+              <FormControlLabel value="preview" control={<Radio size="small" />} label="PNG — Preview (restored document)" />
             </RadioGroup>
           </FormControl>
 

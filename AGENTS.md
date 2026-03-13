@@ -30,9 +30,9 @@ Refer to these for details (load only when needed):
 - `agent_docs/component_design.md` — Embeddable component API design, layout, bundle strategy, migration plan
 
 ## Current State (Update This!)
-**Last Updated:** March 10, 2026
-**Working On:** Done — all phases complete
-**Recently Completed:** Phase 10 — Library packaging, GitHub Packages publishing (v0.1.2), theming docs, bug fixes
+**Last Updated:** March 13, 2026
+**Working On:** Phase 11 — Preview Mode & Auto Background Detection (all steps complete, needs visual verification)
+**Recently Completed:** Phase 10 — Library packaging, npm publishing (v0.1.1), theming docs, bug fixes
 **Blocked By:** None
 **Design Doc:** `agent_docs/component_design.md` — full component API, layout, bundle strategy
 
@@ -152,6 +152,66 @@ See `agent_docs/component_design.md` for full design details.
 - [x] Default `isValidated: false` on new regions
 - [x] Add keyboard shortcuts help button in toolbar
 - [x] Reset dirty flags after `onChange` fires to prevent re-emitting
+
+### Phase 11: Preview Mode & Auto Background Detection
+**Goal:** Add a "Preview" rendering mode that produces a restored-document view — annotated text overlays original text inside region boxes with auto-detected background color. Compare mode uses preview rendering as the "after" side.
+
+**Concept:**
+- **Edit mode** — current behavior, regions always have transparent backgrounds for clear comparison with source image. Text positioned at user-chosen location (top/inside/bottom).
+- **Preview mode** (new) — read-only restored-document view. All region text rendered *inside* the box, background filled with auto-detected (or user-overridden) color to cover original text underneath.
+- **Compare mode** (updated) — slider compares original image vs preview rendering.
+
+**Steps:**
+
+#### Step 1: Expand viewMode & UI toggle ✓
+- [x] Add `'preview'` to `viewMode` type (`'edit' | 'preview' | 'compare'`)
+- [x] Keep existing Edit ↔ Compare toggle in toolbar
+- [x] Add separate Preview button (eye icon) in toolbar for quick preview toggle
+- [x] Keyboard shortcut `P` for preview toggle
+- [x] Preview mode is read-only — no region selection, no InlineEditor
+
+#### Step 2: Auto background color detection ✓
+- [x] Create `detectRegionBackgrounds` util + `useAutoBackgroundColors` hook
+- [x] Canvas-based pixel sampling within each region's bounding box
+- [x] Sampling strategy: edge pixels (4 edges, 6 samples each), median per RGB channel
+- [x] Cache by page ID + region bounds (recomputes on page change or region resize)
+- [x] Priority: user-defined `backgroundColor` (non-transparent) > auto-detected color
+
+#### Step 3: Reframe background color control in InlineEditor ✓
+- [x] Keep color picker, tooltip reframed as "Set custom preview background" / "Reset to auto-detect"
+- [x] Toggle shows "A" (auto) when no override set, "✓" when custom color active
+- [x] User-set color overrides auto-detection; toggle clears back to auto
+- [x] In edit mode rendering: regions always transparent background (ignore backgroundColor)
+
+#### Step 4: Preview rendering via DocumentViewer ✓
+- [x] Extended DocumentViewer + OverlayLayer + TextRegion with `isPreview` mode
+- [x] Each region rendered with opaque bg fill (user-defined or auto-detected)
+- [x] Text always rendered *inside* the region (ignores `textPosition`)
+- [x] No selection highlights, no hover states, no editor controls
+- [x] Reuses existing zoom/pan (TransformWrapper)
+
+#### Step 5: Update ComparisonSlider / AfterImage ✓
+- [x] AfterImage uses preview rendering logic (opaque bg, text inside)
+- [x] Same auto-detected background color approach via `useAutoBackgroundColors` hook
+- [x] Shared rendering logic between TextRegion (preview mode) and AfterImage
+
+#### Step 6: Update public API & backward compatibility ✓
+- [x] `backgroundColor` prop on `RevisoRegion` still accepted — no breaking change
+- [x] New behavior: bg color only affects preview/compare modes, never edit mode
+- [x] `'preview'` added to `ViewMode` type
+- [x] Existing callers see no visual change in edit mode (just bg color controls reframed)
+
+#### Step 7: Preview download/export ✓
+- [x] Download button (SaveAlt icon) appears in toolbar when in preview mode
+- [x] PNG export: `exportPreviewPageAsBlob` renders base image + preview overlay to canvas
+- [x] Wired to `onExport` callback if provided by caller
+- [x] Auto-downloads as `{docname}_page{N}_preview.png` otherwise
+
+#### Step 8: Polish ✓
+- [x] Small regions handled (fallback to #f5f5f0 when region too small to sample)
+- [x] Text clipped to region bounds in preview (clipPath + canvas clip)
+- [x] CORS images handled (crossOrigin + fetch-to-blob fallback)
+- [x] Keyboard shortcuts help updated with `P` shortcut
 
 ## Engineering Constraints
 

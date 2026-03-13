@@ -33,7 +33,7 @@ const shortcuts: Shortcut[] = [
   { keys: '← / →', description: 'Previous / Next page' },
   { keys: 'PageUp / PageDown', description: 'Previous / Next page' },
   { keys: 'Ctrl+↑ / Ctrl+↓', description: 'Previous / Next document' },
-  { keys: 'Ctrl+E', description: 'Toggle Edit / Compare mode' },
+  { keys: 'Ctrl+E', description: 'Toggle Edit / Preview mode' },
   { keys: 'Ctrl+Z', description: 'Undo' },
   { keys: 'Ctrl+Shift+Z', description: 'Redo' },
   { keys: 'N', description: 'Toggle create mode' },

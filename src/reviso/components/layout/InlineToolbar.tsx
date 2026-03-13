@@ -7,7 +7,7 @@ import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
 import AddBoxOutlinedIcon from '@mui/icons-material/AddBoxOutlined';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
-import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
+import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 import UndoIcon from '@mui/icons-material/Undo';
 import RedoIcon from '@mui/icons-material/Redo';
 import TextFieldsIcon from '@mui/icons-material/TextFields';
@@ -77,12 +77,8 @@ export const InlineToolbar: React.FC = () => {
     (_: React.MouseEvent<HTMLElement>, newMode: ViewMode | null) => {
       if (!newMode) return;
       setViewMode(newMode);
-      if (newMode === 'compare') {
-        selectRegion(null);
-        setEditorMode('select');
-      }
     },
-    [setViewMode, selectRegion, setEditorMode],
+    [setViewMode],
   );
 
   const handleUndo = useCallback(() => {
@@ -130,7 +126,7 @@ export const InlineToolbar: React.FC = () => {
             size="small"
             color="inherit"
             aria-label="previous page"
-            disabled={!hasPrev || viewMode === 'compare'}
+            disabled={!hasPrev || viewMode === 'preview'}
             onClick={handlePrevPage}
           >
             <ChevronLeftIcon sx={{ fontSize: 18 }} />
@@ -149,7 +145,7 @@ export const InlineToolbar: React.FC = () => {
             size="small"
             color="inherit"
             aria-label="next page"
-            disabled={!hasNext || viewMode === 'compare'}
+            disabled={!hasNext || viewMode === 'preview'}
             onClick={handleNextPage}
           >
             <ChevronRightIcon sx={{ fontSize: 18 }} />
@@ -356,9 +352,9 @@ export const InlineToolbar: React.FC = () => {
               <EditOutlinedIcon sx={{ fontSize: 14, mr: 0.5 }} />
               Edit
             </ToggleButton>
-            <ToggleButton value="compare" sx={{ px: 1, py: 0, textTransform: 'none', fontSize: 11, minHeight: 26 }}>
-              <CompareArrowsIcon sx={{ fontSize: 14, mr: 0.5 }} />
-              Compare
+            <ToggleButton value="preview" sx={{ px: 1, py: 0, textTransform: 'none', fontSize: 11, minHeight: 26 }}>
+              <VisibilityOutlinedIcon sx={{ fontSize: 14, mr: 0.5 }} />
+              Preview
             </ToggleButton>
           </ToggleButtonGroup>
         )}

@@ -59,7 +59,10 @@ const useUiStore = create<UiStoreState>()((set) => ({
   setActivePage: (id) => set({ activePageId: id, selectedRegionId: null }),
   selectRegion: (id) => set({ selectedRegionId: id }),
   hoverRegion: (id) => set({ hoveredRegionId: id }),
-  setViewMode: (mode) => set({ viewMode: mode }),
+  setViewMode: (mode) => set({
+    viewMode: mode,
+    ...(mode === 'preview' ? { selectedRegionId: null, editorMode: 'select' as const } : {}),
+  }),
   setEditorMode: (mode) => set({ editorMode: mode }),
   toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen })),
   setRegionDefaults: (defaults) =>

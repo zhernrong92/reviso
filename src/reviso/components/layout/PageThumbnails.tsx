@@ -1,6 +1,5 @@
 import { useCallback } from 'react';
 import { Box, Typography } from '@mui/material';
-import { motion, AnimatePresence } from 'framer-motion';
 import { useDocumentStore } from '../../stores/documentStore';
 import { useUiStore } from '../../stores/uiStore';
 
@@ -28,15 +27,7 @@ export const PageThumbnails: React.FC = () => {
           Pages
         </Typography>
       </Box>
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={activeDocumentId}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.15 }}
-          style={{ flex: 1, overflow: 'auto' }}
-        >
+      <div key={activeDocumentId} style={{ flex: 1, overflow: 'auto' }}>
           <Box sx={{ px: 1, pb: 1 }}>
             {activeDocument.pages.map((page) => (
               <Box
@@ -88,8 +79,7 @@ export const PageThumbnails: React.FC = () => {
               </Box>
             ))}
           </Box>
-        </motion.div>
-      </AnimatePresence>
+      </div>
     </>
   );
 };

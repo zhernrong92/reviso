@@ -285,6 +285,8 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
     [updateRegionStyle, pageId, region.id, region.backgroundColor],
   );
 
+  const hasBgOverride = region.backgroundColor !== undefined && region.backgroundColor !== 'transparent';
+
   const handleFontFamilyChange = useCallback(
     (e: React.ChangeEvent<HTMLSelectElement>) => {
       updateRegionStyle(pageId, region.id, { fontFamily: e.target.value });
@@ -670,8 +672,8 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
                     cursor: 'pointer', userSelect: 'none',
                     backgroundColor: region.backgroundColor && region.backgroundColor !== 'transparent' ? region.backgroundColor : 'transparent',
                   }}
-                  title={region.backgroundColor && region.backgroundColor !== 'transparent' ? 'Clear background' : 'Add background'}
-                >{region.backgroundColor && region.backgroundColor !== 'transparent' ? '✓' : ''}</div>
+                  title={hasBgOverride ? 'Reset to auto-detect (preview)' : 'Set custom preview background'}
+                >{hasBgOverride ? '✓' : 'A'}</div>
                 {region.backgroundColor && region.backgroundColor !== 'transparent' ? (
                   <DebouncedColorPicker value={region.backgroundColor} onChange={handleBgColorChange} />
                 ) : (

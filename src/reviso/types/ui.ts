@@ -1,4 +1,4 @@
-export type ViewMode = 'edit' | 'compare';
+export type ViewMode = 'edit' | 'preview';
 export type EditorMode = 'select' | 'create';
 
 export interface FeatureFlags {

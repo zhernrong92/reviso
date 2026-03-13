@@ -1,15 +1,24 @@
 import { useCallback } from 'react';
-import { Box, Typography } from '@mui/material';
+import { Box, Typography, Tooltip } from '@mui/material';
 import { TransformWrapper, TransformComponent, type ReactZoomPanPinchRef } from 'react-zoom-pan-pinch';
-import { ReactCompareSlider, ReactCompareSliderImage } from 'react-compare-slider';
-import { motion, AnimatePresence } from 'framer-motion';
+import { ReactCompareSlider, ReactCompareSliderImage, ReactCompareSliderHandle } from 'react-compare-slider';
 import { useUiStore } from '../../stores/uiStore';
 import { useDocumentStore } from '../../stores/documentStore';
 import { AfterImage } from './AfterImage';
+import { useAutoBackgroundColors } from '../../hooks/useAutoBackgroundColors';
+
+const SliderHandle: React.FC = () => (
+  <Tooltip title="Slide to compare" placement="top" arrow>
+    <div style={{ display: 'flex', height: '100%' }}>
+      <ReactCompareSliderHandle />
+    </div>
+  </Tooltip>
+);
 
 export const ComparisonSlider: React.FC = () => {
   const activePageId = useUiStore((s) => s.activePageId);
   const activePage = useDocumentStore((s) => s.getActivePage(activePageId));
+  const autoBackgroundColors = useAutoBackgroundColors(activePage);
 
   const handleInit = useCallback(
     (ref: ReactZoomPanPinchRef) => {
@@ -23,7 +32,7 @@ export const ComparisonSlider: React.FC = () => {
         wrapperHeight / activePage.height,
       ) * 0.95;
       requestAnimationFrame(() => {
-        ref.centerView(fitScale);
+        ref.centerView(fitScale, 0);
       });
     },
     [activePage],
@@ -55,15 +64,7 @@ export const ComparisonSlider: React.FC = () => {
         bgcolor: 'background.default',
       }}
     >
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={activePageId}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.15 }}
-          style={{ width: '100%', height: '100%' }}
-        >
+      <div key={activePageId} style={{ width: '100%', height: '100%' }}>
           <TransformWrapper
             initialScale={0.5}
             minScale={0.5}
@@ -78,20 +79,21 @@ export const ComparisonSlider: React.FC = () => {
               contentStyle={{ position: 'relative' }}
             >
               <ReactCompareSlider
-                itemOne={
+                itemOne={<AfterImage page={activePage} autoBackgroundColors={autoBackgroundColors} />}
+                itemTwo={
                   <ReactCompareSliderImage
                     src={activePage.originalImageSrc}
                     alt={`Page ${activePage.pageNumber} original`}
                     style={{ width: activePage.width, height: activePage.height, display: 'block' }}
                   />
                 }
-                itemTwo={<AfterImage page={activePage} />}
+                handle={<SliderHandle />}
+                position={100}
                 style={{ width: activePage.width, height: activePage.height }}
               />
             </TransformComponent>
           </TransformWrapper>
-        </motion.div>
-      </AnimatePresence>
+      </div>
     </Box>
   );
 };

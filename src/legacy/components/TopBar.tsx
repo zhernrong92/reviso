@@ -81,7 +81,7 @@ export const TopBar: React.FC = () => {
     (_: React.MouseEvent<HTMLElement>, newMode: ViewMode | null) => {
       if (!newMode) return;
       setViewMode(newMode);
-      if (newMode === 'compare') {
+      if (newMode === 'preview') {
         selectRegion(null);
         setEditorMode('select');
       }
@@ -205,7 +205,7 @@ export const TopBar: React.FC = () => {
             size="small"
             color="inherit"
             aria-label="previous page"
-            disabled={!hasPrev || viewMode === 'compare'}
+            disabled={!hasPrev || viewMode === 'preview'}
             onClick={handlePrevPage}
             sx={{ mr: 0.5 }}
           >
@@ -225,7 +225,7 @@ export const TopBar: React.FC = () => {
             size="small"
             color="inherit"
             aria-label="next page"
-            disabled={!hasNext || viewMode === 'compare'}
+            disabled={!hasNext || viewMode === 'preview'}
             onClick={handleNextPage}
             sx={{ ml: 0.5 }}
           >

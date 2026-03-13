@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Box, Typography } from '@mui/material';
 import { TransformWrapper, TransformComponent, type ReactZoomPanPinchRef } from 'react-zoom-pan-pinch';
-import { motion, AnimatePresence } from 'framer-motion';
 import { useUiStore } from '../../stores/uiStore';
 import { useDocumentStore } from '../../stores/documentStore';
 import { PageImage } from './PageImage';
@@ -42,7 +41,7 @@ export const DocumentViewer: React.FC = () => {
       ) * 0.95;
       setMinScale(fitScale);
       requestAnimationFrame(() => {
-        ref.centerView(fitScale);
+        ref.centerView(fitScale, 0);
       });
     },
     [pageWidth, pageHeight],
@@ -133,15 +132,7 @@ export const DocumentViewer: React.FC = () => {
       }}
       onClick={() => selectRegion(null)}
     >
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={activePageId}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.15 }}
-          style={{ width: '100%', height: '100%' }}
-        >
+      <div key={activePageId} style={{ width: '100%', height: '100%' }}>
           <TransformWrapper
             initialScale={minScale}
             minScale={minScale}
@@ -191,8 +182,7 @@ export const DocumentViewer: React.FC = () => {
               )}
             </TransformComponent>
           </TransformWrapper>
-        </motion.div>
-      </AnimatePresence>
+      </div>
     </Box>
   );
 };
