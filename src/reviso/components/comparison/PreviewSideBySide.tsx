@@ -4,6 +4,7 @@ import { TransformWrapper, TransformComponent, type ReactZoomPanPinchRef } from 
 import { useUiStore } from '../../stores/uiStore';
 import { useDocumentStore } from '../../stores/documentStore';
 import { AfterImage } from './AfterImage';
+import { TextOnlyImage } from './TextOnlyImage';
 import { ValidationOverlay } from './ValidationOverlay';
 import { PageImage } from '../viewer/PageImage';
 import { useAutoBackgroundColors } from '../../hooks/useAutoBackgroundColors';
@@ -13,6 +14,7 @@ export const PreviewSideBySide: React.FC = () => {
   const sidebarOpen = useUiStore((s) => s.sidebarOpen);
   const fitToViewTrigger = useUiStore((s) => s.fitToViewTrigger);
   const showValidationIcons = useUiStore((s) => s.showValidationIcons);
+  const comparisonSource = useUiStore((s) => s.comparisonSource);
   const activePage = useDocumentStore((s) => s.getActivePage(activePageId));
   const autoBackgroundColors = useAutoBackgroundColors(activePage);
 
@@ -111,9 +113,9 @@ export const PreviewSideBySide: React.FC = () => {
           variant="caption"
           sx={{ position: 'absolute', top: 8, left: 8, zIndex: 10, color: 'text.secondary', bgcolor: 'background.paper', px: 0.75, py: 0.25, borderRadius: 1, fontSize: 10 }}
         >
-          Restored
+          {comparisonSource === 'text-only' ? 'Synthetic Reconstruct' : 'Overlay'}
         </Typography>
-        <div key={`restored-${activePageId}`} style={{ width: '100%', height: '100%' }}>
+        <div key={`restored-${activePageId}-${comparisonSource}`} style={{ width: '100%', height: '100%' }}>
           <TransformWrapper
             initialScale={0.5}
             minScale={0.1}
@@ -124,8 +126,11 @@ export const PreviewSideBySide: React.FC = () => {
             onInit={handleRightInit}
           >
             <TransformComponent wrapperStyle={{ width: '100%', height: '100%' }} contentStyle={{ position: 'relative' }}>
-              <AfterImage page={activePage} autoBackgroundColors={autoBackgroundColors} />
-              {showValidationIcons && activePageId && (
+              {comparisonSource === 'text-only'
+                ? <TextOnlyImage page={activePage} />
+                : <AfterImage page={activePage} autoBackgroundColors={autoBackgroundColors} />
+              }
+              {showValidationIcons && activePageId && comparisonSource === 'restored' && (
                 <ValidationOverlay page={activePage} pageId={activePageId} />
               )}
             </TransformComponent>

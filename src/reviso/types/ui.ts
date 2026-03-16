@@ -1,6 +1,7 @@
 export type ViewMode = 'preview' | 'edit';
 export type PreviewLayout = 'side-by-side' | 'slider';
 export type SliderOrientation = 'horizontal' | 'vertical';
+export type ComparisonSource = 'restored' | 'text-only';
 export type EditorMode = 'select' | 'create';
 
 export interface FeatureFlags {

@@ -5,6 +5,7 @@ import { ReactCompareSlider, ReactCompareSliderImage, ReactCompareSliderHandle }
 import { useUiStore } from '../../stores/uiStore';
 import { useDocumentStore } from '../../stores/documentStore';
 import { AfterImage } from './AfterImage';
+import { TextOnlyImage } from './TextOnlyImage';
 import { useAutoBackgroundColors } from '../../hooks/useAutoBackgroundColors';
 
 interface SliderHandleProps {
@@ -22,6 +23,7 @@ const SliderHandle: React.FC<SliderHandleProps> = ({ portrait }) => (
 export const ComparisonSlider: React.FC = () => {
   const activePageId = useUiStore((s) => s.activePageId);
   const sliderOrientation = useUiStore((s) => s.sliderOrientation);
+  const comparisonSource = useUiStore((s) => s.comparisonSource);
   const fitToViewTrigger = useUiStore((s) => s.fitToViewTrigger);
   const activePage = useDocumentStore((s) => s.getActivePage(activePageId));
   const autoBackgroundColors = useAutoBackgroundColors(activePage);
@@ -83,7 +85,7 @@ export const ComparisonSlider: React.FC = () => {
         bgcolor: 'background.default',
       }}
     >
-      <div key={`${activePageId}-${sliderOrientation}`} style={{ width: '100%', height: '100%' }}>
+      <div key={`${activePageId}-${sliderOrientation}-${comparisonSource}`} style={{ width: '100%', height: '100%' }}>
           <TransformWrapper
             initialScale={0.5}
             minScale={0.5}
@@ -98,7 +100,10 @@ export const ComparisonSlider: React.FC = () => {
               contentStyle={{ position: 'relative' }}
             >
               <ReactCompareSlider
-                itemOne={<AfterImage page={activePage} autoBackgroundColors={autoBackgroundColors} />}
+                itemOne={comparisonSource === 'text-only'
+                  ? <TextOnlyImage page={activePage} />
+                  : <AfterImage page={activePage} autoBackgroundColors={autoBackgroundColors} />
+                }
                 itemTwo={
                   <ReactCompareSliderImage
                     src={activePage.originalImageSrc}

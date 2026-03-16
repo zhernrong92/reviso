@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { ViewMode, PreviewLayout, SliderOrientation, EditorMode, RegionDefaults, FeatureFlags } from '../types/ui';
+import type { ViewMode, PreviewLayout, SliderOrientation, ComparisonSource, EditorMode, RegionDefaults, FeatureFlags } from '../types/ui';
 
 interface UiStoreState {
   activeDocumentId: string | null;
@@ -9,6 +9,7 @@ interface UiStoreState {
   viewMode: ViewMode;
   previewLayout: PreviewLayout;
   sliderOrientation: SliderOrientation;
+  comparisonSource: ComparisonSource;
   editorMode: EditorMode;
   sidebarOpen: boolean;
   showValidationIcons: boolean;
@@ -26,6 +27,7 @@ interface UiStoreState {
   setViewMode: (mode: ViewMode) => void;
   setPreviewLayout: (layout: PreviewLayout) => void;
   setSliderOrientation: (orientation: SliderOrientation) => void;
+  setComparisonSource: (source: ComparisonSource) => void;
   setEditorMode: (mode: EditorMode) => void;
   toggleSidebar: () => void;
   toggleValidationIcons: () => void;
@@ -46,6 +48,7 @@ const useUiStore = create<UiStoreState>()((set) => ({
   viewMode: 'preview',
   previewLayout: 'side-by-side',
   sliderOrientation: 'horizontal',
+  comparisonSource: 'restored',
   editorMode: 'select',
   sidebarOpen: true,
   showValidationIcons: true,
@@ -78,6 +81,7 @@ const useUiStore = create<UiStoreState>()((set) => ({
   }),
   setPreviewLayout: (layout) => set({ previewLayout: layout }),
   setSliderOrientation: (orientation) => set({ sliderOrientation: orientation }),
+  setComparisonSource: (source) => set({ comparisonSource: source }),
   setEditorMode: (mode) => set({ editorMode: mode }),
   toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen })),
   toggleValidationIcons: () => set((state) => ({ showValidationIcons: !state.showValidationIcons })),

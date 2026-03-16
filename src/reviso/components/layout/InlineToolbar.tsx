@@ -23,7 +23,7 @@ import { useDocumentStore } from '../../stores/documentStore';
 import { useEditHistoryStore } from '../../stores/editHistoryStore';
 import { ExportDialog } from '../export/ExportDialog';
 import { DebouncedColorPicker } from '../common/DebouncedColorPicker';
-import type { PreviewLayout, SliderOrientation } from '../../types/ui';
+import type { PreviewLayout, SliderOrientation, ComparisonSource } from '../../types/ui';
 
 export const InlineToolbar: React.FC = () => {
   const theme = useTheme();
@@ -41,6 +41,8 @@ export const InlineToolbar: React.FC = () => {
   const toggleValidationIcons = useUiStore((s) => s.toggleValidationIcons);
   const sliderOrientation = useUiStore((s) => s.sliderOrientation);
   const setSliderOrientation = useUiStore((s) => s.setSliderOrientation);
+  const comparisonSource = useUiStore((s) => s.comparisonSource);
+  const setComparisonSource = useUiStore((s) => s.setComparisonSource);
   const triggerFitToView = useUiStore((s) => s.triggerFitToView);
   const selectedRegionId = useUiStore((s) => s.selectedRegionId);
   const selectRegion = useUiStore((s) => s.selectRegion);
@@ -108,6 +110,13 @@ export const InlineToolbar: React.FC = () => {
       if (newOrientation) setSliderOrientation(newOrientation);
     },
     [setSliderOrientation],
+  );
+
+  const handleComparisonSourceChange = useCallback(
+    (_: React.MouseEvent<HTMLElement>, newSource: ComparisonSource | null) => {
+      if (newSource) setComparisonSource(newSource);
+    },
+    [setComparisonSource],
   );
 
   const breadcrumb = activeDocument
@@ -241,6 +250,24 @@ export const InlineToolbar: React.FC = () => {
                 <ToggleButton value="slider" sx={{ px: 1, py: 0, textTransform: 'none', fontSize: 11, minHeight: 26 }}>
                   <CompareArrowsIcon sx={{ fontSize: 14, mr: 0.5 }} />
                   Slider
+                </ToggleButton>
+              </ToggleButtonGroup>
+            )}
+
+            {/* Comparison source toggle */}
+            {activePage && (
+              <ToggleButtonGroup
+                value={comparisonSource}
+                exclusive
+                onChange={handleComparisonSourceChange}
+                size="small"
+                sx={{ mr: 0.5 }}
+              >
+                <ToggleButton value="restored" sx={{ px: 1, py: 0, textTransform: 'none', fontSize: 11, minHeight: 26 }}>
+                  Overlay
+                </ToggleButton>
+                <ToggleButton value="text-only" sx={{ px: 1, py: 0, textTransform: 'none', fontSize: 11, minHeight: 26 }}>
+                  Synthetic Reconstruct
                 </ToggleButton>
               </ToggleButtonGroup>
             )}
