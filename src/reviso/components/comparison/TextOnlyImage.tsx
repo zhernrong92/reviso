@@ -15,8 +15,8 @@ export const TextOnlyImage: React.FC<TextOnlyImageProps> = ({ page }) => {
         viewBox={`0 0 ${page.width} ${page.height}`}
         style={{ display: 'block' }}
       >
-        {/* Dark background matching PDF export */}
-        <rect x={0} y={0} width={page.width} height={page.height} fill="#1f1f1f" />
+        {/* White background for synthetic reconstruct */}
+        <rect x={0} y={0} width={page.width} height={page.height} fill="#ffffff" />
 
         {page.regions.map((region) => {
           if (!region.currentText) return null;
@@ -40,7 +40,7 @@ export const TextOnlyImage: React.FC<TextOnlyImageProps> = ({ page }) => {
                 fontWeight={region.fontWeight ?? 'normal'}
                 fontStyle={region.fontStyle ?? 'normal'}
                 textDecoration={region.textDecoration ?? 'none'}
-                fill={region.fontColor ?? '#e0e0e0'}
+                fill="#1a1a1a"
                 fillOpacity={0.95}
                 clipPath={`url(#${clipId})`}
               >

@@ -48,10 +48,10 @@ const useUiStore = create<UiStoreState>()((set) => ({
   viewMode: 'preview',
   previewLayout: 'side-by-side',
   sliderOrientation: 'horizontal',
-  comparisonSource: 'restored',
+  comparisonSource: 'text-only',
   editorMode: 'select',
   sidebarOpen: true,
-  showValidationIcons: true,
+  showValidationIcons: false,
   fitToViewTrigger: 0,
   regionDefaults: {
     fontColor: '#1565c0',

@@ -28,13 +28,13 @@ export async function exportPdf(documents: Document[]): Promise<Uint8Array> {
     for (const page of doc.pages) {
       const pdfPage = pdfDoc.addPage([page.width, page.height]);
 
-      // Draw light background
+      // White background for synthetic reconstruct
       pdfPage.drawRectangle({
         x: 0,
         y: 0,
         width: page.width,
         height: page.height,
-        color: rgb(0.12, 0.12, 0.12),
+        color: rgb(1, 1, 1),
       });
 
       // Draw each region's text at its bounding box position
@@ -43,9 +43,7 @@ export async function exportPdf(documents: Document[]): Promise<Uint8Array> {
 
         const h = region.y2 - region.y1;
         const fontSize = Math.max(8, h * 0.65);
-        const color = region.fontColor
-          ? hexToRgb(region.fontColor)
-          : { r: 0.88, g: 0.88, b: 0.88 };
+        const color = { r: 0.1, g: 0.1, b: 0.1 };
 
         const isBold = region.fontWeight === 'bold';
         const isItalic = region.fontStyle === 'italic';
