@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
-import { useTheme } from '@mui/material/styles';
-import { Box, IconButton, Typography, Button, Tooltip, ToggleButton, ToggleButtonGroup } from '@mui/material';
+import { Box, IconButton, Typography, Button, Tooltip, Divider, Select, MenuItem, ToggleButton, ToggleButtonGroup } from '@mui/material';
+import type { SelectChangeEvent } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
@@ -8,9 +8,6 @@ import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
 import AddBoxOutlinedIcon from '@mui/icons-material/AddBoxOutlined';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
-import ViewSidebarOutlinedIcon from '@mui/icons-material/ViewSidebarOutlined';
-import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
-import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import UndoIcon from '@mui/icons-material/Undo';
 import RedoIcon from '@mui/icons-material/Redo';
 import TextFieldsIcon from '@mui/icons-material/TextFields';
@@ -18,15 +15,26 @@ import FitScreenOutlinedIcon from '@mui/icons-material/FitScreenOutlined';
 import SwapVertIcon from '@mui/icons-material/SwapVert';
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
+import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
 import { useUiStore } from '../../stores/uiStore';
 import { useDocumentStore } from '../../stores/documentStore';
 import { useEditHistoryStore } from '../../stores/editHistoryStore';
 import { ExportDialog } from '../export/ExportDialog';
-import { DebouncedColorPicker } from '../common/DebouncedColorPicker';
+import { RegionDefaultsDialog } from '../editor/RegionDefaultsDialog';
 import type { PreviewLayout, SliderOrientation, ComparisonSource } from '../../types/ui';
 
+const ToolbarDivider = () => (
+  <Divider orientation="vertical" flexItem sx={{ mx: 0.75, my: 0.75 }} />
+);
+
+const selectSx = {
+  fontSize: 11,
+  minHeight: 0,
+  '& .MuiSelect-select': { py: 0.25, pr: '20px !important', pl: 0.5 },
+  '& .MuiSvgIcon-root': { fontSize: 16 },
+} as const;
+
 export const InlineToolbar: React.FC = () => {
-  const theme = useTheme();
   const toggleSidebar = useUiStore((s) => s.toggleSidebar);
   const activeDocumentId = useUiStore((s) => s.activeDocumentId);
   const activePageId = useUiStore((s) => s.activePageId);
@@ -37,8 +45,6 @@ export const InlineToolbar: React.FC = () => {
   const setViewMode = useUiStore((s) => s.setViewMode);
   const previewLayout = useUiStore((s) => s.previewLayout);
   const setPreviewLayout = useUiStore((s) => s.setPreviewLayout);
-  const showValidationIcons = useUiStore((s) => s.showValidationIcons);
-  const toggleValidationIcons = useUiStore((s) => s.toggleValidationIcons);
   const sliderOrientation = useUiStore((s) => s.sliderOrientation);
   const setSliderOrientation = useUiStore((s) => s.setSliderOrientation);
   const comparisonSource = useUiStore((s) => s.comparisonSource);
@@ -46,8 +52,6 @@ export const InlineToolbar: React.FC = () => {
   const triggerFitToView = useUiStore((s) => s.triggerFitToView);
   const selectedRegionId = useUiStore((s) => s.selectedRegionId);
   const selectRegion = useUiStore((s) => s.selectRegion);
-  const regionDefaults = useUiStore((s) => s.regionDefaults);
-  const setRegionDefaults = useUiStore((s) => s.setRegionDefaults);
   const editable = useUiStore((s) => s.editable);
   const showRegionText = useUiStore((s) => s.showRegionText);
   const toggleRegionText = useUiStore((s) => s.toggleRegionText);
@@ -62,6 +66,7 @@ export const InlineToolbar: React.FC = () => {
   const canRedo = future.length > 0;
 
   const [exportDialogOpen, setExportDialogOpen] = useState(false);
+  const [settingsDialogOpen, setSettingsDialogOpen] = useState(false);
 
   const handleToggleCreateMode = useCallback(() => {
     setEditorMode(editorMode === 'create' ? 'select' : 'create');
@@ -98,25 +103,11 @@ export const InlineToolbar: React.FC = () => {
     if (snapshot) restoreSnapshot(snapshot);
   }, [restoreSnapshot]);
 
-  const handlePreviewLayoutChange = useCallback(
-    (_: React.MouseEvent<HTMLElement>, newLayout: PreviewLayout | null) => {
-      if (newLayout) setPreviewLayout(newLayout);
-    },
-    [setPreviewLayout],
-  );
-
   const handleSliderOrientationChange = useCallback(
     (_: React.MouseEvent<HTMLElement>, newOrientation: SliderOrientation | null) => {
       if (newOrientation) setSliderOrientation(newOrientation);
     },
     [setSliderOrientation],
-  );
-
-  const handleComparisonSourceChange = useCallback(
-    (_: React.MouseEvent<HTMLElement>, newSource: ComparisonSource | null) => {
-      if (newSource) setComparisonSource(newSource);
-    },
-    [setComparisonSource],
   );
 
   const breadcrumb = activeDocument
@@ -144,26 +135,29 @@ export const InlineToolbar: React.FC = () => {
           borderColor: 'divider',
         }}
       >
+        {/* ===== GROUP 1: Navigation ===== */}
         <IconButton
           size="small"
           color="inherit"
           aria-label="toggle sidebar"
           onClick={() => toggleSidebar()}
-          sx={{ mr: 0.5 }}
         >
           <MenuIcon sx={{ fontSize: 18 }} />
         </IconButton>
 
         {activePage && (
-          <IconButton
-            size="small"
-            color="inherit"
-            aria-label="previous page"
-            disabled={!hasPrev}
-            onClick={handlePrevPage}
-          >
-            <ChevronLeftIcon sx={{ fontSize: 18 }} />
-          </IconButton>
+          <>
+            <ToolbarDivider />
+            <IconButton
+              size="small"
+              color="inherit"
+              aria-label="previous page"
+              disabled={!hasPrev}
+              onClick={handlePrevPage}
+            >
+              <ChevronLeftIcon sx={{ fontSize: 18 }} />
+            </IconButton>
+          </>
         )}
 
         <Typography
@@ -185,128 +179,113 @@ export const InlineToolbar: React.FC = () => {
           </IconButton>
         )}
 
-        {/* Validation progress (both modes) */}
+        {/* ===== GROUP 2: Validation Progress ===== */}
         {total > 0 && (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, ml: 1 }}>
-            <Box sx={{ width: 60, height: 4, bgcolor: 'grey.800', borderRadius: 2, overflow: 'hidden' }}>
-              <Box
-                sx={{
-                  width: `${(validated / total) * 100}%`,
-                  height: '100%',
-                  bgcolor: validated === total ? 'success.main' : 'info.main',
-                  borderRadius: 2,
-                  transition: 'width 0.2s ease',
-                }}
-              />
-            </Box>
-            <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: 10 }}>
-              {validated}/{total}
-            </Typography>
-            {hasUnvalidated && viewMode === 'edit' && (
-              <IconButton
-                size="small"
-                color="info"
-                aria-label="jump to next unvalidated region"
-                title="Next unvalidated region"
-                onClick={() => {
-                  if (!activePage) return;
-                  const regions = activePage.regions;
-                  const currentIdx = regions.findIndex((r) => r.id === selectedRegionId);
-                  for (let i = 1; i <= regions.length; i++) {
-                    const idx = (currentIdx + i) % regions.length;
-                    const r = regions[idx];
-                    if (r && !r.isValidated) {
-                      selectRegion(r.id);
-                      return;
+          <>
+            <ToolbarDivider />
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <Box sx={{ width: 60, height: 4, bgcolor: 'grey.800', borderRadius: 2, overflow: 'hidden' }}>
+                <Box
+                  sx={{
+                    width: `${(validated / total) * 100}%`,
+                    height: '100%',
+                    bgcolor: validated === total ? 'success.main' : 'info.main',
+                    borderRadius: 2,
+                    transition: 'width 0.2s ease',
+                  }}
+                />
+              </Box>
+              <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: 10 }}>
+                {validated}/{total}
+              </Typography>
+              {hasUnvalidated && viewMode === 'edit' && (
+                <IconButton
+                  size="small"
+                  color="info"
+                  aria-label="jump to next unvalidated region"
+                  title="Next unvalidated region"
+                  onClick={() => {
+                    if (!activePage) return;
+                    const regions = activePage.regions;
+                    const currentIdx = regions.findIndex((r) => r.id === selectedRegionId);
+                    for (let i = 1; i <= regions.length; i++) {
+                      const idx = (currentIdx + i) % regions.length;
+                      const r = regions[idx];
+                      if (r && !r.isValidated) {
+                        selectRegion(r.id);
+                        return;
+                      }
                     }
-                  }
-                }}
-                sx={{ p: 0.25 }}
-              >
-                <ChevronRightIcon sx={{ fontSize: 14 }} />
-              </IconButton>
-            )}
-          </Box>
+                  }}
+                  sx={{ p: 0.25 }}
+                >
+                  <ChevronRightIcon sx={{ fontSize: 14 }} />
+                </IconButton>
+              )}
+            </Box>
+          </>
         )}
 
         <Box sx={{ flex: 1 }} />
 
-        {/* ===== PREVIEW MODE CONTROLS ===== */}
-        {viewMode === 'preview' && (
+        {/* ===== GROUP 3: Preview Mode Controls ===== */}
+        {viewMode === 'preview' && activePage && (
           <>
-            {/* Preview layout toggle */}
-            {activePage && (
-              <ToggleButtonGroup
+            {/* Compare mode select + slider orientation */}
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mr: 1 }}>
+              <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: 11 }}>
+                Compare:
+              </Typography>
+              <Select
                 value={previewLayout}
-                exclusive
-                onChange={handlePreviewLayoutChange}
+                onChange={(e: SelectChangeEvent) => setPreviewLayout(e.target.value as PreviewLayout)}
+                variant="standard"
                 size="small"
-                sx={{ mr: 0.5 }}
+                disableUnderline
+                sx={selectSx}
               >
-                <ToggleButton value="side-by-side" sx={{ px: 1, py: 0, textTransform: 'none', fontSize: 11, minHeight: 26 }}>
-                  <ViewSidebarOutlinedIcon sx={{ fontSize: 14, mr: 0.5 }} />
-                  Side by Side
-                </ToggleButton>
-                <ToggleButton value="slider" sx={{ px: 1, py: 0, textTransform: 'none', fontSize: 11, minHeight: 26 }}>
-                  <CompareArrowsIcon sx={{ fontSize: 14, mr: 0.5 }} />
-                  Slider
-                </ToggleButton>
-              </ToggleButtonGroup>
-            )}
-
-            {/* Comparison source toggle */}
-            {activePage && (
-              <ToggleButtonGroup
-                value={comparisonSource}
-                exclusive
-                onChange={handleComparisonSourceChange}
-                size="small"
-                sx={{ mr: 0.5 }}
-              >
-                <ToggleButton value="restored" sx={{ px: 1, py: 0, textTransform: 'none', fontSize: 11, minHeight: 26 }}>
-                  Overlay
-                </ToggleButton>
-                <ToggleButton value="text-only" sx={{ px: 1, py: 0, textTransform: 'none', fontSize: 11, minHeight: 26 }}>
-                  Synthetic Reconstruct
-                </ToggleButton>
-              </ToggleButtonGroup>
-            )}
-
-            {/* Slider orientation toggle (only in slider mode) */}
-            {activePage && previewLayout === 'slider' && (
-              <ToggleButtonGroup
-                value={sliderOrientation}
-                exclusive
-                onChange={handleSliderOrientationChange}
-                size="small"
-                sx={{ mr: 0.5 }}
-              >
-                <ToggleButton value="horizontal" sx={{ px: 0.75, py: 0, minHeight: 26 }} title="Horizontal slider">
-                  <SwapHorizIcon sx={{ fontSize: 14 }} />
-                </ToggleButton>
-                <ToggleButton value="vertical" sx={{ px: 0.75, py: 0, minHeight: 26 }} title="Vertical slider">
-                  <SwapVertIcon sx={{ fontSize: 14 }} />
-                </ToggleButton>
-              </ToggleButtonGroup>
-            )}
-
-            {/* Show/hide validation icons */}
-            {activePage && previewLayout === 'side-by-side' && (
-              <Tooltip title={showValidationIcons ? 'Hide validation icons' : 'Show validation icons'}>
-                <IconButton
+                <MenuItem value="side-by-side" sx={{ fontSize: 12 }}>Side by Side</MenuItem>
+                <MenuItem value="slider" sx={{ fontSize: 12 }}>Slider</MenuItem>
+              </Select>
+              {previewLayout === 'slider' && (
+                <ToggleButtonGroup
+                  value={sliderOrientation}
+                  exclusive
+                  onChange={handleSliderOrientationChange}
                   size="small"
-                  color={showValidationIcons ? 'primary' : 'default'}
-                  aria-label="toggle validation icons"
-                  onClick={() => toggleValidationIcons()}
-                  sx={{ mr: 0.5 }}
                 >
-                  <CheckCircleOutlineIcon sx={{ fontSize: 16 }} />
-                </IconButton>
-              </Tooltip>
-            )}
+                  <ToggleButton value="horizontal" sx={{ px: 0.75, py: 0, minHeight: 26 }} title="Horizontal slider">
+                    <SwapHorizIcon sx={{ fontSize: 14 }} />
+                  </ToggleButton>
+                  <ToggleButton value="vertical" sx={{ px: 0.75, py: 0, minHeight: 26 }} title="Vertical slider">
+                    <SwapVertIcon sx={{ fontSize: 14 }} />
+                  </ToggleButton>
+                </ToggleButtonGroup>
+              )}
+            </Box>
+
+            {/* Source mode select */}
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mr: 1 }}>
+              <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: 11 }}>
+                Source:
+              </Typography>
+              <Select
+                value={comparisonSource}
+                onChange={(e: SelectChangeEvent) => setComparisonSource(e.target.value as ComparisonSource)}
+                variant="standard"
+                size="small"
+                disableUnderline
+                sx={selectSx}
+              >
+                <MenuItem value="restored" sx={{ fontSize: 12 }}>Overlay</MenuItem>
+                <MenuItem value="text-only" sx={{ fontSize: 12 }}>Synthetic Reconstruct</MenuItem>
+              </Select>
+            </Box>
+
+            <ToolbarDivider />
 
             {/* Edit button */}
-            {editable && activePage && (
+            {editable && (
               <Button
                 variant="outlined"
                 size="small"
@@ -320,7 +299,7 @@ export const InlineToolbar: React.FC = () => {
           </>
         )}
 
-        {/* ===== EDIT MODE CONTROLS ===== */}
+        {/* ===== GROUP 3: Edit Mode Controls ===== */}
         {viewMode === 'edit' && (
           <>
             {activePage && editable && features.regionCreation && (
@@ -335,128 +314,34 @@ export const InlineToolbar: React.FC = () => {
               </Button>
             )}
 
-            {activePage && editable && features.regionCreation && editorMode === 'create' && (
-              <div style={{ marginRight: 4, display: 'flex', alignItems: 'center', gap: 3 }}>
-                <select
-                  value={regionDefaults.fontFamily}
-                  onChange={(e) => setRegionDefaults({ fontFamily: e.target.value })}
-                  style={{
-                    height: 22, fontSize: 10,
-                    background: theme.palette.background.default, color: theme.palette.text.primary,
-                    border: `1px solid ${theme.palette.divider}`, borderRadius: 2,
-                    padding: '0 2px', cursor: 'pointer', outline: 'none', maxWidth: 72,
-                  }}
-                >
-                  <option value="Inter">Inter</option>
-                  <option value="Roboto">Roboto</option>
-                  <option value="Arial">Arial</option>
-                  <option value="Times New Roman">Times NR</option>
-                  <option value="Courier New">Courier</option>
-                  <option value="Georgia">Georgia</option>
-                </select>
-                <div
-                  onClick={() => setRegionDefaults({ fontWeight: regionDefaults.fontWeight === 'bold' ? 'normal' : 'bold' })}
-                  style={{
-                    width: 20, height: 20, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: 11, fontWeight: 700, borderRadius: 2, cursor: 'pointer', userSelect: 'none',
-                    background: regionDefaults.fontWeight === 'bold' ? theme.palette.primary.main : 'transparent',
-                    color: regionDefaults.fontWeight === 'bold' ? theme.palette.primary.contrastText : theme.palette.text.secondary,
-                  }}
-                  title="Bold"
-                >B</div>
-                <div
-                  onClick={() => setRegionDefaults({ fontStyle: regionDefaults.fontStyle === 'italic' ? 'normal' : 'italic' })}
-                  style={{
-                    width: 20, height: 20, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: 11, fontStyle: 'italic', borderRadius: 2, cursor: 'pointer', userSelect: 'none',
-                    background: regionDefaults.fontStyle === 'italic' ? theme.palette.primary.main : 'transparent',
-                    color: regionDefaults.fontStyle === 'italic' ? theme.palette.primary.contrastText : theme.palette.text.secondary,
-                  }}
-                  title="Italic"
-                >I</div>
-                <div
-                  onClick={() => setRegionDefaults({ textDecoration: regionDefaults.textDecoration === 'line-through' ? 'none' : 'line-through' })}
-                  style={{
-                    width: 20, height: 20, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: 11, textDecoration: 'line-through', borderRadius: 2, cursor: 'pointer', userSelect: 'none',
-                    background: regionDefaults.textDecoration === 'line-through' ? theme.palette.primary.main : 'transparent',
-                    color: regionDefaults.textDecoration === 'line-through' ? theme.palette.primary.contrastText : theme.palette.text.secondary,
-                  }}
-                  title="Strikethrough"
-                >S</div>
-                <DebouncedColorPicker value={regionDefaults.fontColor} onChange={(c) => setRegionDefaults({ fontColor: c })} style={{ width: 20, height: 20 }} />
-                <div style={{ width: 1, height: 16, background: theme.palette.divider }} />
-                <div
-                  onClick={() => setRegionDefaults({ borderVisible: !regionDefaults.borderVisible })}
-                  style={{
-                    width: 20, height: 20,
-                    border: `2px solid ${regionDefaults.borderVisible ? (regionDefaults.borderColor ?? theme.palette.primary.main) : theme.palette.grey[600]}`,
-                    borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: 10, lineHeight: 1, cursor: 'pointer', userSelect: 'none',
-                    opacity: regionDefaults.borderVisible ? 1 : 0.4,
-                  }}
-                  title={regionDefaults.borderVisible ? 'Hide border' : 'Show border'}
-                >{regionDefaults.borderVisible ? '✓' : ''}</div>
-                <DebouncedColorPicker value={regionDefaults.borderColor} onChange={(c) => setRegionDefaults({ borderColor: c })} style={{ width: 20, height: 20 }} />
-                <div style={{ width: 1, height: 16, background: theme.palette.divider }} />
-                <div
-                  onClick={() => setRegionDefaults({ backgroundColor: regionDefaults.backgroundColor === 'transparent' ? '#333333' : 'transparent' })}
-                  style={{
-                    width: 20, height: 20, border: `2px solid ${theme.palette.text.secondary}`, borderRadius: 2,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, lineHeight: 1,
-                    cursor: 'pointer', userSelect: 'none',
-                    backgroundColor: regionDefaults.backgroundColor && regionDefaults.backgroundColor !== 'transparent' ? regionDefaults.backgroundColor : 'transparent',
-                  }}
-                  title={regionDefaults.backgroundColor === 'transparent' ? 'Add background' : 'Clear background'}
-                >{regionDefaults.backgroundColor && regionDefaults.backgroundColor !== 'transparent' ? '✓' : ''}</div>
-                {regionDefaults.backgroundColor && regionDefaults.backgroundColor !== 'transparent' ? (
-                  <DebouncedColorPicker value={regionDefaults.backgroundColor} onChange={(c) => setRegionDefaults({ backgroundColor: c })} style={{ width: 20, height: 20 }} />
-                ) : (
-                  <DebouncedColorPicker value="#000000" onChange={(c) => setRegionDefaults({ backgroundColor: c })} style={{ width: 20, height: 20, opacity: 0.4 }} />
-                )}
-                <div style={{ width: 1, height: 16, background: theme.palette.divider }} />
-                <select
-                  value={regionDefaults.textPosition}
-                  onChange={(e) => setRegionDefaults({ textPosition: e.target.value as 'inside' | 'top' | 'bottom' | 'left' | 'right' })}
-                  style={{
-                    height: 22, fontSize: 10,
-                    background: theme.palette.background.default, color: theme.palette.text.primary,
-                    border: `1px solid ${theme.palette.divider}`, borderRadius: 2,
-                    padding: '0 2px', cursor: 'pointer', outline: 'none', maxWidth: 60,
-                  }}
-                >
-                  <option value="inside">Inside</option>
-                  <option value="top">Top</option>
-                  <option value="bottom">Bottom</option>
-                </select>
-              </div>
-            )}
-
             {editable && (
               <>
+                <ToolbarDivider />
                 <IconButton size="small" color="inherit" aria-label="undo" disabled={!canUndo} onClick={handleUndo}>
                   <UndoIcon sx={{ fontSize: 16 }} />
                 </IconButton>
-                <IconButton size="small" color="inherit" aria-label="redo" disabled={!canRedo} onClick={handleRedo} sx={{ mr: 0.5 }}>
+                <IconButton size="small" color="inherit" aria-label="redo" disabled={!canRedo} onClick={handleRedo}>
                   <RedoIcon sx={{ fontSize: 16 }} />
                 </IconButton>
               </>
             )}
 
             {activePage && (
-              <IconButton
-                size="small"
-                color={showRegionText ? 'primary' : 'default'}
-                aria-label="toggle region text"
-                onClick={() => toggleRegionText()}
-                title={showRegionText ? 'Hide region text' : 'Show region text'}
-                sx={{ mr: 0.5 }}
-              >
-                <TextFieldsIcon sx={{ fontSize: 16 }} />
-              </IconButton>
+              <Tooltip title={showRegionText ? 'Hide region text' : 'Show region text'}>
+                <IconButton
+                  size="small"
+                  color={showRegionText ? 'primary' : 'default'}
+                  aria-label="toggle region text"
+                  onClick={() => toggleRegionText()}
+                >
+                  <TextFieldsIcon sx={{ fontSize: 16 }} />
+                </IconButton>
+              </Tooltip>
             )}
 
-            {/* Back to preview button */}
+            <ToolbarDivider />
+
+            {/* Back to preview */}
             <Button
               variant="outlined"
               size="small"
@@ -470,43 +355,59 @@ export const InlineToolbar: React.FC = () => {
           </>
         )}
 
-        {/* ===== SHARED CONTROLS ===== */}
+        {/* ===== GROUP 4: Shared Utilities ===== */}
+        <ToolbarDivider />
+
         <Tooltip title="Fit to view">
           <IconButton
             size="small"
             color="inherit"
             aria-label="fit to view"
             onClick={() => triggerFitToView()}
-            sx={{ mr: 0.5 }}
           >
             <FitScreenOutlinedIcon sx={{ fontSize: 16 }} />
           </IconButton>
         </Tooltip>
 
         {features.export && (
-          <Button
-            variant="outlined"
-            size="small"
-            startIcon={<FileDownloadOutlinedIcon sx={{ fontSize: 14 }} />}
-            disabled={!activePage}
-            onClick={() => setExportDialogOpen(true)}
-            sx={{ py: 0, fontSize: 11, minHeight: 26 }}
-          >
-            Export
-          </Button>
+          <Tooltip title="Export">
+            <IconButton
+              size="small"
+              color="inherit"
+              disabled={!activePage}
+              aria-label="export"
+              onClick={() => setExportDialogOpen(true)}
+            >
+              <FileDownloadOutlinedIcon sx={{ fontSize: 16 }} />
+            </IconButton>
+          </Tooltip>
         )}
 
-        <IconButton
-          size="small"
-          onClick={() => useUiStore.getState().setHelpDialogOpen(true)}
-          title="Keyboard shortcuts (?)"
-          sx={{ ml: 0.5, p: 0.5 }}
-        >
-          <HelpOutlineIcon sx={{ fontSize: 16 }} />
-        </IconButton>
+        {viewMode === 'edit' && editable && (
+          <Tooltip title="Region default settings">
+            <IconButton
+              size="small"
+              onClick={() => setSettingsDialogOpen(true)}
+              sx={{ p: 0.5 }}
+            >
+              <SettingsOutlinedIcon sx={{ fontSize: 16 }} />
+            </IconButton>
+          </Tooltip>
+        )}
+
+        <Tooltip title="Keyboard shortcuts (?)">
+          <IconButton
+            size="small"
+            onClick={() => useUiStore.getState().setHelpDialogOpen(true)}
+            sx={{ p: 0.5 }}
+          >
+            <HelpOutlineIcon sx={{ fontSize: 16 }} />
+          </IconButton>
+        </Tooltip>
       </Box>
 
       <ExportDialog open={exportDialogOpen} onClose={() => setExportDialogOpen(false)} />
+      <RegionDefaultsDialog open={settingsDialogOpen} onClose={() => setSettingsDialogOpen(false)} />
     </>
   );
 };

@@ -11,6 +11,7 @@ interface DocumentState {
   deleteRegion: (pageId: string, regionId: string) => void;
   updateRegionBounds: (pageId: string, regionId: string, x1: number, y1: number, x2: number, y2: number) => void;
   updateRegionStyle: (pageId: string, regionId: string, style: { fontColor?: string; fontFamily?: string; fontWeight?: 'normal' | 'bold'; fontStyle?: 'normal' | 'italic'; textDecoration?: 'none' | 'line-through'; borderColor?: string; borderVisible?: boolean; backgroundColor?: string; textPosition?: 'inside' | 'top' | 'bottom' | 'left' | 'right' }) => void;
+  updateAllRegionsStyle: (style: { fontColor?: string; fontFamily?: string; fontWeight?: 'normal' | 'bold'; fontStyle?: 'normal' | 'italic'; textDecoration?: 'none' | 'line-through'; borderColor?: string; borderVisible?: boolean; backgroundColor?: string; textPosition?: 'inside' | 'top' | 'bottom' | 'left' | 'right' }) => void;
   toggleRegionValidation: (pageId: string, regionId: string) => void;
   restoreSnapshot: (snapshot: Document[]) => void;
   getActiveDocument: (id: string | null) => Document | undefined;
@@ -153,6 +154,29 @@ const useDocumentStore = create<DocumentState>()(
               if (style.textPosition !== undefined) region.textPosition = style.textPosition;
             }
             break;
+          }
+        }
+      });
+      const after = snapshotForHistory(get().documents);
+      useEditHistoryStore.getState().pushEntry(before, after);
+    },
+
+    updateAllRegionsStyle: (style) => {
+      const before = snapshotForHistory(get().documents);
+      set((state) => {
+        for (const doc of state.documents) {
+          for (const page of doc.pages) {
+            for (const region of page.regions) {
+              if (style.fontColor !== undefined) region.fontColor = style.fontColor;
+              if (style.fontFamily !== undefined) region.fontFamily = style.fontFamily;
+              if (style.fontWeight !== undefined) region.fontWeight = style.fontWeight;
+              if (style.fontStyle !== undefined) region.fontStyle = style.fontStyle;
+              if (style.textDecoration !== undefined) region.textDecoration = style.textDecoration;
+              if (style.borderColor !== undefined) region.borderColor = style.borderColor;
+              if (style.borderVisible !== undefined) region.borderVisible = style.borderVisible;
+              if (style.backgroundColor !== undefined) region.backgroundColor = style.backgroundColor;
+              if (style.textPosition !== undefined) region.textPosition = style.textPosition;
+            }
           }
         }
       });
