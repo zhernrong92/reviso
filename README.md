@@ -7,11 +7,12 @@ An embeddable React component for reviewing and correcting OCR text on restored 
 - **Preview-First UX** — default view shows restored documents for QA review, editing is entered explicitly
 - **Side-by-Side Comparison** — original (left) vs restored (right) with independent zoom/pan
 - **Slider Comparison** — drag slider overlay comparing original vs restored, horizontal or vertical orientation
+- **Comparison Sources** — toggle between Overlay (original image with corrected text) and Synthetic Reconstruct (white background with text only)
 - **Region Validation** — click checkmarks to mark regions as validated; progress bar tracks review completion
 - **Inline Editing** — click a region to edit text, Tab/Shift+Tab to navigate between regions
 - **Region Management** — create, resize, move, delete text regions; customise font, color, border, background, text position
 - **Auto Background Detection** — restored preview automatically detects and fills region backgrounds from the document image
-- **Export** — JSON (structured data), PDF (text at original positions), PNG (restored page render)
+- **Export** — Synthetic Reconstruct, Overlay, Original, and Document JSON export types; PDF or PNG format with multi-page PNG auto-zipped; also available as a headless `exportDocument()` API
 - **Undo/Redo** — Ctrl+Z / Ctrl+Shift+Z with full snapshot history
 - **Fit to View** — reset zoom across all view modes from toolbar
 - **Theme Integration** — inherits host app's MUI theme, accepts theme overrides
@@ -23,7 +24,7 @@ An embeddable React component for reviewing and correcting OCR text on restored 
 1. **Preview** (default) — review restored documents in side-by-side or slider comparison mode
 2. **Validate** — click checkmarks on regions to confirm OCR corrections are accurate
 3. **Edit** (on demand) — enter edit mode to fix text, create/delete regions, adjust styles
-4. **Export** — download corrected document as JSON, PDF, or PNG
+4. **Export** — download as Synthetic Reconstruct, Overlay, Original, or Document JSON in PDF or PNG format
 
 ## Installation
 
@@ -168,7 +169,7 @@ In this example, Reviso uses the host's dark mode and Inter font, but overrides 
 | `onRegionChange` | `(event) => void` | — | Granular per-region change event (`{ type, pageId, regionId, region? }`) |
 | `onPageChange` | `(pageId: string) => void` | — | Fired on page navigation |
 | `onSelectionChange` | `(regionId: string \| null) => void` | — | Fired on region select/deselect |
-| `onExport` | `(format, data: Blob) => void` | — | Intercept export (replaces auto-download) |
+| `onExport` | `(format: 'json' \| 'pdf' \| 'png', data: Blob) => void` | — | Intercept export (replaces auto-download) |
 
 ### `defaultRegionStyles`
 
@@ -225,10 +226,15 @@ In this example, Reviso uses the host's dark mode and Inter font, but overrides 
 
 ### Preview Mode (default)
 
-The default landing view for QA review. Two sub-layouts:
+The default landing view for QA review. Two comparison layouts:
 
 - **Side-by-Side** — original image (left) + restored image (right) with independent zoom/pan. Validation checkmarks overlay the restored pane.
 - **Slider** — single overlay with a draggable comparison slider. Supports horizontal (left/right) and vertical (top/bottom) orientation. No validation checkmarks in this mode.
+
+Each layout supports two comparison sources via toolbar toggle:
+
+- **Overlay** — original page image with corrected text regions rendered on top
+- **Synthetic Reconstruct** — white background with only the corrected text at original positions
 
 ### Edit Mode
 
@@ -253,6 +259,49 @@ Entered via the "Edit" button in the toolbar or `Ctrl+E`. Full editing capabilit
 | `Tab / Shift+Tab` | Next / Previous region |
 | `Enter` | Confirm edit |
 | `?` | Show keyboard shortcuts help |
+
+## Headless Export API
+
+Use `exportDocument()` to export documents without rendering the Reviso component — useful for batch export, server-side workflows, or export buttons on listing pages.
+
+```tsx
+import { exportDocument } from 'react-reviso';
+import type { RevisoDocument } from 'react-reviso';
+
+const doc: RevisoDocument = { /* ... */ };
+
+const result = await exportDocument({
+  documents: [doc],
+  type: 'synthetic',  // 'synthetic' | 'overlay' | 'original' | 'json'
+  format: 'pdf',      // 'pdf' | 'png' (ignored for 'json')
+});
+
+// result: { blob: Blob, filename: string, mimeType: string }
+
+// Download it
+const url = URL.createObjectURL(result.blob);
+const link = document.createElement('a');
+link.href = url;
+link.download = result.filename;
+link.click();
+URL.revokeObjectURL(url);
+```
+
+### Export Types
+
+| Type | Description |
+|------|-------------|
+| `synthetic` | White background with corrected text at original positions |
+| `overlay` | Original page image with corrected text regions overlaid |
+| `original` | Original page image as-is |
+| `json` | Structured document JSON with all region data |
+
+### Export Formats
+
+| Format | Behaviour |
+|--------|-----------|
+| `pdf` | All pages combined into a single PDF |
+| `png` | Single PNG for one page; ZIP archive for multiple pages |
 
 ## Development
 
@@ -341,4 +390,5 @@ npm publish --access public
 | react-zoom-pan-pinch | Document viewer zoom/pan |
 | react-compare-slider | Before/after comparison slider |
 | pdf-lib | PDF export generation |
+| fflate | ZIP compression for multi-page PNG export |
 | nanoid | Unique ID generation |
