@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo, useRef } from 'react';
 import { useTheme } from '@mui/material/styles';
 import type { TextRegion as TextRegionType } from '../../types/document';
 import { useDocumentStore } from '../../stores/documentStore';
@@ -83,8 +83,26 @@ export const TextRegion = React.memo<TextRegionProps>(
 
     const w = region.x2 - region.x1;
     const h = region.y2 - region.y1;
-    const fontSize = h * 0.65;
     const pos = region.textPosition ?? 'inside';
+
+    const measureCanvasRef = useRef<HTMLCanvasElement | null>(null);
+    const fontSize = useMemo(() => {
+      const maxFs = Math.max(6, h * 0.65);
+      if (!region.currentText) return maxFs;
+      if (!measureCanvasRef.current) {
+        measureCanvasRef.current = document.createElement('canvas');
+      }
+      const ctx = measureCanvasRef.current.getContext('2d');
+      if (!ctx) return maxFs;
+      const fontStyle = region.fontStyle === 'italic' ? 'italic ' : '';
+      const fontWeight = region.fontWeight === 'bold' ? 'bold ' : '';
+      const fontFamily = region.fontFamily ?? 'Inter, Roboto, Helvetica, Arial, sans-serif';
+      ctx.font = `${fontStyle}${fontWeight}${maxFs}px ${fontFamily}`;
+      const textWidth = ctx.measureText(region.currentText).width;
+      const padding = 4;
+      const available = w - padding * 2;
+      return textWidth > available ? Math.max(6, maxFs * (available / textWidth)) : maxFs;
+    }, [w, h, region.currentText, region.fontStyle, region.fontWeight, region.fontFamily]);
 
     const clipId = `clip-${region.id}`;
 

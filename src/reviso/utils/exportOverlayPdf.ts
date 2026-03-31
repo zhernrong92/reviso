@@ -1,6 +1,7 @@
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
 import type { Document } from '../types/document';
 import { detectRegionBackgrounds } from './detectRegionBackground';
+import { fitFontSize } from './fitFontSize';
 
 function hexToRgb(hex: string): { r: number; g: number; b: number } {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -89,8 +90,6 @@ export async function exportOverlayPdf(documents: Document[]): Promise<Uint8Arra
 
         if (!region.currentText) continue;
 
-        const fontSize = Math.max(8, h * 0.65);
-
         const fontColorHex = region.fontColor ?? '#1a1a1a';
         const fontRgb = hexToRgb(fontColorHex);
 
@@ -102,8 +101,11 @@ export async function exportOverlayPdf(documents: Document[]): Promise<Uint8Arra
         else if (isItalic) fontKey = 'italic';
         const font = fonts[fontKey];
 
+        const padding = 4;
+        const fontSize = fitFontSize(w - padding * 2, h, (fs) => font.widthOfTextAtSize(region.currentText, fs));
+
         // pdf-lib uses bottom-left origin; flip Y
-        const textX = region.x1 + 4;
+        const textX = region.x1 + padding;
         const textY = page.height - (region.y1 + h * 0.75);
 
         pdfPage.drawText(region.currentText, {

@@ -1,5 +1,6 @@
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
 import type { Document } from '../types/document';
+import { fitFontSize } from './fitFontSize';
 
 type FontKey = 'normal' | 'bold' | 'italic' | 'boldItalic';
 
@@ -29,8 +30,8 @@ export async function exportPdf(documents: Document[]): Promise<Uint8Array> {
       for (const region of page.regions) {
         if (!region.currentText) continue;
 
+        const w = region.x2 - region.x1;
         const h = region.y2 - region.y1;
-        const fontSize = Math.max(8, h * 0.65);
         const color = { r: 0.1, g: 0.1, b: 0.1 };
 
         const isBold = region.fontWeight === 'bold';
@@ -40,10 +41,12 @@ export async function exportPdf(documents: Document[]): Promise<Uint8Array> {
         else if (isBold) fontKey = 'bold';
         else if (isItalic) fontKey = 'italic';
         const font = fonts[fontKey];
+        const padding = 4;
+        const fontSize = fitFontSize(w - padding * 2, h, (fs) => font.widthOfTextAtSize(region.currentText, fs));
 
         // Always render text inside the region box (textPosition is edit-mode only)
         // pdf-lib uses bottom-left origin; SVG uses top-left, so flip Y
-        const textX = region.x1 + 4;
+        const textX = region.x1 + padding;
         const textY = page.height - (region.y1 + h * 0.75);
 
         pdfPage.drawText(region.currentText, {

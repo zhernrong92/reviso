@@ -1,4 +1,5 @@
 import type { Document } from '../types/document';
+import { fitFontSize } from './fitFontSize';
 
 /**
  * Export pages as PNG images using "Synthetic Reconstruct" style:
@@ -29,10 +30,15 @@ export async function exportSyntheticImage(
 
         const w = region.x2 - region.x1;
         const h = region.y2 - region.y1;
-        const fontSize = Math.max(8, h * 0.65);
         const fontStyle = region.fontStyle === 'italic' ? 'italic ' : '';
         const fontWeight = region.fontWeight === 'bold' ? 'bold ' : '';
         const fontFamily = region.fontFamily ?? 'Inter, Roboto, Helvetica, Arial, sans-serif';
+        const padding = 4;
+
+        const fontSize = fitFontSize(w - padding * 2, h, (fs) => {
+          ctx.font = `${fontStyle}${fontWeight}${fs}px ${fontFamily}`;
+          return ctx.measureText(region.currentText).width;
+        });
 
         ctx.font = `${fontStyle}${fontWeight}${fontSize}px ${fontFamily}`;
         ctx.fillStyle = region.fontColor ?? '#1a1a1a';
@@ -43,7 +49,7 @@ export async function exportSyntheticImage(
         ctx.rect(region.x1, region.y1, w, h);
         ctx.clip();
 
-        const textX = region.x1 + 4;
+        const textX = region.x1 + padding;
         const textY = region.y1 + h * 0.75;
         ctx.fillText(region.currentText, textX, textY);
 

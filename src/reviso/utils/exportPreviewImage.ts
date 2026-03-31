@@ -1,5 +1,6 @@
 import type { Page } from '../types/document';
 import { detectRegionBackgrounds } from './detectRegionBackground';
+import { fitFontSize } from './fitFontSize';
 
 function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
@@ -57,10 +58,16 @@ export async function renderPreviewPage(
 
     // Text always inside
     if (region.currentText) {
-      const fontSize = h * 0.65;
       const fontStyle = region.fontStyle === 'italic' ? 'italic ' : '';
       const fontWeight = region.fontWeight === 'bold' ? 'bold ' : '';
       const fontFamily = region.fontFamily ?? 'Inter, Roboto, Helvetica, Arial, sans-serif';
+      const padding = 4;
+
+      const fontSize = fitFontSize(w - padding * 2, h, (fs) => {
+        ctx.font = `${fontStyle}${fontWeight}${fs}px ${fontFamily}`;
+        return ctx.measureText(region.currentText).width;
+      });
+
       ctx.font = `${fontStyle}${fontWeight}${fontSize}px ${fontFamily}`;
       ctx.fillStyle = region.fontColor ?? '#1a1a1a';
       ctx.globalAlpha = 0.95;
@@ -71,7 +78,7 @@ export async function renderPreviewPage(
       ctx.rect(region.x1, region.y1, w, h);
       ctx.clip();
 
-      ctx.fillText(region.currentText, region.x1 + 4, region.y1 + h * 0.75);
+      ctx.fillText(region.currentText, region.x1 + padding, region.y1 + h * 0.75);
 
       // Strikethrough
       if (region.textDecoration === 'line-through') {
@@ -80,8 +87,8 @@ export async function renderPreviewPage(
         ctx.strokeStyle = region.fontColor ?? '#1a1a1a';
         ctx.lineWidth = Math.max(1, fontSize * 0.06);
         ctx.beginPath();
-        ctx.moveTo(region.x1 + 4, strikeY);
-        ctx.lineTo(region.x1 + 4 + textWidth, strikeY);
+        ctx.moveTo(region.x1 + padding, strikeY);
+        ctx.lineTo(region.x1 + padding + textWidth, strikeY);
         ctx.stroke();
       }
 

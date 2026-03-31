@@ -1,11 +1,12 @@
 import type { Page } from '../../types/document';
+import { useFittedFontSizes } from '../../hooks/useFittedFontSizes';
 
 interface TextOnlyImageProps {
   page: Page;
 }
 
 export const TextOnlyImage: React.FC<TextOnlyImageProps> = ({ page }) => {
-  const fontSize = (h: number) => Math.max(8, h * 0.65);
+  const fontSizes = useFittedFontSizes(page);
 
   return (
     <div style={{ position: 'relative', width: page.width, height: page.height }}>
@@ -23,7 +24,7 @@ export const TextOnlyImage: React.FC<TextOnlyImageProps> = ({ page }) => {
 
           const w = region.x2 - region.x1;
           const h = region.y2 - region.y1;
-          const fs = fontSize(h);
+          const fs = fontSizes[region.id] ?? Math.max(6, h * 0.65);
           const clipId = `text-only-clip-${region.id}`;
 
           return (

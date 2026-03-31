@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { useTheme } from '@mui/material/styles';
 import type { TextRegion } from '../../types/document';
 import { useDocumentStore } from '../../stores/documentStore';
@@ -336,9 +336,27 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
 
   const w = bounds.x2 - bounds.x1;
   const h = bounds.y2 - bounds.y1;
-  const fontSize = h * 0.65;
   const half = HANDLE_SIZE / 2;
   const textPos = region.textPosition ?? 'inside';
+
+  const measureCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const fontSize = useMemo(() => {
+    const maxFs = Math.max(6, h * 0.65);
+    if (!value) return maxFs;
+    if (!measureCanvasRef.current) {
+      measureCanvasRef.current = document.createElement('canvas');
+    }
+    const ctx = measureCanvasRef.current.getContext('2d');
+    if (!ctx) return maxFs;
+    const fontStyle = region.fontStyle === 'italic' ? 'italic ' : '';
+    const fontWeight = region.fontWeight === 'bold' ? 'bold ' : '';
+    const fontFamily = region.fontFamily ?? 'Inter, Roboto, Helvetica, Arial, sans-serif';
+    ctx.font = `${fontStyle}${fontWeight}${maxFs}px ${fontFamily}`;
+    const textWidth = ctx.measureText(value).width;
+    const padding = 4;
+    const available = w - padding * 2;
+    return textWidth > available ? Math.max(6, maxFs * (available / textWidth)) : maxFs;
+  }, [w, h, value, region.fontStyle, region.fontWeight, region.fontFamily]);
   const inputH = fontSize + 8;
   const inverseScale = 1 / zoomScale;
 

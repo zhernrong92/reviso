@@ -1,4 +1,5 @@
 import type { Page } from '../../types/document';
+import { useFittedFontSizes } from '../../hooks/useFittedFontSizes';
 
 interface AfterImageProps {
   page: Page;
@@ -7,7 +8,7 @@ interface AfterImageProps {
 }
 
 export const AfterImage: React.FC<AfterImageProps> = ({ page, autoBackgroundColors }) => {
-  const fontSize = (h: number) => h * 0.65;
+  const fontSizes = useFittedFontSizes(page);
 
   return (
     <div style={{ position: 'relative', width: page.width, height: page.height }}>
@@ -27,7 +28,7 @@ export const AfterImage: React.FC<AfterImageProps> = ({ page, autoBackgroundColo
         {page.regions.map((region) => {
           const w = region.x2 - region.x1;
           const h = region.y2 - region.y1;
-          const fs = fontSize(h);
+          const fs = fontSizes[region.id] ?? Math.max(6, h * 0.65);
           const clipId = `after-clip-${region.id}`;
 
           // Preview rendering: opaque background, text always inside
