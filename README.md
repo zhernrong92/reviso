@@ -260,9 +260,51 @@ Entered via the "Edit" button in the toolbar or `Ctrl+E`. Full editing capabilit
 | `Enter` | Confirm edit |
 | `?` | Show keyboard shortcuts help |
 
-## Headless Export API
+## Export API
 
-Use `exportDocument()` to export documents without rendering the Reviso component — useful for batch export, server-side workflows, or export buttons on listing pages.
+Export functionality is available in two forms — a ready-made dialog component and a headless function — both usable outside the Reviso editor.
+
+### Export Dialog
+
+Use `ExportDocumentDialog` to show the same export dialog used inside the editor. It accepts a `RevisoDocument` directly — no Reviso component or stores needed.
+
+```tsx
+import { useState } from 'react';
+import { ExportDocumentDialog } from 'react-reviso';
+import type { RevisoDocument } from 'react-reviso';
+
+const doc: RevisoDocument = { /* ... */ };
+
+function MyPage() {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <>
+      <button onClick={() => setOpen(true)}>Export</button>
+      <ExportDocumentDialog
+        open={open}
+        onClose={() => setOpen(false)}
+        document={doc}
+        onExport={(format, blob) => {
+          // Optional: intercept instead of auto-downloading
+          console.log(format, blob);
+        }}
+      />
+    </>
+  );
+}
+```
+
+| Prop | Type | Required | Description |
+|------|------|----------|-------------|
+| `open` | `boolean` | yes | Whether the dialog is visible |
+| `onClose` | `() => void` | yes | Called when dialog should close |
+| `document` | `RevisoDocument \| null` | yes | The document to export |
+| `onExport` | `(format: 'json' \| 'pdf' \| 'png', data: Blob) => void` | no | Intercept export (replaces auto-download) |
+
+### Headless Function
+
+Use `exportDocument()` for full programmatic control — useful for batch export, custom UIs, or server-side workflows.
 
 ```tsx
 import { exportDocument } from 'react-reviso';

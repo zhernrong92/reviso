@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Box,
   Typography,
@@ -7,17 +7,12 @@ import {
   CardActions,
   Button,
   CircularProgress,
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
   Grid2 as Grid,
 } from '@mui/material';
 import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
 import OpenInNewOutlinedIcon from '@mui/icons-material/OpenInNewOutlined';
 import { Reviso } from './reviso/Reviso';
-import { exportDocument } from './reviso/utils/exportDocument';
-import type { ExportType, ExportFormat } from './reviso/utils/exportDocument';
+import { ExportDocumentDialog } from './reviso/components/export/ExportDocumentDialog';
 import { parsePdf } from './legacy/utils/parsePdf';
 import { parseUploadedJson } from './legacy/utils/parseUploadedJson';
 import { toPublicDocument } from './reviso/utils/typeMappers';
@@ -33,16 +28,11 @@ function loadImageDimensions(src: string): Promise<{ width: number; height: numb
   });
 }
 
-/** Simulates a document listing page with headless export. */
 const ExportDemo: React.FC = () => {
   const [documents, setDocuments] = useState<RevisoDocument[]>([]);
   const [loading, setLoading] = useState(true);
-  const [exporting, setExporting] = useState<string | null>(null);
   const [selectedDoc, setSelectedDoc] = useState<RevisoDocument | null>(null);
-
-  // Per-document export settings
-  const [exportTypes, setExportTypes] = useState<Record<string, ExportType>>({});
-  const [exportFormats, setExportFormats] = useState<Record<string, ExportFormat>>({});
+  const [exportDoc, setExportDoc] = useState<RevisoDocument | null>(null);
 
   useEffect(() => {
     async function loadDocs() {
@@ -100,48 +90,12 @@ const ExportDemo: React.FC = () => {
         // PNG load failed
       }
 
-      // Set default export settings
-      const defaultTypes: Record<string, ExportType> = {};
-      const defaultFormats: Record<string, ExportFormat> = {};
-      for (const doc of docs) {
-        defaultTypes[doc.id] = 'synthetic';
-        defaultFormats[doc.id] = 'pdf';
-      }
-      setExportTypes(defaultTypes);
-      setExportFormats(defaultFormats);
-
       setDocuments(docs);
       setLoading(false);
     }
 
     loadDocs();
   }, []);
-
-  const handleExport = useCallback(async (doc: RevisoDocument) => {
-    const type = exportTypes[doc.id] ?? 'synthetic';
-    const format = exportFormats[doc.id] ?? 'pdf';
-
-    setExporting(doc.id);
-    try {
-      const result = await exportDocument({
-        documents: [doc],
-        type,
-        format,
-      });
-
-      // Trigger download
-      const url = URL.createObjectURL(result.blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = result.filename;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-    } finally {
-      setExporting(null);
-    }
-  }, [exportTypes, exportFormats]);
 
   if (loading) {
     return (
@@ -195,88 +149,52 @@ const ExportDemo: React.FC = () => {
           Documents
         </Typography>
         <Typography variant="body2" sx={{ color: 'text.secondary', mb: 3 }}>
-          Demo of the headless <code>exportDocument()</code> API — export directly from the listing page without opening the editor.
+          Demo of <code>ExportDocumentDialog</code> — click Export to open the same export dialog used inside the editor.
         </Typography>
 
         <Grid container spacing={2}>
-          {documents.map((doc) => {
-            const type = exportTypes[doc.id] ?? 'synthetic';
-            const format = exportFormats[doc.id] ?? 'pdf';
-            const isExporting = exporting === doc.id;
-            const showFormat = type !== 'json';
+          {documents.map((doc) => (
+            <Grid key={doc.id} size={{ xs: 12, sm: 6 }}>
+              <Card sx={{ bgcolor: '#1a1a2e', borderRadius: 2 }}>
+                <CardContent sx={{ pb: 1 }}>
+                  <Typography variant="subtitle1" sx={{ fontWeight: 600, color: 'text.primary' }}>
+                    {doc.name}
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                    {doc.pages.length} page{doc.pages.length > 1 ? 's' : ''} &middot;{' '}
+                    {doc.pages.reduce((sum, p) => sum + p.regions.length, 0)} regions
+                  </Typography>
+                </CardContent>
 
-            return (
-              <Grid key={doc.id} size={{ xs: 12, sm: 6 }}>
-                <Card sx={{ bgcolor: '#1a1a2e', borderRadius: 2 }}>
-                  <CardContent sx={{ pb: 1 }}>
-                    <Typography variant="subtitle1" sx={{ fontWeight: 600, color: 'text.primary' }}>
-                      {doc.name}
-                    </Typography>
-                    <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                      {doc.pages.length} page{doc.pages.length > 1 ? 's' : ''} &middot;{' '}
-                      {doc.pages.reduce((sum, p) => sum + p.regions.length, 0)} regions
-                    </Typography>
-
-                    <Box sx={{ display: 'flex', gap: 1, mt: 2 }}>
-                      <FormControl size="small" sx={{ minWidth: 160 }}>
-                        <InputLabel>Export Type</InputLabel>
-                        <Select
-                          label="Export Type"
-                          value={type}
-                          onChange={(e) =>
-                            setExportTypes((prev) => ({ ...prev, [doc.id]: e.target.value as ExportType }))
-                          }
-                        >
-                          <MenuItem value="synthetic">Synthetic Reconstruct</MenuItem>
-                          <MenuItem value="overlay">Overlay</MenuItem>
-                          <MenuItem value="original">Original</MenuItem>
-                          <MenuItem value="json">Document JSON</MenuItem>
-                        </Select>
-                      </FormControl>
-
-                      {showFormat && (
-                        <FormControl size="small" sx={{ minWidth: 80 }}>
-                          <InputLabel>Format</InputLabel>
-                          <Select
-                            label="Format"
-                            value={format}
-                            onChange={(e) =>
-                              setExportFormats((prev) => ({ ...prev, [doc.id]: e.target.value as ExportFormat }))
-                            }
-                          >
-                            <MenuItem value="pdf">PDF</MenuItem>
-                            <MenuItem value="png">PNG</MenuItem>
-                          </Select>
-                        </FormControl>
-                      )}
-                    </Box>
-                  </CardContent>
-
-                  <CardActions sx={{ px: 2, pb: 2, gap: 1 }}>
-                    <Button
-                      size="small"
-                      variant="contained"
-                      startIcon={isExporting ? <CircularProgress size={16} color="inherit" /> : <FileDownloadOutlinedIcon />}
-                      disabled={isExporting}
-                      onClick={() => handleExport(doc)}
-                    >
-                      {isExporting ? 'Exporting...' : 'Export'}
-                    </Button>
-                    <Button
-                      size="small"
-                      variant="outlined"
-                      startIcon={<OpenInNewOutlinedIcon />}
-                      onClick={() => setSelectedDoc(doc)}
-                    >
-                      Open in Editor
-                    </Button>
-                  </CardActions>
-                </Card>
-              </Grid>
-            );
-          })}
+                <CardActions sx={{ px: 2, pb: 2, gap: 1 }}>
+                  <Button
+                    size="small"
+                    variant="contained"
+                    startIcon={<FileDownloadOutlinedIcon />}
+                    onClick={() => setExportDoc(doc)}
+                  >
+                    Export
+                  </Button>
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    startIcon={<OpenInNewOutlinedIcon />}
+                    onClick={() => setSelectedDoc(doc)}
+                  >
+                    Open in Editor
+                  </Button>
+                </CardActions>
+              </Card>
+            </Grid>
+          ))}
         </Grid>
       </Box>
+
+      <ExportDocumentDialog
+        open={exportDoc !== null}
+        onClose={() => setExportDoc(null)}
+        document={exportDoc}
+      />
     </Box>
   );
 };
