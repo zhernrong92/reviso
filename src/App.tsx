@@ -7,6 +7,7 @@ import { parsePdf } from './legacy/utils/parsePdf';
 import { parseUploadedJson } from './legacy/utils/parseUploadedJson';
 import type { Document, TextRegion } from './reviso/types/document';
 import RevisoDemo from './RevisoDemo';
+import ExportDemo from './ExportDemo';
 
 function createPngDocument(width: number, height: number): Document {
   return {
@@ -106,7 +107,8 @@ const LegacyDemo: React.FC = () => {
 const App: React.FC = () => (
   <BrowserRouter>
     <Routes>
-      <Route path="/" element={<LegacyDemo />} />
+      <Route path="/" element={<ExportDemo />} />
+      <Route path="/legacy" element={<LegacyDemo />} />
       <Route path="/reviso" element={<RevisoDemo />} />
     </Routes>
   </BrowserRouter>
