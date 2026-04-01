@@ -1,7 +1,9 @@
-import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
+import { PDFDocument, rgb } from 'pdf-lib';
 import type { Document } from '../types/document';
 import { detectRegionBackgrounds } from './detectRegionBackground';
 import { fitFontSize } from './fitFontSize';
+import { loadPdfFonts, preparePdfText } from './pdfFonts';
+import { imageToPngBytes } from './imageToBytes';
 
 function hexToRgb(hex: string): { r: number; g: number; b: number } {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -15,24 +17,6 @@ function hexToRgb(hex: string): { r: number; g: number; b: number } {
   };
 }
 
-function loadImageAsArrayBuffer(src: string): Promise<ArrayBuffer> {
-  if (src.startsWith('data:')) {
-    const base64 = src.split(',')[1];
-    if (!base64) throw new Error('Invalid data URL');
-    const binary = atob(base64);
-    const bytes = new Uint8Array(binary.length);
-    for (let i = 0; i < binary.length; i++) {
-      bytes[i] = binary.charCodeAt(i);
-    }
-    return Promise.resolve(bytes.buffer as ArrayBuffer);
-  }
-
-  return fetch(src).then((res) => {
-    if (!res.ok) throw new Error(`Failed to fetch image: ${res.status}`);
-    return res.arrayBuffer();
-  });
-}
-
 type FontKey = 'normal' | 'bold' | 'italic' | 'boldItalic';
 
 /**
@@ -41,23 +25,15 @@ type FontKey = 'normal' | 'bold' | 'italic' | 'boldItalic';
  */
 export async function exportOverlayPdf(documents: Document[]): Promise<Uint8Array> {
   const pdfDoc = await PDFDocument.create();
-  const fonts = {
-    normal: await pdfDoc.embedFont(StandardFonts.Helvetica),
-    bold: await pdfDoc.embedFont(StandardFonts.HelveticaBold),
-    italic: await pdfDoc.embedFont(StandardFonts.HelveticaOblique),
-    boldItalic: await pdfDoc.embedFont(StandardFonts.HelveticaBoldOblique),
-  };
+  const { fonts, isUnicode } = await loadPdfFonts(pdfDoc);
 
   for (const doc of documents) {
     for (const page of doc.pages) {
       const pdfPage = pdfDoc.addPage([page.width, page.height]);
 
       // Embed and draw the original page image as background
-      const imageBytes = await loadImageAsArrayBuffer(page.imageSrc);
-      const isPng = page.imageSrc.includes('.png') || page.imageSrc.includes('image/png');
-      const embeddedImage = isPng
-        ? await pdfDoc.embedPng(imageBytes)
-        : await pdfDoc.embedJpg(imageBytes);
+      const imageBytes = await imageToPngBytes(page.imageSrc, page.width, page.height);
+      const embeddedImage = await pdfDoc.embedPng(imageBytes);
 
       pdfPage.drawImage(embeddedImage, {
         x: 0,
@@ -90,6 +66,9 @@ export async function exportOverlayPdf(documents: Document[]): Promise<Uint8Arra
 
         if (!region.currentText) continue;
 
+        const text = preparePdfText(region.currentText, isUnicode);
+        if (!text) continue;
+
         const fontColorHex = region.fontColor ?? '#1a1a1a';
         const fontRgb = hexToRgb(fontColorHex);
 
@@ -102,13 +81,13 @@ export async function exportOverlayPdf(documents: Document[]): Promise<Uint8Arra
         const font = fonts[fontKey];
 
         const padding = 4;
-        const fontSize = fitFontSize(w - padding * 2, h, (fs) => font.widthOfTextAtSize(region.currentText, fs));
+        const fontSize = fitFontSize(w - padding * 2, h, (fs) => font.widthOfTextAtSize(text, fs));
 
         // pdf-lib uses bottom-left origin; flip Y
         const textX = region.x1 + padding;
         const textY = page.height - (region.y1 + h * 0.75);
 
-        pdfPage.drawText(region.currentText, {
+        pdfPage.drawText(text, {
           x: textX,
           y: textY,
           size: fontSize,
@@ -118,7 +97,7 @@ export async function exportOverlayPdf(documents: Document[]): Promise<Uint8Arra
 
         // Strikethrough
         if (region.textDecoration === 'line-through') {
-          const textWidth = font.widthOfTextAtSize(region.currentText, fontSize);
+          const textWidth = font.widthOfTextAtSize(text, fontSize);
           const lineY = textY + fontSize * 0.3;
           pdfPage.drawLine({
             start: { x: textX, y: lineY },

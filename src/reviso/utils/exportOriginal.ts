@@ -1,5 +1,6 @@
 import { PDFDocument } from 'pdf-lib';
 import type { Document } from '../types/document';
+import { imageToPngBytes } from './imageToBytes';
 
 function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
@@ -23,24 +24,6 @@ function loadImage(src: string): Promise<HTMLImageElement> {
   });
 }
 
-function loadImageAsArrayBuffer(src: string): Promise<ArrayBuffer> {
-  if (src.startsWith('data:')) {
-    const base64 = src.split(',')[1];
-    if (!base64) throw new Error('Invalid data URL');
-    const binary = atob(base64);
-    const bytes = new Uint8Array(binary.length);
-    for (let i = 0; i < binary.length; i++) {
-      bytes[i] = binary.charCodeAt(i);
-    }
-    return Promise.resolve(bytes.buffer as ArrayBuffer);
-  }
-
-  return fetch(src).then((res) => {
-    if (!res.ok) throw new Error(`Failed to fetch image: ${res.status}`);
-    return res.arrayBuffer();
-  });
-}
-
 /**
  * Export original page images as a PDF (one page per image).
  */
@@ -49,11 +32,8 @@ export async function exportOriginalPdf(documents: Document[]): Promise<Uint8Arr
 
   for (const doc of documents) {
     for (const page of doc.pages) {
-      const imageBytes = await loadImageAsArrayBuffer(page.imageSrc);
-      const isPng = page.imageSrc.includes('.png') || page.imageSrc.includes('image/png');
-      const embeddedImage = isPng
-        ? await pdfDoc.embedPng(imageBytes)
-        : await pdfDoc.embedJpg(imageBytes);
+      const imageBytes = await imageToPngBytes(page.imageSrc, page.width, page.height);
+      const embeddedImage = await pdfDoc.embedPng(imageBytes);
 
       const pdfPage = pdfDoc.addPage([page.width, page.height]);
       pdfPage.drawImage(embeddedImage, {

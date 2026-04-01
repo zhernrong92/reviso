@@ -1,17 +1,13 @@
-import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
+import { PDFDocument, rgb } from 'pdf-lib';
 import type { Document } from '../types/document';
 import { fitFontSize } from './fitFontSize';
+import { loadPdfFonts, preparePdfText } from './pdfFonts';
 
 type FontKey = 'normal' | 'bold' | 'italic' | 'boldItalic';
 
 export async function exportPdf(documents: Document[]): Promise<Uint8Array> {
   const pdfDoc = await PDFDocument.create();
-  const fonts = {
-    normal: await pdfDoc.embedFont(StandardFonts.Helvetica),
-    bold: await pdfDoc.embedFont(StandardFonts.HelveticaBold),
-    italic: await pdfDoc.embedFont(StandardFonts.HelveticaOblique),
-    boldItalic: await pdfDoc.embedFont(StandardFonts.HelveticaBoldOblique),
-  };
+  const { fonts, isUnicode } = await loadPdfFonts(pdfDoc);
 
   for (const doc of documents) {
     for (const page of doc.pages) {
@@ -30,6 +26,9 @@ export async function exportPdf(documents: Document[]): Promise<Uint8Array> {
       for (const region of page.regions) {
         if (!region.currentText) continue;
 
+        const text = preparePdfText(region.currentText, isUnicode);
+        if (!text) continue;
+
         const w = region.x2 - region.x1;
         const h = region.y2 - region.y1;
         const color = { r: 0.1, g: 0.1, b: 0.1 };
@@ -42,14 +41,13 @@ export async function exportPdf(documents: Document[]): Promise<Uint8Array> {
         else if (isItalic) fontKey = 'italic';
         const font = fonts[fontKey];
         const padding = 4;
-        const fontSize = fitFontSize(w - padding * 2, h, (fs) => font.widthOfTextAtSize(region.currentText, fs));
+        const fontSize = fitFontSize(w - padding * 2, h, (fs) => font.widthOfTextAtSize(text, fs));
 
-        // Always render text inside the region box (textPosition is edit-mode only)
         // pdf-lib uses bottom-left origin; SVG uses top-left, so flip Y
         const textX = region.x1 + padding;
         const textY = page.height - (region.y1 + h * 0.75);
 
-        pdfPage.drawText(region.currentText, {
+        pdfPage.drawText(text, {
           x: textX,
           y: textY,
           size: fontSize,
@@ -59,7 +57,7 @@ export async function exportPdf(documents: Document[]): Promise<Uint8Array> {
 
         // Strikethrough
         if (region.textDecoration === 'line-through') {
-          const textWidth = font.widthOfTextAtSize(region.currentText, fontSize);
+          const textWidth = font.widthOfTextAtSize(text, fontSize);
           const lineY = textY + fontSize * 0.3;
           pdfPage.drawLine({
             start: { x: textX, y: lineY },
