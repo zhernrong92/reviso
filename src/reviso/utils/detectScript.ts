@@ -1,4 +1,4 @@
-export type ScriptKey = 'latin' | 'cjk' | 'tamil' | 'khmer' | 'thai';
+export type ScriptKey = 'latin' | 'cjk' | 'korean' | 'tamil' | 'khmer' | 'thai';
 
 /**
  * Detect the dominant non-Latin script in a text string.
@@ -10,6 +10,7 @@ export type ScriptKey = 'latin' | 'cjk' | 'tamil' | 'khmer' | 'thai';
 export function detectScript(text: string): ScriptKey {
   const counts: Record<Exclude<ScriptKey, 'latin'>, number> = {
     cjk: 0,
+    korean: 0,
     tamil: 0,
     khmer: 0,
     thai: 0,
@@ -32,14 +33,17 @@ export function detectScript(text: string): ScriptKey {
       (code >= 0x3040 && code <= 0x309f) ||
       // Katakana
       (code >= 0x30a0 && code <= 0x30ff) ||
-      // Hangul Syllables
-      (code >= 0xac00 && code <= 0xd7af) ||
-      // Hangul Jamo
-      (code >= 0x1100 && code <= 0x11ff) ||
       // Bopomofo
       (code >= 0x3100 && code <= 0x312f)
     ) {
       counts.cjk++;
+    } else if (
+      // Hangul Syllables
+      (code >= 0xac00 && code <= 0xd7af) ||
+      // Hangul Jamo
+      (code >= 0x1100 && code <= 0x11ff)
+    ) {
+      counts.korean++;
     } else if (code >= 0x0b80 && code <= 0x0bff) {
       // Tamil
       counts.tamil++;

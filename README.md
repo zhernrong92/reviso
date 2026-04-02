@@ -347,31 +347,31 @@ URL.revokeObjectURL(url);
 
 ### PDF Font Support
 
-PDF export uses [Noto Sans](https://fonts.google.com/noto) font variants for multi-script text rendering. Fonts are loaded lazily — only the fonts needed for the detected scripts are downloaded.
+PDF export uses [Noto Sans](https://fonts.google.com/noto) font variants for multi-script text rendering. Fonts are loaded lazily — only the fonts needed for the detected scripts are loaded.
 
 **Supported scripts:**
 
 | Script | Font | Covers |
 |--------|------|--------|
 | Latin | Noto Sans | English, European languages |
-| CJK | Noto Sans SC | Chinese, Japanese kanji, Korean hanja |
+| CJK | Noto Sans SC | Chinese, Japanese kanji |
 | Tamil | Noto Sans Tamil | Tamil |
 | Khmer | Noto Sans Khmer | Khmer |
 | Thai | Noto Sans Thai | Thai |
 
 **Font resolution order:**
-1. Custom base path (if set via `setFontBasePath`)
-2. CDN fallback (`cdn.jsdelivr.net/fontsource`)
-3. StandardFonts (Helvetica — Latin only)
+1. Local path (`/assets/` by default, or custom path via `setFontBasePath`)
+2. StandardFonts fallback (Helvetica — Latin only)
 
 **Known limitations:**
+- **Korean (Hangul)** is not currently supported in PDF export due to font size constraints (~10MB). Korean text will fall back to placeholder characters.
 - PDF export uses Noto Sans fonts regardless of the font selected in the editor. The editor font choice (e.g. Inter, Arial) only applies to on-screen rendering and PNG export.
 - Each text region uses a single font based on its dominant script. Mixed non-Latin scripts within a single region (e.g. Tamil + Chinese in one region) are not supported — use separate regions for different scripts.
 - `fontWeight` (bold) and `fontStyle` (italic) are respected. `fontFamily` is not used in PDF output.
 
 **Custom font hosting:**
 
-If fonts cannot be downloaded from CDN (e.g. offline environments), host the font files yourself and set the base path before exporting:
+Font files are bundled in `node_modules/react-reviso/dist/assets/`. Copy them to your public directory (e.g. `public/assets/`) so they are served at `/assets/`. For a custom location, set the base path before exporting:
 
 ```tsx
 import { setFontBasePath } from 'react-reviso';

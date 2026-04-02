@@ -66,9 +66,6 @@ export async function exportOverlayPdf(documents: Document[]): Promise<Uint8Arra
 
         if (!region.currentText) continue;
 
-        const text = fontSet.prepareText(region.currentText);
-        if (!text) continue;
-
         const fontColorHex = region.fontColor ?? '#1a1a1a';
         const fontRgb = hexToRgb(fontColorHex);
 
@@ -78,7 +75,8 @@ export async function exportOverlayPdf(documents: Document[]): Promise<Uint8Arra
         if (isBold && isItalic) fontKey = 'boldItalic';
         else if (isBold) fontKey = 'bold';
         else if (isItalic) fontKey = 'italic';
-        const font = await fontSet.getFont(text, fontKey);
+        const { font, text } = await fontSet.resolveFont(region.currentText, fontKey);
+        if (!text) continue;
 
         const padding = 4;
         const fontSize = fitFontSize(w - padding * 2, h, (fs) => font.widthOfTextAtSize(text, fs));

@@ -26,9 +26,6 @@ export async function exportPdf(documents: Document[]): Promise<Uint8Array> {
       for (const region of page.regions) {
         if (!region.currentText) continue;
 
-        const text = fontSet.prepareText(region.currentText);
-        if (!text) continue;
-
         const w = region.x2 - region.x1;
         const h = region.y2 - region.y1;
         const color = { r: 0.1, g: 0.1, b: 0.1 };
@@ -39,7 +36,8 @@ export async function exportPdf(documents: Document[]): Promise<Uint8Array> {
         if (isBold && isItalic) fontKey = 'boldItalic';
         else if (isBold) fontKey = 'bold';
         else if (isItalic) fontKey = 'italic';
-        const font = await fontSet.getFont(text, fontKey);
+        const { font, text } = await fontSet.resolveFont(region.currentText, fontKey);
+        if (!text) continue;
         const padding = 4;
         const fontSize = fitFontSize(w - padding * 2, h, (fs) => font.widthOfTextAtSize(text, fs));
 
