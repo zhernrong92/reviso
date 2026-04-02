@@ -21,6 +21,13 @@ export interface ExportOptions {
   format?: ExportFormat;
 }
 
+export interface ExportAllOptions {
+  /** The document(s) to export */
+  documents: RevisoDocument[];
+  /** File format for image-based exports (synthetic, overlay, original) */
+  format: ExportFormat;
+}
+
 export interface ExportResult {
   /** The exported data as a Blob */
   blob: Blob;
@@ -93,6 +100,39 @@ export async function exportDocument(options: ExportOptions): Promise<ExportResu
     }
   }
   return bundlePngs(images, `${baseName}_overlay`);
+}
+
+/**
+ * Export all types (synthetic, overlay, original, json) bundled as a single ZIP.
+ */
+export async function exportAllDocuments(options: ExportAllOptions): Promise<ExportResult> {
+  const { documents, format } = options;
+  const baseName = (documents[0]?.name ?? 'export').replace(/\s+/g, '_').toLowerCase();
+
+  const types: ExportType[] = ['synthetic', 'overlay', 'original', 'json'];
+  const results = await Promise.all(
+    types.map((type) =>
+      exportDocument({
+        documents,
+        type,
+        format: type === 'json' ? undefined : format,
+      }),
+    ),
+  );
+
+  const entries = await Promise.all(
+    results.map(async (result) => ({
+      filename: result.filename,
+      data: await blobToUint8Array(result.blob),
+    })),
+  );
+
+  const zipBlob = createZipBlob(entries);
+  return {
+    blob: zipBlob,
+    filename: `${baseName}_all.zip`,
+    mimeType: 'application/zip',
+  };
 }
 
 /**

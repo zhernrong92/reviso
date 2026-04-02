@@ -16,7 +16,7 @@ import {
   Select,
   MenuItem,
 } from '@mui/material';
-import { exportDocument } from '../../utils/exportDocument';
+import { exportDocument, exportAllDocuments } from '../../utils/exportDocument';
 import type { ExportType, ExportFormat } from '../../utils/exportDocument';
 import type { RevisoDocument } from '../../types/public';
 
@@ -121,6 +121,32 @@ export const ExportDocumentDialog: React.FC<ExportDocumentDialogProps> = ({
     }
   }, [exportType, fileFormat, filteredDocument, onClose, onExport]);
 
+  const handleDownloadAll = useCallback(async () => {
+    if (!doc) return;
+
+    setExporting(true);
+
+    try {
+      const result = await exportAllDocuments({
+        documents: [doc],
+        format: fileFormat,
+      });
+
+      const url = URL.createObjectURL(result.blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = result.filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      onClose();
+    } finally {
+      setExporting(false);
+    }
+  }, [doc, fileFormat, onClose]);
+
   const showFormatSelect = exportType !== 'json';
 
   return (
@@ -141,19 +167,17 @@ export const ExportDocumentDialog: React.FC<ExportDocumentDialogProps> = ({
             </RadioGroup>
           </FormControl>
 
-          {showFormatSelect && (
-            <FormControl size="small">
-              <FormLabel>Export Format</FormLabel>
-              <Select
-                value={fileFormat}
-                onChange={(e) => setFileFormat(e.target.value as ExportFormat)}
-                sx={{ mt: 0.5, maxWidth: 160 }}
-              >
-                <MenuItem value="pdf">PDF</MenuItem>
-                <MenuItem value="png">PNG</MenuItem>
-              </Select>
-            </FormControl>
-          )}
+          <FormControl size="small">
+            <FormLabel>Export Format{!showFormatSelect ? ' (for Download All)' : ''}</FormLabel>
+            <Select
+              value={fileFormat}
+              onChange={(e) => setFileFormat(e.target.value as ExportFormat)}
+              sx={{ mt: 0.5, maxWidth: 160 }}
+            >
+              <MenuItem value="pdf">PDF</MenuItem>
+              <MenuItem value="png">PNG</MenuItem>
+            </Select>
+          </FormControl>
 
           {showPageSelection && (
             <FormControl>
@@ -182,6 +206,13 @@ export const ExportDocumentDialog: React.FC<ExportDocumentDialogProps> = ({
       <DialogActions>
         <Button onClick={onClose} disabled={exporting}>
           Cancel
+        </Button>
+        <Button
+          variant="outlined"
+          onClick={handleDownloadAll}
+          disabled={exporting || !doc}
+        >
+          {exporting ? 'Exporting...' : 'Download All'}
         </Button>
         <Button
           variant="contained"
