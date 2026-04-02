@@ -369,23 +369,55 @@ PDF export uses [Noto Sans](https://fonts.google.com/noto) font variants for mul
 - Each text region uses a single font based on its dominant script. Mixed non-Latin scripts within a single region (e.g. Tamil + Chinese in one region) are not supported — use separate regions for different scripts.
 - `fontWeight` (bold) and `fontStyle` (italic) are respected. `fontFamily` is not used in PDF output.
 
-**Custom font hosting:**
+**Font setup (required for non-Latin PDF export):**
 
-Font files are bundled in `node_modules/react-reviso/dist/assets/`. Copy them to your public directory (e.g. `public/assets/`) so they are served at `/assets/`. For a custom location, set the base path before exporting:
+PDF export loads font files at runtime via `fetch()`. These fonts are included in the npm package under `dist/assets/` but must be copied to your app's public directory so they can be served over HTTP.
+
+**Step 1 — Copy font assets to your public directory:**
+
+```bash
+cp -r node_modules/react-reviso/dist/assets/ public/assets/
+```
+
+This copies the following font files:
+- `NotoSans-Regular.ttf`, `NotoSans-Bold.ttf` (Latin)
+- `NotoSansSC-Regular.ttf`, `NotoSansSC-Bold.ttf` (CJK)
+- `NotoSansTamil-Regular.ttf`, `NotoSansTamil-Bold.ttf` (Tamil)
+- `NotoSansKhmer-Regular.ttf`, `NotoSansKhmer-Bold.ttf` (Khmer)
+- `NotoSansThai-Regular.ttf`, `NotoSansThai-Bold.ttf` (Thai)
+
+By default, fonts are loaded from `/assets/` at runtime. If you skip this step, non-Latin text in PDF exports will fall back to Helvetica (Latin only) and other scripts will render as placeholder characters.
+
+**Step 2 (optional) — Custom font path:**
+
+If your fonts are served from a different location (e.g. a subfolder or CDN), call `setFontBasePath` before exporting:
 
 ```tsx
 import { setFontBasePath } from 'react-reviso';
 
-// Point to your self-hosted font directory
+// Point to your custom font directory
 setFontBasePath('/assets/fonts/');
+
+// Or use a CDN
+setFontBasePath('https://cdn.example.com/fonts/');
 ```
 
-The following font files must be available at the configured path:
-- `NotoSans-Regular.ttf`, `NotoSans-Bold.ttf`
-- `NotoSansSC-Regular.ttf`, `NotoSansSC-Bold.ttf`
-- `NotoSansTamil-Regular.ttf`, `NotoSansTamil-Bold.ttf`
-- `NotoSansKhmer-Regular.ttf`, `NotoSansKhmer-Bold.ttf`
-- `NotoSansThai-Regular.ttf`, `NotoSansThai-Bold.ttf`
+**Framework-specific examples:**
+
+| Framework | Public directory | Copy command |
+|-----------|-----------------|--------------|
+| Vite | `public/` | `cp -r node_modules/react-reviso/dist/assets/ public/assets/` |
+| Next.js | `public/` | `cp -r node_modules/react-reviso/dist/assets/ public/assets/` |
+| Create React App | `public/` | `cp -r node_modules/react-reviso/dist/assets/ public/assets/` |
+
+> **Tip:** Add the copy command to a `postinstall` script in your `package.json` so fonts are copied automatically after `npm install`:
+> ```json
+> {
+>   "scripts": {
+>     "postinstall": "cp -r node_modules/react-reviso/dist/assets/ public/assets/"
+>   }
+> }
+> ```
 
 ## Development
 
