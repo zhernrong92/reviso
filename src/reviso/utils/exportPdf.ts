@@ -1,13 +1,13 @@
 import { PDFDocument, rgb } from 'pdf-lib';
 import type { Document } from '../types/document';
 import { fitFontSize } from './fitFontSize';
-import { loadPdfFonts, preparePdfText } from './pdfFonts';
+import { loadPdfFonts } from './pdfFonts';
 
 type FontKey = 'normal' | 'bold' | 'italic' | 'boldItalic';
 
 export async function exportPdf(documents: Document[]): Promise<Uint8Array> {
   const pdfDoc = await PDFDocument.create();
-  const { fonts, isUnicode } = await loadPdfFonts(pdfDoc);
+  const fontSet = await loadPdfFonts(pdfDoc);
 
   for (const doc of documents) {
     for (const page of doc.pages) {
@@ -26,7 +26,7 @@ export async function exportPdf(documents: Document[]): Promise<Uint8Array> {
       for (const region of page.regions) {
         if (!region.currentText) continue;
 
-        const text = preparePdfText(region.currentText, isUnicode);
+        const text = fontSet.prepareText(region.currentText);
         if (!text) continue;
 
         const w = region.x2 - region.x1;
@@ -39,7 +39,7 @@ export async function exportPdf(documents: Document[]): Promise<Uint8Array> {
         if (isBold && isItalic) fontKey = 'boldItalic';
         else if (isBold) fontKey = 'bold';
         else if (isItalic) fontKey = 'italic';
-        const font = fonts[fontKey];
+        const font = await fontSet.getFont(text, fontKey);
         const padding = 4;
         const fontSize = fitFontSize(w - padding * 2, h, (fs) => font.widthOfTextAtSize(text, fs));
 

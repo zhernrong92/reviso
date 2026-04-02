@@ -2,7 +2,7 @@ import { PDFDocument, rgb } from 'pdf-lib';
 import type { Document } from '../types/document';
 import { detectRegionBackgrounds } from './detectRegionBackground';
 import { fitFontSize } from './fitFontSize';
-import { loadPdfFonts, preparePdfText } from './pdfFonts';
+import { loadPdfFonts } from './pdfFonts';
 import { imageToPngBytes } from './imageToBytes';
 
 function hexToRgb(hex: string): { r: number; g: number; b: number } {
@@ -25,7 +25,7 @@ type FontKey = 'normal' | 'bold' | 'italic' | 'boldItalic';
  */
 export async function exportOverlayPdf(documents: Document[]): Promise<Uint8Array> {
   const pdfDoc = await PDFDocument.create();
-  const { fonts, isUnicode } = await loadPdfFonts(pdfDoc);
+  const fontSet = await loadPdfFonts(pdfDoc);
 
   for (const doc of documents) {
     for (const page of doc.pages) {
@@ -66,7 +66,7 @@ export async function exportOverlayPdf(documents: Document[]): Promise<Uint8Arra
 
         if (!region.currentText) continue;
 
-        const text = preparePdfText(region.currentText, isUnicode);
+        const text = fontSet.prepareText(region.currentText);
         if (!text) continue;
 
         const fontColorHex = region.fontColor ?? '#1a1a1a';
@@ -78,7 +78,7 @@ export async function exportOverlayPdf(documents: Document[]): Promise<Uint8Arra
         if (isBold && isItalic) fontKey = 'boldItalic';
         else if (isBold) fontKey = 'bold';
         else if (isItalic) fontKey = 'italic';
-        const font = fonts[fontKey];
+        const font = await fontSet.getFont(text, fontKey);
 
         const padding = 4;
         const fontSize = fitFontSize(w - padding * 2, h, (fs) => font.widthOfTextAtSize(text, fs));

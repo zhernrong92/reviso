@@ -1,6 +1,6 @@
 {
   "name": "react-reviso",
-  "version": "0.3.7",
+  "version": "0.3.8",
   "type": "module",
   "description": "React component for document restoration QA, review, and correction",
   "main": "dist/index.cjs",
@@ -46,6 +46,7 @@
     "pdf-lib": "^1.17.1",
     "react-compare-slider": "^3.1.0",
     "react-zoom-pan-pinch": "^3.7.0",
+    "regenerator-runtime": "^0.14.1",
     "zustand": "^5.0.11"
   },
   "devDependencies": {

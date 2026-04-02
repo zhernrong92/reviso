@@ -345,6 +345,48 @@ URL.revokeObjectURL(url);
 | `pdf` | All pages combined into a single PDF |
 | `png` | Single PNG for one page; ZIP archive for multiple pages |
 
+### PDF Font Support
+
+PDF export uses [Noto Sans](https://fonts.google.com/noto) font variants for multi-script text rendering. Fonts are loaded lazily — only the fonts needed for the detected scripts are downloaded.
+
+**Supported scripts:**
+
+| Script | Font | Covers |
+|--------|------|--------|
+| Latin | Noto Sans | English, European languages |
+| CJK | Noto Sans SC | Chinese, Japanese kanji, Korean hanja |
+| Tamil | Noto Sans Tamil | Tamil |
+| Khmer | Noto Sans Khmer | Khmer |
+| Thai | Noto Sans Thai | Thai |
+
+**Font resolution order:**
+1. Custom base path (if set via `setFontBasePath`)
+2. CDN fallback (`cdn.jsdelivr.net/fontsource`)
+3. StandardFonts (Helvetica — Latin only)
+
+**Known limitations:**
+- PDF export uses Noto Sans fonts regardless of the font selected in the editor. The editor font choice (e.g. Inter, Arial) only applies to on-screen rendering and PNG export.
+- Each text region uses a single font based on its dominant script. Mixed non-Latin scripts within a single region (e.g. Tamil + Chinese in one region) are not supported — use separate regions for different scripts.
+- `fontWeight` (bold) and `fontStyle` (italic) are respected. `fontFamily` is not used in PDF output.
+
+**Custom font hosting:**
+
+If fonts cannot be downloaded from CDN (e.g. offline environments), host the font files yourself and set the base path before exporting:
+
+```tsx
+import { setFontBasePath } from 'react-reviso';
+
+// Point to your self-hosted font directory
+setFontBasePath('/assets/fonts/');
+```
+
+The following font files must be available at the configured path:
+- `NotoSans-Regular.ttf`, `NotoSans-Bold.ttf`
+- `NotoSansSC-Regular.ttf`, `NotoSansSC-Bold.ttf`
+- `NotoSansTamil-Regular.ttf`, `NotoSansTamil-Bold.ttf`
+- `NotoSansKhmer-Regular.ttf`, `NotoSansKhmer-Bold.ttf`
+- `NotoSansThai-Regular.ttf`, `NotoSansThai-Bold.ttf`
+
 ## Development
 
 ### Prerequisites
