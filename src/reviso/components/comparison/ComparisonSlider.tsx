@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Box, Typography, Tooltip } from '@mui/material';
 import { TransformWrapper, TransformComponent, type ReactZoomPanPinchRef } from 'react-zoom-pan-pinch';
 import { ReactCompareSlider, ReactCompareSliderImage, ReactCompareSliderHandle } from 'react-compare-slider';
@@ -10,15 +10,22 @@ import { useAutoBackgroundColors } from '../../hooks/useAutoBackgroundColors';
 
 interface SliderHandleProps {
   portrait?: boolean;
+  scale: number;
 }
 
-const SliderHandle: React.FC<SliderHandleProps> = ({ portrait }) => (
-  <Tooltip title="Slide to compare" placement={portrait ? 'right' : 'top'} arrow>
-    <div style={{ display: 'flex', height: '100%' }}>
-      <ReactCompareSliderHandle portrait={portrait} />
-    </div>
-  </Tooltip>
-);
+const SliderHandle: React.FC<SliderHandleProps> = ({ portrait, scale }) => {
+  const inverseScale = scale > 0 ? 1 / scale : 1;
+  return (
+    <Tooltip title="Slide to compare" placement={portrait ? 'right' : 'top'} arrow>
+      <div style={{ display: 'flex', height: '100%' }}>
+        <ReactCompareSliderHandle
+          portrait={portrait}
+          buttonStyle={{ transform: `scale(${inverseScale})` }}
+        />
+      </div>
+    </Tooltip>
+  );
+};
 
 export const ComparisonSlider: React.FC = () => {
   const activePageId = useUiStore((s) => s.activePageId);
@@ -28,6 +35,7 @@ export const ComparisonSlider: React.FC = () => {
   const activePage = useDocumentStore((s) => s.getActivePage(activePageId));
   const autoBackgroundColors = useAutoBackgroundColors(activePage);
   const transformRef = useRef<ReactZoomPanPinchRef | null>(null);
+  const [currentScale, setCurrentScale] = useState(1);
 
   const fitToView = useCallback(
     (ref: ReactZoomPanPinchRef) => {
@@ -40,6 +48,7 @@ export const ComparisonSlider: React.FC = () => {
       ) * 0.95;
       requestAnimationFrame(() => {
         ref.centerView(fitScale, 0);
+        setCurrentScale(fitScale);
       });
     },
     [activePage],
@@ -94,6 +103,7 @@ export const ComparisonSlider: React.FC = () => {
             centerOnInit
             centerZoomedOut
             onInit={handleInit}
+            onTransformed={(_, state) => setCurrentScale(state.scale)}
           >
             <TransformComponent
               wrapperStyle={{ width: '100%', height: '100%' }}
@@ -111,7 +121,7 @@ export const ComparisonSlider: React.FC = () => {
                     style={{ width: activePage.width, height: activePage.height, display: 'block' }}
                   />
                 }
-                handle={<SliderHandle portrait={sliderOrientation === 'vertical'} />}
+                handle={<SliderHandle portrait={sliderOrientation === 'vertical'} scale={currentScale} />}
                 portrait={sliderOrientation === 'vertical'}
                 position={100}
                 style={{ width: activePage.width, height: activePage.height }}

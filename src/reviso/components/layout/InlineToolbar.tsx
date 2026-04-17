@@ -6,6 +6,8 @@ import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
 import AddBoxOutlinedIcon from '@mui/icons-material/AddBoxOutlined';
+import CloseIcon from '@mui/icons-material/Close';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 import UndoIcon from '@mui/icons-material/Undo';
@@ -184,20 +186,31 @@ export const InlineToolbar: React.FC = () => {
           <>
             <ToolbarDivider />
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-              <Box sx={{ width: 60, height: 4, bgcolor: 'grey.800', borderRadius: 2, overflow: 'hidden' }}>
-                <Box
-                  sx={{
-                    width: `${(validated / total) * 100}%`,
-                    height: '100%',
-                    bgcolor: validated === total ? 'success.main' : 'info.main',
-                    borderRadius: 2,
-                    transition: 'width 0.2s ease',
-                  }}
-                />
-              </Box>
-              <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: 10 }}>
-                {validated}/{total}
-              </Typography>
+              <Tooltip title={`${validated} of ${total} regions validated`}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, cursor: 'default' }}>
+                  <CheckCircleOutlineIcon
+                    sx={{
+                      fontSize: 14,
+                      color: validated === total ? 'success.main' : 'text.secondary',
+                      transition: 'color 0.2s ease',
+                    }}
+                  />
+                  <Box sx={{ width: 60, height: 4, bgcolor: 'grey.800', borderRadius: 2, overflow: 'hidden' }}>
+                    <Box
+                      sx={{
+                        width: `${(validated / total) * 100}%`,
+                        height: '100%',
+                        bgcolor: validated === total ? 'success.main' : 'info.main',
+                        borderRadius: 2,
+                        transition: 'width 0.2s ease',
+                      }}
+                    />
+                  </Box>
+                  <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: 10 }}>
+                    {validated}/{total}
+                  </Typography>
+                </Box>
+              </Tooltip>
               {hasUnvalidated && viewMode === 'edit' && (
                 <IconButton
                   size="small"
@@ -306,11 +319,15 @@ export const InlineToolbar: React.FC = () => {
               <Button
                 variant={editorMode === 'create' ? 'contained' : 'outlined'}
                 size="small"
-                startIcon={<AddBoxOutlinedIcon sx={{ fontSize: 14 }} />}
+                startIcon={
+                  editorMode === 'create'
+                    ? <CloseIcon sx={{ fontSize: 14 }} />
+                    : <AddBoxOutlinedIcon sx={{ fontSize: 14 }} />
+                }
                 onClick={handleToggleCreateMode}
                 sx={{ mr: 0.5, py: 0, fontSize: 11, minHeight: 26 }}
               >
-                New Region
+                {editorMode === 'create' ? 'Cancel' : 'New Region'}
               </Button>
             )}
 

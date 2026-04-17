@@ -22,7 +22,7 @@ export function useEditorKeyboard() {
         }
       } else if (e.key === 'n') {
         setEditorMode(editorMode === 'create' ? 'select' : 'create');
-      } else if ((e.key === 'Delete' || e.key === 'Backspace') && selectedRegionId && activePageId) {
+      } else if (e.key === 'Delete' && selectedRegionId && activePageId) {
         e.preventDefault();
         deleteRegion(activePageId, selectedRegionId);
         selectRegion(null);

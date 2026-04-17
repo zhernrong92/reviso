@@ -6,14 +6,12 @@ import { useEditHistoryStore } from '../stores/editHistoryStore';
 export function useNavigationKeyboard() {
   const activeDocumentId = useUiStore((s) => s.activeDocumentId);
   const activePageId = useUiStore((s) => s.activePageId);
-  const setActiveDocument = useUiStore((s) => s.setActiveDocument);
   const setActivePage = useUiStore((s) => s.setActivePage);
   const viewMode = useUiStore((s) => s.viewMode);
   const setViewMode = useUiStore((s) => s.setViewMode);
   const setEditorMode = useUiStore((s) => s.setEditorMode);
   const setHelpDialogOpen = useUiStore((s) => s.setHelpDialogOpen);
 
-  const documents = useDocumentStore((s) => s.documents);
   const activeDocument = useDocumentStore((s) => s.getActiveDocument(activeDocumentId));
   const restoreSnapshot = useDocumentStore((s) => s.restoreSnapshot);
 
@@ -63,24 +61,6 @@ export function useNavigationKeyboard() {
         }
       }
 
-      if (e.ctrlKey && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) {
-        e.preventDefault();
-        if (!activeDocumentId || documents.length < 2) return;
-        const currentIdx = documents.findIndex((d) => d.id === activeDocumentId);
-        if (currentIdx === -1) return;
-
-        const delta = e.key === 'ArrowUp' ? -1 : 1;
-        const nextIdx = currentIdx + delta;
-        if (nextIdx < 0 || nextIdx >= documents.length) return;
-
-        const nextDoc = documents[nextIdx];
-        if (!nextDoc) return;
-        setActiveDocument(nextDoc.id);
-        const firstPage = nextDoc.pages[0];
-        if (firstPage) setActivePage(firstPage.id);
-        return;
-      }
-
       // Page navigation — works in all modes
       if (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'PageUp' || e.key === 'PageDown') {
         if (!activeDocument || !activePageId) return;
@@ -101,5 +81,5 @@ export function useNavigationKeyboard() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [activeDocumentId, activePageId, documents, activeDocument, setActiveDocument, setActivePage, viewMode, setViewMode, setEditorMode, setHelpDialogOpen, restoreSnapshot]);
+  }, [activePageId, activeDocument, setActivePage, viewMode, setViewMode, setEditorMode, setHelpDialogOpen, restoreSnapshot]);
 }

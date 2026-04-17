@@ -32,7 +32,6 @@ interface Shortcut {
 const shortcuts: Shortcut[] = [
   { keys: '← / →', description: 'Previous / Next page' },
   { keys: 'PageUp / PageDown', description: 'Previous / Next page' },
-  { keys: 'Ctrl+↑ / Ctrl+↓', description: 'Previous / Next document' },
   { keys: 'Ctrl+E', description: 'Toggle Preview / Edit mode' },
   { keys: 'Escape', description: 'Exit edit mode (when nothing selected)' },
   { keys: 'Ctrl+Z', description: 'Undo' },
@@ -40,7 +39,7 @@ const shortcuts: Shortcut[] = [
   { keys: 'N', description: 'Toggle create mode' },
   { keys: 'Escape', description: 'Deselect / exit create mode' },
   { keys: 'Delete', description: 'Delete selected region' },
-  { keys: 'Tab / Shift+Tab', description: 'Next / Previous region' },
+  { keys: 'Tab / Shift+Tab', description: 'Next / Previous region (while editing text)' },
   { keys: 'Enter', description: 'Confirm edit' },
   { keys: '?', description: 'Show this help' },
 ];
