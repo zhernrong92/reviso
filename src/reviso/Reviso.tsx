@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef } from 'react';
-import { Box } from '@mui/material';
+import { Box, Drawer, useMediaQuery } from '@mui/material';
 import { ThemeProvider, createTheme, useTheme } from '@mui/material/styles';
 import { InlineToolbar } from './components/layout/InlineToolbar';
 import { PageThumbnails } from './components/layout/PageThumbnails';
@@ -29,6 +29,7 @@ export const Reviso: React.FC<RevisoProps> = ({
   onExport,
 }) => {
   const hostTheme = useTheme();
+  const isMobile = useMediaQuery(hostTheme.breakpoints.down('md'));
   const mergedTheme = useMemo(
     () => (themeOverrides ? createTheme(hostTheme, themeOverrides) : hostTheme),
     [hostTheme, themeOverrides],
@@ -37,6 +38,7 @@ export const Reviso: React.FC<RevisoProps> = ({
   const setActiveDocument = useUiStore((s) => s.setActiveDocument);
   const setActivePage = useUiStore((s) => s.setActivePage);
   const sidebarOpen = useUiStore((s) => s.sidebarOpen);
+  const toggleSidebar = useUiStore((s) => s.toggleSidebar);
   const viewMode = useUiStore((s) => s.viewMode);
   const previewLayout = useUiStore((s) => s.previewLayout);
   const setEditorMode = useUiStore((s) => s.setEditorMode);
@@ -166,21 +168,41 @@ export const Reviso: React.FC<RevisoProps> = ({
     >
       {showToolbar && <InlineToolbar />}
       <Box sx={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
-        {showSidebar && sidebarOpen && (
-          <Box
-            sx={{
-              width: 280,
-              minWidth: 280,
-              bgcolor: 'background.paper',
-              borderRight: 1,
-              borderColor: 'divider',
-              display: 'flex',
-              flexDirection: 'column',
-              height: '100%',
-            }}
-          >
-            <PageThumbnails />
-          </Box>
+        {showSidebar && (
+          isMobile ? (
+            <Drawer
+              variant="temporary"
+              open={sidebarOpen}
+              onClose={() => toggleSidebar()}
+              ModalProps={{ keepMounted: true }}
+              sx={{
+                '& .MuiDrawer-paper': {
+                  width: 280,
+                  bgcolor: 'background.paper',
+                  boxSizing: 'border-box',
+                },
+              }}
+            >
+              <PageThumbnails />
+            </Drawer>
+          ) : (
+            sidebarOpen && (
+              <Box
+                sx={{
+                  width: 280,
+                  minWidth: 280,
+                  bgcolor: 'background.paper',
+                  borderRight: 1,
+                  borderColor: 'divider',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  height: '100%',
+                }}
+              >
+                <PageThumbnails />
+              </Box>
+            )
+          )
         )}
         {renderMainContent()}
       </Box>

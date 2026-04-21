@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { useTheme } from '@mui/material/styles';
+import { useMediaQuery } from '@mui/material';
 import type { TextRegion } from '../../types/document';
 import { useDocumentStore } from '../../stores/documentStore';
 import { useUiStore } from '../../stores/uiStore';
@@ -40,6 +41,7 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
   zoomScale,
 }) => {
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const inputRef = useRef<HTMLInputElement>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const [value, setValue] = useState(region.currentText);
@@ -486,8 +488,8 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
         </svg>
       </div>
 
-      {/* Move handle — drag grip icon at top center */}
-      <div
+      {/* Move handle — drag grip icon at top center (desktop only) */}
+      {!isMobile && <div
         onMouseDown={handleMoveMouseDown}
         style={{
           position: 'absolute',
@@ -515,25 +517,27 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
           <circle cx="5" cy="5.5" r="1" />
           <circle cx="8" cy="5.5" r="1" />
         </svg>
-      </div>
+      </div>}
 
-      {/* Resize handles */}
-      <div
-        onMouseDown={handleResizeMouseDown('tl')}
-        style={{ ...handleStyle('nw-resize'), top: -half, left: -half, transform: `scale(${inverseScale})`, transformOrigin: 'center' }}
-      />
-      <div
-        onMouseDown={handleResizeMouseDown('tr')}
-        style={{ ...handleStyle('ne-resize'), top: -half, right: -half, transform: `scale(${inverseScale})`, transformOrigin: 'center' }}
-      />
-      <div
-        onMouseDown={handleResizeMouseDown('bl')}
-        style={{ ...handleStyle('sw-resize'), bottom: -half, left: -half, transform: `scale(${inverseScale})`, transformOrigin: 'center' }}
-      />
-      <div
-        onMouseDown={handleResizeMouseDown('br')}
-        style={{ ...handleStyle('se-resize'), bottom: -half, right: -half, transform: `scale(${inverseScale})`, transformOrigin: 'center' }}
-      />
+      {/* Resize handles (desktop only) */}
+      {!isMobile && <>
+        <div
+          onMouseDown={handleResizeMouseDown('tl')}
+          style={{ ...handleStyle('nw-resize'), top: -half, left: -half, transform: `scale(${inverseScale})`, transformOrigin: 'center' }}
+        />
+        <div
+          onMouseDown={handleResizeMouseDown('tr')}
+          style={{ ...handleStyle('ne-resize'), top: -half, right: -half, transform: `scale(${inverseScale})`, transformOrigin: 'center' }}
+        />
+        <div
+          onMouseDown={handleResizeMouseDown('bl')}
+          style={{ ...handleStyle('sw-resize'), bottom: -half, left: -half, transform: `scale(${inverseScale})`, transformOrigin: 'center' }}
+        />
+        <div
+          onMouseDown={handleResizeMouseDown('br')}
+          style={{ ...handleStyle('se-resize'), bottom: -half, right: -half, transform: `scale(${inverseScale})`, transformOrigin: 'center' }}
+        />
+      </>}
 
       {/* Delete button + Style toolbar — gear icon + expandable panel */}
       {(() => {
@@ -567,42 +571,43 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
                 <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
               </svg>
             </div>
-            {/* Gear icon */}
-            <div
-              onMouseDown={(e) => {
-                e.stopPropagation();
-                e.preventDefault();
-                setShowStyleToolbar((v) => !v);
-              }}
-              style={{
-                marginLeft: 4,
-                width: HANDLE_SIZE + 8,
-                height: HANDLE_SIZE + 8,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                background: showStyleToolbar ? theme.palette.primary.main : theme.palette.background.paper,
-                color: showStyleToolbar ? theme.palette.primary.contrastText : theme.palette.text.secondary,
-                border: `1px solid ${theme.palette.divider}`,
-                borderRadius: 4,
-                cursor: 'pointer',
-                zIndex: 12,
-              }}
-              title="Style settings"
-            >
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="4" y1="21" x2="4" y2="14" />
-                <line x1="4" y1="10" x2="4" y2="3" />
-                <line x1="12" y1="21" x2="12" y2="12" />
-                <line x1="12" y1="8" x2="12" y2="3" />
-                <line x1="20" y1="21" x2="20" y2="16" />
-                <line x1="20" y1="12" x2="20" y2="3" />
-                <line x1="1" y1="14" x2="7" y2="14" />
-                <line x1="9" y1="8" x2="15" y2="8" />
-                <line x1="17" y1="16" x2="23" y2="16" />
-              </svg>
-            </div>
-            {showStyleToolbar && (
+            {/* Gear icon + style toolbar (desktop only) */}
+            {!isMobile && <>
+              <div
+                onMouseDown={(e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+                  setShowStyleToolbar((v) => !v);
+                }}
+                style={{
+                  marginLeft: 4,
+                  width: HANDLE_SIZE + 8,
+                  height: HANDLE_SIZE + 8,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  background: showStyleToolbar ? theme.palette.primary.main : theme.palette.background.paper,
+                  color: showStyleToolbar ? theme.palette.primary.contrastText : theme.palette.text.secondary,
+                  border: `1px solid ${theme.palette.divider}`,
+                  borderRadius: 4,
+                  cursor: 'pointer',
+                  zIndex: 12,
+                }}
+                title="Style settings"
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="4" y1="21" x2="4" y2="14" />
+                  <line x1="4" y1="10" x2="4" y2="3" />
+                  <line x1="12" y1="21" x2="12" y2="12" />
+                  <line x1="12" y1="8" x2="12" y2="3" />
+                  <line x1="20" y1="21" x2="20" y2="16" />
+                  <line x1="20" y1="12" x2="20" y2="3" />
+                  <line x1="1" y1="14" x2="7" y2="14" />
+                  <line x1="9" y1="8" x2="15" y2="8" />
+                  <line x1="17" y1="16" x2="23" y2="16" />
+                </svg>
+              </div>
+              {showStyleToolbar && (
               <div
                 onMouseDown={(e) => e.stopPropagation()}
                 style={{
@@ -714,7 +719,8 @@ export const InlineEditor: React.FC<InlineEditorProps> = ({
                   <option value="bottom">Bottom</option>
                 </select>
               </div>
-            )}
+              )}
+            </>}
           </div>
         );
       })()}

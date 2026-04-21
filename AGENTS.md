@@ -33,9 +33,9 @@ Refer to these for details (load only when needed):
 - `agent_docs/component_design.md` — Embeddable component API design, layout, bundle strategy
 
 ## Current State (Update This!)
-**Last Updated:** March 13, 2026
+**Last Updated:** April 21, 2026
 **Working On:** Polish & bug fixes
-**Recently Completed:** Phase 12 — Preview-first UX, side-by-side comparison, slider comparison (horizontal + vertical), validation overlay, fit-to-view
+**Recently Completed:** Phase 13 — Mobile graceful fallback (sidebar drawer, toolbar overflow menu, side-by-side tabs, InlineEditor touch cleanup, next-unvalidated UX improvements)
 **Blocked By:** None
 **Design Doc:** `agent_docs/component_design.md` — full component API, layout, bundle strategy
 
@@ -140,6 +140,21 @@ Refer to these for details (load only when needed):
 - [x] Mode-specific toolbar controls
 - [x] Keyboard shortcuts updated (Ctrl+E toggle, Escape exits edit mode)
 
+### Phase 13: Mobile Graceful Fallback ✓
+- [x] Sidebar → MUI `Drawer` (overlay) on mobile, permanent panel on desktop
+- [x] Toolbar → secondary controls hidden behind `MoreVert` overflow menu on mobile
+- [x] Side-by-side comparison → `Tabs` (Original / Restored) on mobile, unchanged on desktop
+- [x] `InlineEditor` — resize handles, move handle, style toolbar hidden on mobile (mouse-only interactions)
+- [x] New Region excluded from mobile overflow menu (draw-to-create is mouse-only)
+- [x] Keyboard Shortcuts excluded from mobile overflow menu
+- [x] Sidebar closed by default on mobile (`window.innerWidth < 900`)
+- [x] Breadcrumb shortened to `X / Y` on mobile
+- [x] Validation progress bar narrowed to 32px on mobile (60px on desktop)
+- [x] Next unvalidated region button always visible (both modes); auto-enters edit mode on tap
+- [x] Pan-to-region wrapped in rAF to fix zoom race condition when entering edit mode from preview
+- [x] Pan-to-region skipped if region already fully visible in viewport
+- [x] Type declaration stubs added for `@pdf-lib/fontkit` and `fflate`
+
 ## Engineering Constraints
 
 ### Type Safety (No Compromises)
@@ -180,4 +195,4 @@ Refer to these for details (load only when needed):
 - Do NOT add backend logic — this is frontend-only
 - Do NOT optimise prematurely — 50 regions per page is our target, not 5000
 - Do NOT add authentication or user management
-- Do NOT make it mobile responsive — desktop only for this PoC
+- Mobile is a **graceful fallback**, not a first-class UX — do not over-engineer for touch

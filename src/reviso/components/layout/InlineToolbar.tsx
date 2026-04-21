@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react';
-import { Box, IconButton, Typography, Button, Tooltip, Divider, Select, MenuItem, ToggleButton, ToggleButtonGroup } from '@mui/material';
+import { Box, IconButton, Typography, Button, Tooltip, Divider, Select, MenuItem, ToggleButton, ToggleButtonGroup, Menu, useMediaQuery } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import type { SelectChangeEvent } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
@@ -18,6 +19,7 @@ import SwapVertIcon from '@mui/icons-material/SwapVert';
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { useUiStore } from '../../stores/uiStore';
 import { useDocumentStore } from '../../stores/documentStore';
 import { useEditHistoryStore } from '../../stores/editHistoryStore';
@@ -37,6 +39,8 @@ const selectSx = {
 } as const;
 
 export const InlineToolbar: React.FC = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const toggleSidebar = useUiStore((s) => s.toggleSidebar);
   const activeDocumentId = useUiStore((s) => s.activeDocumentId);
   const activePageId = useUiStore((s) => s.activePageId);
@@ -69,6 +73,10 @@ export const InlineToolbar: React.FC = () => {
 
   const [exportDialogOpen, setExportDialogOpen] = useState(false);
   const [settingsDialogOpen, setSettingsDialogOpen] = useState(false);
+  const [overflowAnchor, setOverflowAnchor] = useState<null | HTMLElement>(null);
+  const overflowOpen = Boolean(overflowAnchor);
+  const handleOverflowOpen = (e: React.MouseEvent<HTMLElement>) => setOverflowAnchor(e.currentTarget);
+  const handleOverflowClose = () => setOverflowAnchor(null);
 
   const handleToggleCreateMode = useCallback(() => {
     setEditorMode(editorMode === 'create' ? 'select' : 'create');
@@ -114,8 +122,10 @@ export const InlineToolbar: React.FC = () => {
 
   const breadcrumb = activeDocument
     ? activePage
-      ? `${activeDocument.name} — Page ${activePage.pageNumber} of ${activeDocument.pageCount}`
-      : activeDocument.name
+      ? isMobile
+        ? `${activePage.pageNumber} / ${activeDocument.pageCount}`
+        : `${activeDocument.name} — Page ${activePage.pageNumber} of ${activeDocument.pageCount}`
+      : isMobile ? '' : activeDocument.name
     : '';
 
   // Validation progress
@@ -195,7 +205,7 @@ export const InlineToolbar: React.FC = () => {
                       transition: 'color 0.2s ease',
                     }}
                   />
-                  <Box sx={{ width: 60, height: 4, bgcolor: 'grey.800', borderRadius: 2, overflow: 'hidden' }}>
+                  <Box sx={{ width: isMobile ? 32 : 60, height: 4, bgcolor: 'grey.800', borderRadius: 2, overflow: 'hidden' }}>
                     <Box
                       sx={{
                         width: `${(validated / total) * 100}%`,
@@ -211,7 +221,7 @@ export const InlineToolbar: React.FC = () => {
                   </Typography>
                 </Box>
               </Tooltip>
-              {hasUnvalidated && viewMode === 'edit' && (
+              {hasUnvalidated && (
                 <IconButton
                   size="small"
                   color="info"
@@ -225,6 +235,7 @@ export const InlineToolbar: React.FC = () => {
                       const idx = (currentIdx + i) % regions.length;
                       const r = regions[idx];
                       if (r && !r.isValidated) {
+                        setViewMode('edit');
                         selectRegion(r.id);
                         return;
                       }
@@ -241,8 +252,8 @@ export const InlineToolbar: React.FC = () => {
 
         <Box sx={{ flex: 1 }} />
 
-        {/* ===== GROUP 3: Preview Mode Controls ===== */}
-        {viewMode === 'preview' && activePage && (
+        {/* ===== GROUP 3: Preview Mode Controls (desktop only inline) ===== */}
+        {!isMobile && viewMode === 'preview' && activePage && (
           <>
             {/* Compare mode select + slider orientation */}
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mr: 1 }}>
@@ -297,7 +308,6 @@ export const InlineToolbar: React.FC = () => {
 
             <ToolbarDivider />
 
-            {/* Edit button */}
             {editable && (
               <Button
                 variant="outlined"
@@ -312,8 +322,8 @@ export const InlineToolbar: React.FC = () => {
           </>
         )}
 
-        {/* ===== GROUP 3: Edit Mode Controls ===== */}
-        {viewMode === 'edit' && (
+        {/* ===== GROUP 3: Edit Mode Controls (desktop only inline) ===== */}
+        {!isMobile && viewMode === 'edit' && (
           <>
             {activePage && editable && features.regionCreation && (
               <Button
@@ -358,7 +368,6 @@ export const InlineToolbar: React.FC = () => {
 
             <ToolbarDivider />
 
-            {/* Back to preview */}
             <Button
               variant="outlined"
               size="small"
@@ -369,6 +378,32 @@ export const InlineToolbar: React.FC = () => {
             >
               Preview
             </Button>
+          </>
+        )}
+
+        {/* ===== Mobile: Edit / Preview toggle button (always visible) ===== */}
+        {isMobile && activePage && editable && (
+          <>
+            <ToolbarDivider />
+            {viewMode === 'preview' ? (
+              <IconButton
+                size="small"
+                color="inherit"
+                aria-label="edit"
+                onClick={() => setViewMode('edit')}
+              >
+                <EditOutlinedIcon sx={{ fontSize: 16 }} />
+              </IconButton>
+            ) : (
+              <IconButton
+                size="small"
+                color="primary"
+                aria-label="preview"
+                onClick={() => setViewMode('preview')}
+              >
+                <VisibilityOutlinedIcon sx={{ fontSize: 16 }} />
+              </IconButton>
+            )}
           </>
         )}
 
@@ -386,7 +421,7 @@ export const InlineToolbar: React.FC = () => {
           </IconButton>
         </Tooltip>
 
-        {features.export && (
+        {!isMobile && features.export && (
           <Tooltip title="Export">
             <IconButton
               size="small"
@@ -400,7 +435,7 @@ export const InlineToolbar: React.FC = () => {
           </Tooltip>
         )}
 
-        {viewMode === 'edit' && editable && (
+        {!isMobile && viewMode === 'edit' && editable && (
           <Tooltip title="Region default settings">
             <IconButton
               size="small"
@@ -412,15 +447,92 @@ export const InlineToolbar: React.FC = () => {
           </Tooltip>
         )}
 
-        <Tooltip title="Keyboard shortcuts (?)">
-          <IconButton
-            size="small"
-            onClick={() => useUiStore.getState().setHelpDialogOpen(true)}
-            sx={{ p: 0.5 }}
-          >
-            <HelpOutlineIcon sx={{ fontSize: 16 }} />
-          </IconButton>
-        </Tooltip>
+        {!isMobile && (
+          <Tooltip title="Keyboard shortcuts (?)">
+            <IconButton
+              size="small"
+              onClick={() => useUiStore.getState().setHelpDialogOpen(true)}
+              sx={{ p: 0.5 }}
+            >
+              <HelpOutlineIcon sx={{ fontSize: 16 }} />
+            </IconButton>
+          </Tooltip>
+        )}
+
+        {/* ===== Mobile: Overflow menu ===== */}
+        {isMobile && (
+          <>
+            <IconButton
+              size="small"
+              color="inherit"
+              aria-label="more options"
+              onClick={handleOverflowOpen}
+            >
+              <MoreVertIcon sx={{ fontSize: 18 }} />
+            </IconButton>
+            <Menu
+              anchorEl={overflowAnchor}
+              open={overflowOpen}
+              onClose={handleOverflowClose}
+              anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+              transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+            >
+              {/* Compare layout — preview mode only */}
+              {viewMode === 'preview' && activePage && [
+                <MenuItem key="side-by-side" selected={previewLayout === 'side-by-side'} onClick={() => { setPreviewLayout('side-by-side'); handleOverflowClose(); }}>
+                  Side by Side
+                </MenuItem>,
+                <MenuItem key="slider" selected={previewLayout === 'slider'} onClick={() => { setPreviewLayout('slider'); handleOverflowClose(); }}>
+                  Slider
+                </MenuItem>,
+                <Divider key="div-compare" />,
+                <MenuItem key="overlay" selected={comparisonSource === 'restored'} onClick={() => { setComparisonSource('restored'); handleOverflowClose(); }}>
+                  Source: Overlay
+                </MenuItem>,
+                <MenuItem key="text-only" selected={comparisonSource === 'text-only'} onClick={() => { setComparisonSource('text-only'); handleOverflowClose(); }}>
+                  Source: Synthetic Reconstruct
+                </MenuItem>,
+                ...(previewLayout === 'slider' ? [
+                  <Divider key="div-orient" />,
+                  <MenuItem key="horiz" selected={sliderOrientation === 'horizontal'} onClick={() => { setSliderOrientation('horizontal'); handleOverflowClose(); }}>
+                    Horizontal Slider
+                  </MenuItem>,
+                  <MenuItem key="vert" selected={sliderOrientation === 'vertical'} onClick={() => { setSliderOrientation('vertical'); handleOverflowClose(); }}>
+                    Vertical Slider
+                  </MenuItem>,
+                ] : []),
+                <Divider key="div-edit" />,
+              ]}
+
+              {/* New Region intentionally excluded from mobile menu — draw-to-create is mouse-only */}
+              {viewMode === 'edit' && editable && [
+                <MenuItem key="undo" disabled={!canUndo} onClick={() => { handleUndo(); handleOverflowClose(); }}>
+                  Undo
+                </MenuItem>,
+                <MenuItem key="redo" disabled={!canRedo} onClick={() => { handleRedo(); handleOverflowClose(); }}>
+                  Redo
+                </MenuItem>,
+              ]}
+              {viewMode === 'edit' && activePage && (
+                <MenuItem onClick={() => { toggleRegionText(); handleOverflowClose(); }}>
+                  {showRegionText ? 'Hide Region Text' : 'Show Region Text'}
+                </MenuItem>
+              )}
+              {viewMode === 'edit' && editable && (
+                <MenuItem onClick={() => { setSettingsDialogOpen(true); handleOverflowClose(); }}>
+                  Region Defaults
+                </MenuItem>
+              )}
+
+              {/* Shared utilities */}
+              {features.export && (
+                <MenuItem disabled={!activePage} onClick={() => { setExportDialogOpen(true); handleOverflowClose(); }}>
+                  Export
+                </MenuItem>
+              )}
+            </Menu>
+          </>
+        )}
       </Box>
 
       <ExportDialog open={exportDialogOpen} onClose={() => setExportDialogOpen(false)} />

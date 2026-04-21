@@ -73,26 +73,42 @@ export const DocumentViewer: React.FC = () => {
     fitToView(transformRef.current);
   }, [fitToViewTrigger, fitToView]);
 
-  // Pan view to center on the selected region when it changes
+  // Pan view to center on the selected region when it changes.
+  // Wrapped in rAF to ensure fitToView's rAF has completed first — otherwise
+  // ref.state.scale reads the initial value (0.1) when entering edit mode from preview.
   useEffect(() => {
     if (!selectedRegion || !transformRef.current) return;
     const ref = transformRef.current;
-    const wrapper = ref.instance.wrapperComponent;
-    if (!wrapper) return;
 
-    const scale = ref.state.scale;
-    const wrapperWidth = wrapper.clientWidth;
-    const wrapperHeight = wrapper.clientHeight;
+    const raf = requestAnimationFrame(() => {
+      const wrapper = ref.instance.wrapperComponent;
+      if (!wrapper) return;
 
-    // Region center in content coordinates
-    const regionCenterX = (selectedRegion.x1 + selectedRegion.x2) / 2;
-    const regionCenterY = (selectedRegion.y1 + selectedRegion.y2) / 2;
+      const { scale, positionX, positionY } = ref.state;
+      const wrapperWidth = wrapper.clientWidth;
+      const wrapperHeight = wrapper.clientHeight;
 
-    // Target position: place region center at wrapper center
-    const targetX = wrapperWidth / 2 - regionCenterX * scale;
-    const targetY = wrapperHeight / 2 - regionCenterY * scale;
+      // Check if the region is already fully visible in the viewport
+      const screenX1 = positionX + selectedRegion.x1 * scale;
+      const screenX2 = positionX + selectedRegion.x2 * scale;
+      const screenY1 = positionY + selectedRegion.y1 * scale;
+      const screenY2 = positionY + selectedRegion.y2 * scale;
+      const isVisible =
+        screenX1 >= 0 && screenX2 <= wrapperWidth &&
+        screenY1 >= 0 && screenY2 <= wrapperHeight;
 
-    ref.setTransform(targetX, targetY, scale, 300, 'easeOut');
+      if (isVisible) return;
+
+      // Region not fully visible — pan to center it
+      const regionCenterX = (selectedRegion.x1 + selectedRegion.x2) / 2;
+      const regionCenterY = (selectedRegion.y1 + selectedRegion.y2) / 2;
+      const targetX = wrapperWidth / 2 - regionCenterX * scale;
+      const targetY = wrapperHeight / 2 - regionCenterY * scale;
+
+      ref.setTransform(targetX, targetY, scale, 0);
+    });
+
+    return () => cancelAnimationFrame(raf);
   }, [selectedRegionId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleAdvance = useCallback(

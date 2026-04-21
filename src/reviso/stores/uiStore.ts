@@ -50,7 +50,7 @@ const useUiStore = create<UiStoreState>()((set) => ({
   sliderOrientation: 'horizontal',
   comparisonSource: 'text-only',
   editorMode: 'select',
-  sidebarOpen: true,
+  sidebarOpen: typeof window !== 'undefined' ? window.innerWidth >= 900 : true,
   showValidationIcons: false,
   fitToViewTrigger: 0,
   regionDefaults: {
