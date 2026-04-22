@@ -19,8 +19,8 @@ type Corner = 'tl' | 'tr' | 'bl' | 'br';
 type DragKind = Corner | 'move';
 
 const HANDLE_SIZE = 12;
-const MIN_WIDTH = 20;
-const MIN_HEIGHT = 10;
+const MIN_WIDTH = 4;
+const MIN_HEIGHT = 4;
 
 /** Returns relative luminance (0 = black, 1 = white) from a hex color string. */
 function luminance(hex: string): number {
