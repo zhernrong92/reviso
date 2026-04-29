@@ -21,12 +21,7 @@ export function useFittedFontSizes(page: Page): Record<string, number> {
       if (!region.currentText) continue;
       const w = region.x2 - region.x1;
       const h = region.y2 - region.y1;
-      const pos = region.textPosition ?? 'inside';
       const maxFs = Math.max(6, h * 0.65);
-      if (pos !== 'inside') {
-        result[region.id] = maxFs;
-        continue;
-      }
       const padding = Math.min(4, w * 0.1);
       const fontStyle = region.fontStyle === 'italic' ? 'italic ' : '';
       const fontWeight = region.fontWeight === 'bold' ? 'bold ' : '';

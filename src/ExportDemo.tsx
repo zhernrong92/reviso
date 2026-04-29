@@ -9,6 +9,7 @@ import {
   CircularProgress,
   Grid2 as Grid,
 } from '@mui/material';
+import type { ThemeOptions } from '@mui/material/styles';
 import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
 import OpenInNewOutlinedIcon from '@mui/icons-material/OpenInNewOutlined';
 import { Reviso } from './reviso/Reviso';
@@ -16,8 +17,33 @@ import { ExportDocumentDialog } from './reviso/components/export/ExportDocumentD
 import { parsePdf } from './legacy/utils/parsePdf';
 import { parseUploadedJson } from './legacy/utils/parseUploadedJson';
 import { toPublicDocument } from './reviso/utils/typeMappers';
-import type { RevisoDocument } from './reviso/types/public';
+import type { RevisoDocument, RevisoProps } from './reviso/types/public';
 import type { TextRegion } from './reviso/types/document';
+
+// Mirrors doc-res-ui-1's RevisoDarkTheme (src/constants/ThemeConstant.tsx)
+const ExternalAppDarkTheme: ThemeOptions = {
+  palette: {
+    mode: 'dark',
+    primary: { main: '#0bda90', light: '#4de8ab', dark: '#08a86e', contrastText: '#000000' },
+    background: { default: '#0a0a0a', paper: '#141414' },
+    text: { primary: '#e0e0e0', secondary: '#a0a0a0' },
+  },
+  typography: { fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif' },
+  shape: { borderRadius: 8 },
+  components: {
+    MuiButton: { styleOverrides: { root: { textTransform: 'none' } } },
+  },
+};
+
+const EXTERNAL_APP_DEFAULT_REGION_STYLES: RevisoProps['defaultRegionStyles'] = {
+  fontColor: '#0000ff',
+  borderColor: '#00ff00',
+};
+
+type DocConfig = {
+  theme?: ThemeOptions;
+  defaultRegionStyles?: RevisoProps['defaultRegionStyles'];
+};
 
 function loadImageDimensions(src: string): Promise<{ width: number; height: number }> {
   return new Promise((resolve, reject) => {
@@ -30,6 +56,7 @@ function loadImageDimensions(src: string): Promise<{ width: number; height: numb
 
 const ExportDemo: React.FC = () => {
   const [documents, setDocuments] = useState<RevisoDocument[]>([]);
+  const [docConfigs, setDocConfigs] = useState<Record<string, DocConfig>>({});
   const [loading, setLoading] = useState(true);
   const [selectedDoc, setSelectedDoc] = useState<RevisoDocument | null>(null);
   const [exportDoc, setExportDoc] = useState<RevisoDocument | null>(null);
@@ -37,6 +64,7 @@ const ExportDemo: React.FC = () => {
   useEffect(() => {
     async function loadDocs() {
       const docs: RevisoDocument[] = [];
+      const configs: Record<string, DocConfig> = {};
 
       // Load sample PDF
       try {
@@ -90,7 +118,68 @@ const ExportDemo: React.FC = () => {
         // PNG load failed
       }
 
+      // Image + regions JSON samples
+      const imageJsonSamples: Array<{ image: string; json: string; name: string }> = [
+        { image: '/DBK_2022-61_T__86.jpg', json: '/dbk_2022-61_t__86.jpg.json', name: 'DBK 2022-61 T 86' },
+        { image: '/receipt_ancient_003_598x922.jpg', json: '/receipt_ancient_003_598x922.jpg.json', name: 'Ancient Receipt 003' },
+      ];
+      for (const sample of imageJsonSamples) {
+        try {
+          const [{ width, height }, regionsResponse] = await Promise.all([
+            loadImageDimensions(sample.image),
+            fetch(sample.json),
+          ]);
+          const regionsJson = await regionsResponse.text();
+
+          // Converted (proper) version
+          const internalDoc = parseUploadedJson(regionsJson)[0];
+          if (internalDoc?.pages[0]) {
+            const page = internalDoc.pages[0];
+            page.imageSrc = sample.image;
+            page.originalImageSrc = sample.image;
+            page.width = width;
+            page.height = height;
+            internalDoc.name = sample.name;
+            docs.push(toPublicDocument(internalDoc));
+          }
+
+          // External-app simulation: mimics doc-res-ui-1's path.
+          // - Same public-shape conversion (their API already returns it)
+          // - Page width/height kept as JSON-declared (NOT image natural dims)
+          // - Reviso wrapped with their dark theme + defaultRegionStyles
+          const extInternalDoc = parseUploadedJson(regionsJson)[0];
+          if (extInternalDoc?.pages[0]) {
+            const page = extInternalDoc.pages[0];
+            page.imageSrc = sample.image;
+            page.originalImageSrc = sample.image;
+            // Intentionally do NOT override page.width / page.height
+            extInternalDoc.id = `${extInternalDoc.id}-ext`;
+            extInternalDoc.name = `${sample.name} (external-app config)`;
+            const extDoc = toPublicDocument(extInternalDoc);
+            docs.push(extDoc);
+            configs[extDoc.id] = {
+              theme: ExternalAppDarkTheme,
+              defaultRegionStyles: EXTERNAL_APP_DEFAULT_REGION_STYLES,
+            };
+          }
+        } catch {
+          // sample load failed
+        }
+      }
+
+      // Force textPosition: "top" on every region — the legacy loaders
+      // (parseUploadedJson / parsePdf) drop this field, and the renderer
+      // defaults missing values to "inside".
+      for (const doc of docs) {
+        for (const page of doc.pages) {
+          for (const region of page.regions) {
+            region.textPosition = 'top';
+          }
+        }
+      }
+
       setDocuments(docs);
+      setDocConfigs(configs);
       setLoading(false);
     }
 
@@ -135,7 +224,11 @@ const ExportDemo: React.FC = () => {
           </Typography>
         </Box>
         <Box sx={{ flex: 1, overflow: 'hidden' }}>
-          <Reviso document={selectedDoc} />
+          <Reviso
+            document={selectedDoc}
+            theme={docConfigs[selectedDoc.id]?.theme}
+            defaultRegionStyles={docConfigs[selectedDoc.id]?.defaultRegionStyles}
+          />
         </Box>
       </Box>
     );
