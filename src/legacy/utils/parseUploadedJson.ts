@@ -37,6 +37,9 @@ function parseRegion(raw: Record<string, unknown>, index: number): TextRegion {
     ...(typeof raw['borderColor'] === 'string' ? { borderColor: raw['borderColor'] } : {}),
     ...(typeof raw['borderVisible'] === 'boolean' ? { borderVisible: raw['borderVisible'] } : {}),
     ...(typeof raw['backgroundColor'] === 'string' ? { backgroundColor: raw['backgroundColor'] } : {}),
+    ...(raw['textPosition'] === 'inside' || raw['textPosition'] === 'top' || raw['textPosition'] === 'bottom' || raw['textPosition'] === 'left' || raw['textPosition'] === 'right' ? { textPosition: raw['textPosition'] } : {}),
+    ...(raw['textOrientation'] === 'auto' || raw['textOrientation'] === 'horizontal' || raw['textOrientation'] === 'vertical' ? { textOrientation: raw['textOrientation'] } : {}),
+    ...(typeof raw['isValidated'] === 'boolean' ? { isValidated: raw['isValidated'] } : {}),
   };
 }
 

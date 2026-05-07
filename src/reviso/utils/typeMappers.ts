@@ -24,6 +24,7 @@ export function toInternalRegion(region: RevisoRegion): TextRegion {
     borderVisible: region.borderVisible,
     backgroundColor: region.backgroundColor,
     textPosition: region.textPosition,
+    textOrientation: region.textOrientation,
     isValidated: region.isValidated,
   };
 }
@@ -70,6 +71,7 @@ export function toPublicRegion(region: TextRegion): RevisoRegion {
     borderVisible: region.borderVisible,
     backgroundColor: region.backgroundColor,
     textPosition: region.textPosition,
+    textOrientation: region.textOrientation,
     isValidated: region.isValidated,
   };
 }

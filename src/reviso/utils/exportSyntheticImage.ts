@@ -1,5 +1,6 @@
 import type { Document } from '../types/document';
 import { fitFontSize } from './fitFontSize';
+import { shouldRenderVertical, computeVerticalFontSize, splitGlyphs, regionPadding } from './textLayout';
 
 /**
  * Export pages as PNG images using "Synthetic Reconstruct" style:
@@ -33,15 +34,9 @@ export async function exportSyntheticImage(
         const fontStyle = region.fontStyle === 'italic' ? 'italic ' : '';
         const fontWeight = region.fontWeight === 'bold' ? 'bold ' : '';
         const fontFamily = region.fontFamily ?? 'Inter, Roboto, Helvetica, Arial, sans-serif';
-        const padding = 4;
+        const padding = regionPadding(w);
 
-        const fontSize = fitFontSize(w - padding * 2, h, (fs) => {
-          ctx.font = `${fontStyle}${fontWeight}${fs}px ${fontFamily}`;
-          return ctx.measureText(region.currentText).width;
-        });
-
-        ctx.font = `${fontStyle}${fontWeight}${fontSize}px ${fontFamily}`;
-        ctx.fillStyle = region.fontColor ?? '#1a1a1a';
+        const vertical = shouldRenderVertical(region, w, h);
 
         // Clip to region bounds
         ctx.save();
@@ -49,20 +44,43 @@ export async function exportSyntheticImage(
         ctx.rect(region.x1, region.y1, w, h);
         ctx.clip();
 
-        const textX = region.x1 + padding;
-        const textY = region.y1 + h * 0.75;
-        ctx.fillText(region.currentText, textX, textY);
+        if (vertical) {
+          const fontSize = computeVerticalFontSize(region.currentText, w, h, padding);
+          ctx.font = `${fontStyle}${fontWeight}${fontSize}px ${fontFamily}`;
+          ctx.fillStyle = region.fontColor ?? '#1a1a1a';
+          ctx.textAlign = 'center';
+          const cx = region.x1 + w / 2;
+          const glyphs = splitGlyphs(region.currentText);
+          let y = region.y1 + padding + fontSize * 0.85;
+          for (const g of glyphs) {
+            ctx.fillText(g, cx, y);
+            y += fontSize;
+          }
+          ctx.textAlign = 'start';
+        } else {
+          const fontSize = fitFontSize(w - padding * 2, h, (fs) => {
+            ctx.font = `${fontStyle}${fontWeight}${fs}px ${fontFamily}`;
+            return ctx.measureText(region.currentText).width;
+          });
 
-        // Strikethrough
-        if (region.textDecoration === 'line-through') {
-          const textWidth = ctx.measureText(region.currentText).width;
-          const strikeY = textY - fontSize * 0.3;
-          ctx.strokeStyle = region.fontColor ?? '#1a1a1a';
-          ctx.lineWidth = Math.max(1, fontSize * 0.06);
-          ctx.beginPath();
-          ctx.moveTo(textX, strikeY);
-          ctx.lineTo(textX + textWidth, strikeY);
-          ctx.stroke();
+          ctx.font = `${fontStyle}${fontWeight}${fontSize}px ${fontFamily}`;
+          ctx.fillStyle = region.fontColor ?? '#1a1a1a';
+
+          const textX = region.x1 + padding;
+          const textY = region.y1 + h * 0.75;
+          ctx.fillText(region.currentText, textX, textY);
+
+          // Strikethrough
+          if (region.textDecoration === 'line-through') {
+            const textWidth = ctx.measureText(region.currentText).width;
+            const strikeY = textY - fontSize * 0.3;
+            ctx.strokeStyle = region.fontColor ?? '#1a1a1a';
+            ctx.lineWidth = Math.max(1, fontSize * 0.06);
+            ctx.beginPath();
+            ctx.moveTo(textX, strikeY);
+            ctx.lineTo(textX + textWidth, strikeY);
+            ctx.stroke();
+          }
         }
 
         ctx.restore();

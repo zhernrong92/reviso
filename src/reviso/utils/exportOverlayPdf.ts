@@ -4,6 +4,7 @@ import { detectRegionBackgrounds } from './detectRegionBackground';
 import { fitFontSize } from './fitFontSize';
 import { loadPdfFonts } from './pdfFonts';
 import { imageToPngBytes } from './imageToBytes';
+import { shouldRenderVertical, computeVerticalFontSize, splitGlyphs, regionPadding } from './textLayout';
 
 function hexToRgb(hex: string): { r: number; g: number; b: number } {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -75,34 +76,64 @@ export async function exportOverlayPdf(documents: Document[]): Promise<Uint8Arra
         if (isBold && isItalic) fontKey = 'boldItalic';
         else if (isBold) fontKey = 'bold';
         else if (isItalic) fontKey = 'italic';
+        const padding = regionPadding(w);
+        const vertical = shouldRenderVertical(region, w, h);
+
+        if (vertical) {
+          // Per-glyph font resolution: mixed-script columns (e.g. Han + Hangul)
+          // each glyph picks its own script font.
+          const glyphs = splitGlyphs(region.currentText);
+          const fontSize = computeVerticalFontSize(region.currentText, w, h, padding);
+          const cx = region.x1 + w / 2;
+          let yCanvas = region.y1 + padding + fontSize * 0.85;
+          for (const g of glyphs) {
+            const { font: gFont, text: gText } = await fontSet.resolveFont(g, fontKey);
+            if (!gText) {
+              yCanvas += fontSize;
+              continue;
+            }
+            const gw = gFont.widthOfTextAtSize(gText, fontSize);
+            pdfPage.drawText(gText, {
+              x: cx - gw / 2,
+              y: page.height - yCanvas,
+              size: fontSize,
+              font: gFont,
+              color: rgb(fontRgb.r, fontRgb.g, fontRgb.b),
+            });
+            yCanvas += fontSize;
+          }
+          continue;
+        }
+
         const { font, text } = await fontSet.resolveFont(region.currentText, fontKey);
         if (!text) continue;
 
-        const padding = 4;
-        const fontSize = fitFontSize(w - padding * 2, h, (fs) => font.widthOfTextAtSize(text, fs));
+        {
+          const fontSize = fitFontSize(w - padding * 2, h, (fs) => font.widthOfTextAtSize(text, fs));
 
-        // pdf-lib uses bottom-left origin; flip Y
-        const textX = region.x1 + padding;
-        const textY = page.height - (region.y1 + h * 0.75);
+          // pdf-lib uses bottom-left origin; flip Y
+          const textX = region.x1 + padding;
+          const textY = page.height - (region.y1 + h * 0.75);
 
-        pdfPage.drawText(text, {
-          x: textX,
-          y: textY,
-          size: fontSize,
-          font,
-          color: rgb(fontRgb.r, fontRgb.g, fontRgb.b),
-        });
-
-        // Strikethrough
-        if (region.textDecoration === 'line-through') {
-          const textWidth = font.widthOfTextAtSize(text, fontSize);
-          const lineY = textY + fontSize * 0.3;
-          pdfPage.drawLine({
-            start: { x: textX, y: lineY },
-            end: { x: textX + textWidth, y: lineY },
-            thickness: Math.max(1, fontSize * 0.06),
+          pdfPage.drawText(text, {
+            x: textX,
+            y: textY,
+            size: fontSize,
+            font,
             color: rgb(fontRgb.r, fontRgb.g, fontRgb.b),
           });
+
+          // Strikethrough
+          if (region.textDecoration === 'line-through') {
+            const textWidth = font.widthOfTextAtSize(text, fontSize);
+            const lineY = textY + fontSize * 0.3;
+            pdfPage.drawLine({
+              start: { x: textX, y: lineY },
+              end: { x: textX + textWidth, y: lineY },
+              thickness: Math.max(1, fontSize * 0.06),
+              color: rgb(fontRgb.r, fontRgb.g, fontRgb.b),
+            });
+          }
         }
       }
     }

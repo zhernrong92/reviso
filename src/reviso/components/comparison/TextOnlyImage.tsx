@@ -1,5 +1,6 @@
 import type { Page } from '../../types/document';
 import { useFittedFontSizes } from '../../hooks/useFittedFontSizes';
+import { splitGlyphs, regionPadding } from '../../utils/textLayout';
 
 interface TextOnlyImageProps {
   page: Page;
@@ -24,12 +25,24 @@ export const TextOnlyImage: React.FC<TextOnlyImageProps> = ({ page }) => {
 
           const w = region.x2 - region.x1;
           const h = region.y2 - region.y1;
-          const fs = fontSizes[region.id] ?? Math.max(6, h * 0.65);
-          const pos = region.textPosition ?? 'inside';
-          const padding = Math.min(4, w * 0.1);
+          const fitted = fontSizes[region.id];
+          const fs = fitted?.fontSize ?? Math.max(6, h * 0.65);
+          const orientation = fitted?.orientation ?? 'horizontal';
+          const padding = regionPadding(w);
           const clipId = `text-only-clip-${region.id}`;
 
+          const isVertical = orientation === 'vertical';
+          const pos = isVertical ? 'inside' : (region.textPosition ?? 'inside');
+
           const textAttrs = (() => {
+            if (isVertical) {
+              return {
+                x: region.x1 + w / 2,
+                y: region.y1 + padding + fs * 0.85,
+                anchor: 'middle' as const,
+                useClip: true,
+              };
+            }
             switch (pos) {
               case 'top':
                 return { x: region.x1, y: region.y1 - 4, anchor: 'start' as const, useClip: false };
@@ -65,7 +78,11 @@ export const TextOnlyImage: React.FC<TextOnlyImageProps> = ({ page }) => {
                 fillOpacity={0.95}
                 clipPath={textAttrs.useClip ? `url(#${clipId})` : undefined}
               >
-                {region.currentText}
+                {isVertical
+                  ? splitGlyphs(region.currentText).map((g, i) => (
+                    <tspan key={i} x={textAttrs.x} dy={i === 0 ? 0 : fs}>{g}</tspan>
+                  ))
+                  : region.currentText}
               </text>
             </g>
           );

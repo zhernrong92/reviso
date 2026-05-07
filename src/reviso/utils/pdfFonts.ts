@@ -21,10 +21,14 @@ export interface PdfFontSet {
 }
 
 // Font file names per script (shipped in dist/assets/)
-// Scripts without an entry here (e.g. korean) will fall back to StandardFonts.
+// Korean requires NotoSansKR (NotoSansSC does not contain Hangul).
+// Drop NotoSansKR-Regular.ttf / NotoSansKR-Bold.ttf into the same fonts
+// directory to enable Korean PDF export. Without them, Hangul falls
+// back to StandardFonts (Helvetica) which strips it via WinAnsi.
 const SCRIPT_FONTS: Partial<Record<ScriptKey, Record<WeightKey, string>>> = {
   latin: { regular: 'NotoSans-Regular.ttf', bold: 'NotoSans-Bold.ttf' },
   cjk: { regular: 'NotoSansSC-Regular.ttf', bold: 'NotoSansSC-Bold.ttf' },
+  korean: { regular: 'NotoSansKR-Regular.ttf', bold: 'NotoSansKR-Bold.ttf' },
   tamil: { regular: 'NotoSansTamil-Regular.ttf', bold: 'NotoSansTamil-Bold.ttf' },
   khmer: { regular: 'NotoSansKhmer-Regular.ttf', bold: 'NotoSansKhmer-Bold.ttf' },
   thai: { regular: 'NotoSansThai-Regular.ttf', bold: 'NotoSansThai-Bold.ttf' },

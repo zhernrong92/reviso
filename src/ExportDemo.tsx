@@ -122,6 +122,9 @@ const ExportDemo: React.FC = () => {
       const imageJsonSamples: Array<{ image: string; json: string; name: string }> = [
         { image: '/DBK_2022-61_T__86.jpg', json: '/dbk_2022-61_t__86.jpg.json', name: 'DBK 2022-61 T 86' },
         { image: '/receipt_ancient_003_598x922.jpg', json: '/receipt_ancient_003_598x922.jpg.json', name: 'Ancient Receipt 003' },
+        { image: '/cn1.png', json: '/cn1.png.json', name: 'CN1 — Vertical CJK' },
+        { image: '/cn2.png', json: '/cn2.png.json', name: 'CN2 — Vertical CJK' },
+        { image: '/cn3.png', json: '/cn3.png.json', name: 'CN3 — Vertical CJK' },
       ];
       for (const sample of imageJsonSamples) {
         try {
